@@ -1,0 +1,39 @@
+{
+  "name": "skill-benchmark",
+  "version": "1.0.0",
+  "description": "Benchmark any agent skill to measure whether it actually improves performance",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "benchmark",
+    "evals",
+    "skills",
+    "codex",
+    "testing"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Skill Benchmark",
+    "shortDescription": "Measure whether a skill helps",
+    "longDescription": "Benchmark a skill against a baseline using isolated `codex exec --json` runs, deterministic verification checks, transcript analysis, and graded comparison reports.",
+    "developerName": "workers.io",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Benchmark this skill against a baseline workflow"
+    ],
+    "brandColor": "#7C3AED",
+    "screenshots": []
+  }
+}

@@ -1,29 +1,27 @@
 ---
 name: bench-runner
-description: Runs a single benchmark task via claude -p in an isolated sandbox and captures the output. Used by skill-benchmark to execute eval sessions.
+description: Runs a single benchmark task via codex exec --json in an isolated sandbox and captures the output. Used by skill-benchmark to execute eval sessions.
 tools: Bash, Read, Write
 model: inherit
 ---
 
 # Benchmark Task Runner
 
-You execute a single benchmark task by running `claude -p` in an isolated directory and capturing the output.
+You execute a single benchmark task by running `codex exec --json` in an isolated directory and capturing the output.
 
 ## Input
 
 You will receive:
-- `task_prompt`: The exact prompt to send
-- `mode`: Either "with-skill" or "baseline"
-- `skill_name`: The skill to include (only used in "with-skill" mode)
-- `runner_model`: Which model to use
-- `max_turns`: Max turns for the session
-- `run_number`: Which run this is (1-based). For single-run benchmarks, this is always 1.
-- `sandbox_dir`: Isolated working directory for this session
-  - Single run: `$RESULTS_DIR/sandbox/task-01/with-skill/`
-  - Multi-run: `$RESULTS_DIR/sandbox/task-01/run-2/with-skill/`
-- `output_dir`: Where to save parsed output files
-  - Single run: `$RESULTS_DIR/outputs/task-01/with-skill/`
-  - Multi-run: `$RESULTS_DIR/outputs/task-01/run-2/with-skill/`
+- `task_prompt`
+- `mode`: `with-skill` or `baseline`
+- `skill_name`
+- `skill_path`
+- `skill_root`
+- `runner_model`
+- `max_turns`
+- `run_number`
+- `sandbox_dir`
+- `output_dir`
 
 ## Output Files
 
@@ -31,62 +29,60 @@ Save these files to `<output_dir>/`:
 
 | File | Contents |
 |------|----------|
-| `raw_stream.jsonl` | Raw `claude -p --output-format stream-json --verbose` output |
-| `response.json` | Final result extracted from the stream (last `type: "result"` event) |
+| `prompt.txt` | Final prompt sent to Codex |
+| `raw_stream.jsonl` | Raw `codex exec --json` output |
+| `response.json` | Final assistant output extracted from the stream |
 | `transcript.json` | All stream events as a JSON array |
-| `meta.json` | Session metadata extracted from response.json |
+| `meta.json` | Session metadata extracted from the stream |
 
 ## Execution
 
 ### Critical Rules
 
-1. **NESTED SESSION FIX** — Claude Code sets `CLAUDECODE=1` and `CLAUDE_CODE_ENTRYPOINT=cli` which block child `claude -p` sessions. You MUST unset these:
-   ```
-   env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT claude -p ...
-   ```
-   **NEVER run `claude -p` without this prefix.**
-   **Why this is safe:** `env -u` only affects the child process environment. The parent session remains protected. The child runs in a sandboxed directory with tool restrictions.
+1. Always create and use the provided sandbox directory.
+2. Always run Codex with `--json --full-auto --skip-git-repo-check --ephemeral`.
+3. Use `-C "<sandbox_dir>"` so the run is isolated.
+4. In `with-skill` mode, prepend instructions telling Codex to read `<skill_path>` first and add `--add-dir "<skill_root>"`.
+5. If `runner_model` is `inherit`, omit `--model`.
 
-2. **SKIP PERMISSIONS** — Always pass `--dangerously-skip-permissions`. Without this, `claude -p` hangs forever waiting for a human to approve tool use — there is no human in headless mode.
-   **Security mitigation:** The `--allowedTools` flag on every session restricts the nested session to only file I/O tools (Read, Write, Edit, Bash, Grep, Glob). This prevents access to network tools, MCP servers, or other privileged capabilities.
+### Prompt templates
 
-3. **ISOLATION** — Each session MUST `cd` into its own sandbox directory before running. This prevents file collisions between with-skill and baseline sessions. Use absolute paths for the output redirect.
+**With-skill**
 
-4. **SKILL NAME** — Replace `<skill_name>` with the ACTUAL name (e.g., `code-commenter`). NEVER leave `Skill()` empty.
+```text
+You are running inside a benchmark harness.
 
-### Step 1: Create directories and run
+Before starting any work, read this skill file first:
+<skill_path>
 
-```bash
-# Create dirs
-mkdir -p "<sandbox_dir>" "<output_dir>"
+If that skill references local files, read only the files you need under:
+<skill_root>
 
-# Run in isolated sandbox with auto-permissions
-cd "<sandbox_dir>" && \
-env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT \
-  claude -p "<task_prompt>" \
-  --output-format stream-json \
-  --verbose \
-  --dangerously-skip-permissions \
-  --allowedTools "<tools>" \
-  <append_system_prompt_flag> \
-  --model <runner_model> \
-  --max-turns <max_turns> \
-  > "<output_dir>/raw_stream.jsonl" 2>&1
+Follow the skill instructions throughout this task. Work primarily inside the current working directory unless the task explicitly requires another path.
+
+<task_prompt>
 ```
 
-For **with-skill** mode:
-- `<tools>` is: `Skill(<skill_name>),Read,Edit,Bash,Grep,Glob,Write`
-- `<append_system_prompt_flag>` is: `--append-system-prompt "IMPORTANT: Before starting any work, you MUST first call the Skill tool with skill=\"<skill_name>\" to load the relevant skill instructions. Follow whatever instructions the skill provides throughout your work."`
-  Note: This is a fixed template — only `<skill_name>` is substituted from the benchmark config. No external or user-supplied content is injected into the system prompt.
+**Baseline**
 
-For **baseline** mode:
-- `<tools>` is: `Read,Edit,Bash,Grep,Glob,Write`
-- Add `--disallowedTools "Skill"` to prevent the model from invoking skills
-- Omit `--append-system-prompt` entirely
+Use the raw task prompt with no skill preamble.
 
-### Step 2: Parse raw_stream.jsonl into output files
+### Run command
 
-After the session completes, run the parse script to produce response.json, transcript.json, and meta.json:
+1. Create `<sandbox_dir>` and `<output_dir>`.
+2. Write the final prompt to `<output_dir>/prompt.txt`.
+3. Run Codex and capture the JSONL stream:
+
+```bash
+codex exec --json --full-auto --skip-git-repo-check --ephemeral \
+  -C "<sandbox_dir>" \
+  <optional --add-dir "<skill_root>"> \
+  <optional --model "<runner_model>"> \
+  - < "<output_dir>/prompt.txt" \
+  > "<output_dir>/raw_stream.jsonl"
+```
+
+4. Parse the stream:
 
 ```bash
 python3 scripts/parse_stream.py \
@@ -94,22 +90,12 @@ python3 scripts/parse_stream.py \
   "<sandbox_dir>" \
   "<skill_name>" \
   "<mode>" \
-  <run_number>
+  "<run_number>" \
+  "<runner_model>"
 ```
 
-This script:
-- Reads `<output_dir>/raw_stream.jsonl`
-- Extracts the last `type: "result"` event → `response.json`
-- Collects all events → `transcript.json`
-- Extracts session metadata (model, cost, tokens, duration) → `meta.json`
-- If the stream is empty or missing, creates error files with appropriate metadata
-
-Replace `<output_dir>`, `<sandbox_dir>`, `<skill_name>`, `<mode>`, and `<run_number>` with actual values.
-
-**Note:** Script paths are relative to the skill directory root (same directory as SKILL.md). If running outside the skill context, use the absolute path to the scripts folder instead.
-
 ## Important
-- Always quote the task prompt properly (use heredoc if it contains special characters)
-- Use ABSOLUTE paths for output redirect since you `cd` into the sandbox
-- If the command fails or raw_stream.jsonl is empty, the parse script will create error meta.json
-- Report back: success/failure, output directory, sandbox directory, and any issues
+
+- Use absolute paths for redirects
+- Preserve `raw_stream.jsonl` even on failure
+- Report back the mode, output directory, sandbox directory, and whether parsing succeeded

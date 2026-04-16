@@ -1,0 +1,41 @@
+{
+  "name": "kani-proof",
+  "version": "0.1.0",
+  "description": "Write Kani bounded model checker proofs for Solana and Rust programs",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "kani",
+    "rust",
+    "solana",
+    "model-checking",
+    "formal-verification"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Kani Proof",
+    "shortDescription": "Bounded model checking for Rust and Solana",
+    "longDescription": "Write Kani proof harnesses for Rust and Solana code, with analyzer, linter, and verifier helper workflows expressed as Codex-compatible subagent prompts with inline fallback.",
+    "developerName": "workers.io",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Write a Kani proof harness for this Rust function",
+      "Review these Solana invariants before running Kani",
+      "Help me prove this routine cannot overflow"
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

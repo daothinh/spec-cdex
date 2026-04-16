@@ -1,0 +1,42 @@
+{
+  "name": "workers-app-tester",
+  "version": "3.0.0",
+  "description": "Pentest Android apps on a rooted device with ADB, mitmproxy, Frida, and UI Automator",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "android",
+    "pentest",
+    "adb",
+    "frida",
+    "mitmproxy",
+    "security"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Workers App Tester",
+    "shortDescription": "Android app testing on rooted devices",
+    "longDescription": "Expose the Android application testing workflow to Codex so it can guide rooted-device testing with ADB, traffic capture, SSL pinning bypass, and static APK inspection.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Plan a rooted-device test for this Android app",
+      "Help capture and analyze traffic from this APK",
+      "Review this mobile app for auth and data exposure issues"
+    ],
+    "brandColor": "#1D4ED8",
+    "screenshots": []
+  }
+}

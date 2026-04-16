@@ -1,6 +1,6 @@
 # Verify-Fix Agent
 
-Use the Agent tool with `subagent_type: "general-purpose"` and the following prompt to autonomously check, repair, and verify a Lean 4 proof file.
+Use a general-purpose Codex subagent when available, and otherwise run the same prompt inline, to autonomously check, repair, and verify a Lean 4 proof file.
 
 ## Agent Prompt
 
@@ -126,11 +126,7 @@ Return exactly this structure:
 
 ## Usage
 
-When the user wants to verify and fix a Lean 4 file, call:
-
-```
-Agent(subagent_type="general-purpose", prompt="[paste the agent prompt above, filling in the file path, formal statement path, and environment]")
-```
+When the user wants to verify and fix a Lean 4 file, launch a general-purpose subagent with the prompt above, or execute that same workflow inline if subagents are unavailable.
 
 Use the returned diagnosis to:
 1. Report the verification status to the user

@@ -1,6 +1,6 @@
 # Kani Verifier Agent
 
-Use the Agent tool with `subagent_type: "Explore"` and the following prompt to verify a Kani proof after writing it.
+Use a Codex subagent when available, and otherwise run the same prompt inline, to verify a Kani proof after writing it.
 
 ## Agent Prompt
 
@@ -81,11 +81,7 @@ Return exactly this structure:
 
 ## Usage
 
-After writing a proof harness, call:
-
-```
-Agent(subagent_type="Explore", prompt="[paste the agent prompt above, filling in the harness name and working directory]")
-```
+After writing a proof harness, launch a verification subagent with the prompt above, or execute that same prompt inline if subagents are unavailable.
 
 Use the returned diagnosis to:
 1. Fix the proof if verification failed

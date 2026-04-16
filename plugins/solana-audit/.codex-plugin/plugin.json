@@ -1,0 +1,41 @@
+{
+  "name": "solana-audit",
+  "version": "0.1.0",
+  "description": "Structured Solana smart contract security audits",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "solana",
+    "audit",
+    "security",
+    "smart-contract",
+    "anchor"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Solana Audit",
+    "shortDescription": "Structured Solana security reviews",
+    "longDescription": "Run structured Solana smart contract audits in Codex with repo-local persistence under ./.codex/solana-audit and subagent-friendly explorer and scanner workflows.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Audit this Solana program for signer and PDA issues",
+      "Walk through the audit checklist for this Anchor code",
+      "Review this instruction for authority validation bugs"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

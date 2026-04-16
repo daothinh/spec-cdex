@@ -1,6 +1,6 @@
 # Codebase Explorer Agent
 
-Use the Agent tool with `subagent_type: "Explore"` and the following prompt to analyze a Solana program before scanning for vulnerabilities.
+Use a Codex subagent when available, and otherwise run the same prompt inline, to analyze a Solana program before scanning for vulnerabilities.
 
 ## Agent Prompt
 
@@ -131,11 +131,7 @@ Return this structured summary:
 
 ## Usage
 
-Before starting the audit scan, call:
-
-```
-Agent(subagent_type="Explore", prompt="[paste the agent prompt above, filling in the target repository path]")
-```
+Before starting the audit scan, launch a codebase-explorer style subagent with the prompt above, or execute that prompt inline if subagents are unavailable.
 
 Use the returned summary to:
 1. Pass the complete output to all 4 scanning agents as context

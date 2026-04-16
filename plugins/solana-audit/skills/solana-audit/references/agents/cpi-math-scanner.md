@@ -88,8 +88,4 @@ Return results in this exact format:
 
 ## Usage
 
-Spawn as one of 4 parallel scanning agents in Phase 2:
-
-```
-Agent(prompt="[paste prompt above with explorer output inserted]")
-```
+Launch as one of 4 parallel scanning subagents in Phase 2, or run the same prompt inline if subagents are unavailable.

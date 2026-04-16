@@ -1,0 +1,42 @@
+{
+  "name": "fuzzer",
+  "version": "0.1.0",
+  "description": "Coverage-guided fuzzing workflow for C/C++, Rust, and Go with deep audit context building",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "fuzzer",
+    "fuzzing",
+    "security",
+    "rust",
+    "c-cpp",
+    "go"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Fuzzer",
+    "shortDescription": "Coverage-guided fuzzing with audit context",
+    "longDescription": "Expose the repository's fuzzing workflow to Codex so it can inspect a target, choose promising entry points, and guide harness creation for C/C++, Rust, and Go projects.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Find a strong fuzz target in this codebase",
+      "Design a libFuzzer harness for this parser",
+      "Review this target and suggest sanitizer-friendly fuzz cases"
+    ],
+    "brandColor": "#B91C1C",
+    "screenshots": []
+  }
+}

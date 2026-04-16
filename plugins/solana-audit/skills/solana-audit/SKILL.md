@@ -19,6 +19,11 @@ Activate this skill when the user asks to:
 
 ## Workflow
 
+Use these paths throughout the workflow:
+
+- `SKILL_ROOT`: the directory that contains this `SKILL.md`
+- `AUDIT_DATA_DIR`: `./.codex/solana-audit` unless the user explicitly chooses another audit output directory
+
 ### Phase 0: Setup & Configuration
 
 Before scanning, establish the audit scope and check for prior data.
@@ -33,33 +38,28 @@ Before scanning, establish the audit scope and check for prior data.
 
 **Step 2 — Store configuration:**
 
-If `${CLAUDE_PLUGIN_DATA}` is available:
-1. Read `${CLAUDE_SKILL_DIR}/references/templates/config-template.json` for the schema
-2. Write the user's answers to `${CLAUDE_PLUGIN_DATA}/config.json`
-3. Check for prior audit data:
-   - `${CLAUDE_PLUGIN_DATA}/audit-log.jsonl` — if it exists and contains entries for the same program, inform the user: "Found prior audit from [date]. [N] findings were reported."
-   - `${CLAUDE_PLUGIN_DATA}/accepted-risks.json` — if it exists, load accepted risks to cross-reference during Phase 3
-
-If `${CLAUDE_PLUGIN_DATA}` is not available, proceed without persistence. Do not error or warn — just skip silently.
+1. Create `AUDIT_DATA_DIR` if it does not exist
+2. Read `references/templates/config-template.json` for the schema
+3. Write the user's answers to `AUDIT_DATA_DIR/config.json`
+4. Check for prior audit data:
+   - `AUDIT_DATA_DIR/audit-log.jsonl` — if it exists and contains entries for the same program, inform the user: "Found prior audit from [date]. [N] findings were reported."
+   - `AUDIT_DATA_DIR/accepted-risks.json` — if it exists, load accepted risks to cross-reference during Phase 3
 
 **Defaults** (if user skips configuration): scope=all programs, depth=standard, no known constraints.
 
 ### Phase 1: Explore
 
-Read [references/agents/explorer.md](references/agents/explorer.md) and spawn the explorer agent using the Agent tool.
+Read [references/agents/explorer.md](references/agents/explorer.md) and launch a subagent with that prompt when subagents are available. If subagents are unavailable, perform the same explorer workflow inline and produce the same structured output.
 
 **How to construct the agent call:**
 
-1. Read the file `${CLAUDE_SKILL_DIR}/references/agents/explorer.md`. The agent prompt is the text between the triple-backtick fences in the `## Agent Prompt` section.
+1. Read `references/agents/explorer.md`. The agent prompt is the text between the triple-backtick fences in the `## Agent Prompt` section.
 2. In the prompt, replace `[Insert: repository path or "full codebase scan"]` with the actual target path (from Phase 0 scope, or the repo root).
-3. Spawn the agent:
-   ```
-   Agent(subagent_type="Explore", prompt="<the filled-in prompt>")
-   ```
+3. Launch a codebase-explorer subagent (or equivalent general-purpose explorer) with the filled-in prompt. If you cannot launch subagents, execute the same prompt workflow yourself.
 
 It returns: program map, instruction list, account structures, PDA map, CPI graph, protocol type classification, LOC count, and threat model.
 
-You MUST spawn this agent and wait for its output before proceeding. The explorer output is passed to every scanning agent as shared context.
+You MUST complete this exploration step before proceeding. The explorer output is passed to every scanning agent as shared context.
 
 ### Adaptive Sizing
 
@@ -73,8 +73,8 @@ After the explorer agent returns, determine the program size and select the scan
 
 For **small programs**, construct a single agent prompt that:
 - Includes the explorer output as context
-- References `${CLAUDE_SKILL_DIR}/references/scoring.md` for scoring rules
-- References `${CLAUDE_SKILL_DIR}/references/CHEATSHEET.md` for all 30 vulnerability types
+- References `references/scoring.md` for scoring rules
+- References `references/CHEATSHEET.md` for all 30 vulnerability types
 - Instructs the agent to scan all categories (A-1 through R-3) in one pass
 - Uses the same output format as the individual scanner agents
 - Then skip to Phase 3 with the single agent's output
@@ -87,7 +87,7 @@ For **medium and large programs**, proceed to Phase 2.
 
 Before spawning the scanner agents, run the consolidated syntactic scan:
 
-1. Read `${CLAUDE_SKILL_DIR}/references/scripts/scan-commands.md`
+1. Read `references/scripts/scan-commands.md`
 2. Execute the grep commands against the target program directory
 3. Collect results organized by category (A, S, C, M, L, T, R)
 4. Count total hits per category
@@ -102,13 +102,13 @@ This eliminates redundant grep work across 4 agents.
 
 #### Spawning Scanner Agents
 
-Read [references/scoring.md](references/scoring.md) for the confidence scoring rules and False Positive Gate. Then read all 4 agent prompt files and spawn them **IN PARALLEL** using 4 simultaneous Agent tool calls.
+Read [references/scoring.md](references/scoring.md) for the confidence scoring rules and False Positive Gate. Then read all 4 agent prompt files and launch them **IN PARALLEL** as subagents when subagents are available. If subagents are unavailable, run the same four prompts serially yourself.
 
 **How to construct each agent call:**
 
-1. Read the agent prompt file (e.g., `${CLAUDE_SKILL_DIR}/references/agents/auth-state-scanner.md`). The prompt is everything between the triple-backtick fences in the `## Agent Prompt` section.
+1. Read the agent prompt file (e.g., `references/agents/auth-state-scanner.md`). The prompt is everything between the triple-backtick fences in the `## Agent Prompt` section.
 2. Replace `[INSERT EXPLORER OUTPUT HERE — the full codebase analysis from the explorer agent]` with the literal full text output from the explorer agent.
-3. Replace bracketed reference paths (e.g., `[references/scoring.md]`) with absolute file paths using `${CLAUDE_SKILL_DIR}` as the base (e.g., `${CLAUDE_SKILL_DIR}/references/scoring.md`) so the agent can `Read` them directly — do NOT paste file contents inline.
+3. Replace bracketed reference paths (e.g., `[references/scoring.md]`) with paths rooted at `SKILL_ROOT` so the scanner can `Read` them directly — do NOT paste file contents inline.
 4. For the logic-economic scanner, fill in the protocol type from the explorer classification so it loads the correct protocol reference.
 5. Prepend the syntactic scan results (from the pre-scan step above) to each agent's context.
 
@@ -125,18 +125,16 @@ Read [references/scoring.md](references/scoring.md) for the confidence scoring r
 **Framework Scanner** ([references/agents/framework-scanner.md](references/agents/framework-scanner.md))
 - Framework-specific checks (Anchor/Native/Pinocchio) + R-1..R-3
 
-Spawn all 4 in a single response:
+Launch all 4 scanners in a single orchestration step:
 
-```
-Agent(prompt="<auth-state-scanner prompt with explorer output + syntactic scan results inserted>")
-Agent(prompt="<cpi-math-scanner prompt with explorer output + syntactic scan results inserted>")
-Agent(prompt="<logic-economic-scanner prompt with explorer output + syntactic scan results inserted>")
-Agent(prompt="<framework-scanner prompt with explorer output + syntactic scan results inserted>")
-```
+- Auth scanner with the filled auth-state prompt
+- CPI scanner with the filled cpi-math prompt
+- Logic scanner with the filled logic-economic prompt
+- Framework scanner with the filled framework prompt
 
 Each agent returns candidates with taxonomy ID, file:line, evidence, attack path, confidence score, and FP gate result.
 
-**DEEP mode** (when user requests thorough/deep audit or depth=deep in config): After the 4 scanners complete, also spawn a 5th adversarial agent per [references/agents/adversarial-scanner.md](references/agents/adversarial-scanner.md). Pass it the explorer output AND the merged scanner findings for cross-validation.
+**DEEP mode** (when user requests thorough/deep audit or depth=deep in config): After the 4 scanners complete, also launch a 5th adversarial subagent per [references/agents/adversarial-scanner.md](references/agents/adversarial-scanner.md). Pass it the explorer output AND the merged scanner findings for cross-validation. If subagents are unavailable, execute that adversarial prompt inline.
 
 ### Phase 3: Validate + Falsify
 
@@ -288,13 +286,11 @@ A clean audit report does not guarantee the absence of vulnerabilities. This aud
 
 ### Audit Persistence
 
-After generating the report, persist the results if `${CLAUDE_PLUGIN_DATA}` is available:
+After generating the report, persist the results in `AUDIT_DATA_DIR`:
 
-1. Read `${CLAUDE_SKILL_DIR}/references/templates/audit-log-schema.md` for the schema
-2. Append a single JSONL line to `${CLAUDE_PLUGIN_DATA}/audit-log.jsonl` with: timestamp, program name, path, framework, protocol type, LOC, instruction count, depth, finding counts by severity, finding IDs, and taxonomy IDs
+1. Read `references/templates/audit-log-schema.md` for the schema
+2. Append a single JSONL line to `AUDIT_DATA_DIR/audit-log.jsonl` with: timestamp, program name, path, framework, protocol type, LOC, instruction count, depth, finding counts by severity, finding IDs, and taxonomy IDs
 3. Inform the user: "Audit results saved. You can mark findings as accepted risks for future audits."
-
-If `${CLAUDE_PLUGIN_DATA}` is not available, skip silently.
 
 ### Follow-Up: Formal Verification
 

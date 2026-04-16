@@ -148,9 +148,9 @@ Read [references/axiom-best-practices.md](references/axiom-best-practices.md) fo
 
 ### Common Multi-Step Workflows
 
-**Verify and fix a proof:** Spawn an agent following [references/agents/verify-fix-agent.md](references/agents/verify-fix-agent.md). It autonomously runs check → repair → re-check → verify and returns a structured diagnosis.
+**Verify and fix a proof:** Launch a subagent following [references/agents/verify-fix-agent.md](references/agents/verify-fix-agent.md), or execute the same workflow inline if subagents are unavailable. It runs check → repair → re-check → verify and returns a structured diagnosis.
 
-**Analyze and clean a file:** Spawn an agent following [references/agents/clean-analyze-agent.md](references/agents/clean-analyze-agent.md). It autonomously runs normalize → extract → repair → simplify → check and returns a structural summary with cleaned output.
+**Analyze and clean a file:** Launch a subagent following [references/agents/clean-analyze-agent.md](references/agents/clean-analyze-agent.md), or execute the same workflow inline if subagents are unavailable. It runs normalize → extract → repair → simplify → check and returns a structural summary with cleaned output.
 
 **Scaffold a proof development:**
 1. Write formal statements

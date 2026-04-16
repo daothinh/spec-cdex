@@ -1,0 +1,39 @@
+{
+  "name": "save",
+  "version": "0.4.0",
+  "description": "Convert sessions into reusable Codex agents",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "save",
+    "agents",
+    "session",
+    "workflow",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Save",
+    "shortDescription": "Session-to-agent exporter",
+    "longDescription": "Convert a successful session into a reusable Codex agent TOML file. The skill defaults to the user agent directory and can also emit repo-local agent files for manual installation or version control.",
+    "developerName": "workers.io",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Convert this session into a reusable agent definition"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

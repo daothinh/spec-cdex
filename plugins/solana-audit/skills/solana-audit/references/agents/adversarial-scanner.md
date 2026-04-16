@@ -106,10 +106,6 @@ Apply the False Positive Gate and confidence scoring from scoring.md to all new 
 
 ## Usage
 
-Spawn only when the user requests DEEP or thorough mode:
-
-```
-Agent(prompt="[paste prompt above with explorer output and scanner findings inserted]")
-```
+Launch only when the user requests DEEP or thorough mode. Use a subagent when available, or execute the same prompt inline if subagents are unavailable.
 
 This agent should be spawned AFTER the 4 scanner agents complete, so their findings can be cross-validated. Alternatively, spawn in parallel with scanners for speed — in that case, omit the scanner findings section and the cross-validation will happen during the orchestrator's Phase 3 merge.

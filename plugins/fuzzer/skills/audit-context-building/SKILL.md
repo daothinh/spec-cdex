@@ -11,7 +11,7 @@ description: >
 
 ## 1. Purpose
 
-This skill governs **how Claude thinks** during the context-building phase of an audit.
+This skill governs **how the agent thinks** during the context-building phase of an audit.
 
 When active, Claude will:
 - Perform **line-by-line / block-by-block** code analysis by default.

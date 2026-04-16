@@ -1,37 +1,55 @@
 ---
 name: save
-description: Save this session as a reusable agent
+description: Save this session as a reusable Codex agent
 disable-model-invocation: true
-allowed-tools: Bash(mkdir *), Write(.claude/agents/*)
+allowed-tools: Bash(mkdir *), Write(*)
 ---
 
-# Save Session as Agent
+# Save Session as Codex Agent
 
-Generate a reusable agent file from the current conversation and save it to `.claude/agents/`.
+Generate a reusable Codex agent file from the current conversation and save it as a `.toml` file.
 
-## Instructions
+## Default Target Location
 
-### Step 1: Generate the agent file
+Unless the user asks for another path, save to the user agent directory:
 
-Analyze the entire conversation — the original task, every user correction, every tool call, and the final output — then distill it into a reusable agent file. The agent file is NOT a session log. It is a system prompt that a subagent will receive with no prior context.
+- Windows: `%USERPROFILE%\.codex\agents\`
+- macOS/Linux: `~/.codex/agents/`
 
-Key priorities:
-1. **User corrections are the most important signal.** Every correction implies a rule the agent got wrong initially. Each correction MUST become an explicit rule.
-2. **Only capture what worked.** If approach A failed and approach B worked — only document approach B.
-3. **Generalize** — replace session-specific values (file names, URLs, credentials) with descriptive placeholders. The agent must work for similar tasks, not just this exact one.
-4. **Keep it concise** — this is a system prompt for a subagent. Shorter is better.
+If the user explicitly wants a repo-local or shareable output, save to `./.codex/agents/` instead.
 
-Output the agent file with YAML frontmatter followed by a system prompt body:
+If the user provides an explicit file path or directory, use that path exactly.
 
-```
+## Step 1: Generate the agent file
+
+Analyze the entire conversation: the original task, every user correction, every tool call, and the final outcome. Distill it into a reusable Codex agent definition.
+
+The agent file is NOT a session log. It is a self-contained instruction set for a fresh Codex agent with no prior context.
+
+### Priorities
+
+1. User corrections are the highest-signal input. Every correction implies a rule that should become explicit.
+2. Capture only the approach that worked. Exclude failed branches unless they become "do not do X" rules.
+3. Generalize session-specific values into placeholders such as `<repo-root>`, `<target-file>`, `<artifact-dir>`.
+4. Keep it concise. This is an agent definition, not documentation.
+
+### Output format
+
+Write a TOML agent file in this shape:
+
+```toml
+# Optional: include only when pinning the model materially matters.
+# model = "gpt-5.2"
+
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
 ---
 name: "<kebab-case-name>"
 description: "<one-liner, max 200 chars>"
-tools: Read, Glob, Grep, Bash, Write, Edit
-model: sonnet
 ---
 
-You are an agent that <role description — what this agent does>.
+You are an agent that <role description>.
 
 ## Behavior
 
@@ -46,46 +64,48 @@ You are an agent that <role description — what this agent does>.
 
 ## Output
 
-<What the agent should produce — format, structure, location.>
+<What the agent should produce and how it should report completion.>
+"""
 ```
 
-#### Frontmatter Constraints
+### TOML constraints
 
-- `name` — required, kebab-case, max 100 characters
-- `description` — required, max 200 characters
-- `tools` — required, comma-separated list of tools the agent needs (choose from: Read, Glob, Grep, Bash, Write, Edit, WebFetch, WebSearch)
-- `model` — required, use `sonnet` unless the task clearly needs stronger reasoning (then use `opus`)
+- The filename is the agent slug: `<name>.toml`
+- `sandbox_mode` should default to `workspace-write`
+- Only set `model` if the workflow clearly benefits from pinning a specific model
+- Use `danger-full-access` only when the session proved it is truly required
 
-#### Body Constraints
+### Embedded instruction constraints
 
-- Start with a one-sentence role description: "You are an agent that..."
-- **Behavior** section: numbered steps describing what the agent does, in order
-- **Rules** section: bullet list of constraints and guidelines — every user correction from the session MUST appear here
-- **Output** section: what the agent produces and in what format
-- All sections are required
+- `name` is required, kebab-case, max 100 characters
+- `description` is required, max 200 characters
+- Start with `You are an agent that ...`
+- `Behavior`, `Rules`, and `Output` sections are all required
+- Every user correction from the session must appear in `Rules`
 
-#### Guidelines
+### Writing guidelines
 
-- Write natural language instructions, not formal SHALL/MUST requirements
-- Be specific — "Use openpyxl for Excel files" not "Use the right tool"
-- Do NOT include session-specific details (specific file names, URLs, credentials, data values from this run)
-- DO generalize patterns — replace specific values with descriptive placeholders like `<input-file>`, `<target-url>`
-- Only include steps that succeeded, not failed attempts
-- The agent file MUST be self-contained — the subagent needs nothing beyond this prompt and its input
+- Use natural language, not formal RFC-style requirements
+- Be concrete about tools, file patterns, and order of operations
+- Do not include secrets, transient paths, or one-off values from this run
+- Prefer stable placeholders over real values
+- If the user explicitly requests Claude Code agent format, generate the legacy markdown format instead; otherwise default to Codex TOML
 
-### Step 2: Save the agent file
+## Step 2: Save the file
 
-After generating the agent file content (starting with `---`):
+After generating the TOML content:
 
-1. Extract the `name` from the YAML frontmatter. Use it as the slug directly (it's already kebab-case).
+1. Extract the `name` from the embedded frontmatter in `developer_instructions`
+2. Resolve the destination directory:
+   - Explicit user path wins
+   - Otherwise default to the user Codex agents directory
+3. Create the destination directory if it does not exist
+4. Write the file to `<destination>/<name>.toml`
 
-2. Create the `.claude/agents/` directory if it doesn't exist:
-   ```bash
-   mkdir -p .claude/agents
-   ```
+## Step 3: Report the result
 
-3. Write the agent file content to `.claude/agents/{name}.md` using the Write tool.
+Tell the user:
 
-### Step 3: Display the result
-
-Tell the user the agent was saved to `.claude/agents/{name}.md`. Let them know they can invoke it with `@{name}` in any conversation. Since the agent lives in the repo, it's automatically shared with anyone who has access to the repository.
+- the exact path where the `.toml` file was saved
+- whether it is already in the user agent directory or still repo-local
+- if it was saved repo-local, remind them that moving it into `~/.codex/agents/` or `%USERPROFILE%\.codex\agents\` makes it available user-wide in Codex

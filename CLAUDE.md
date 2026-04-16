@@ -8,13 +8,13 @@ https://github.com/workersio/spec
 
 ## What This Project Does
 
-A collection of Claude Code plugins by workers.io. Each plugin is a self-contained directory under `plugins/` with a manifest and one or more skills. The root `.claude-plugin/marketplace.json` catalogs all plugins for marketplace discovery. Users install via `npx skills add workersio/spec`.
+A collection of workers.io plugins with dual metadata for Claude Code and Codex. Each plugin is a self-contained directory under `plugins/` with one or more skills. Claude Code uses `.claude-plugin/marketplace.json`; Codex uses `.agents/plugins/marketplace.json`. Users install Claude plugins via `npx skills add workersio/spec`.
 
 ## Plugins
 
 ### save (`plugins/save/`)
 
-Converts Claude Code conversations into reusable agents. Analyzes the current session and distills it into an agent file saved to `.claude/agents/{name}.md`, invocable via `@{name}`.
+Converts sessions into reusable Codex-compatible agents. Analyzes the current session and distills it into a `.toml` agent file, typically saved under `~/.codex/agents/{name}.toml` unless the user requests a repo-local path.
 
 - **Skill**: `skills/save/SKILL.md` (`/save`)
 - **Manifest**: `plugins/save/.claude-plugin/plugin.json`
@@ -50,6 +50,15 @@ Benchmark any agent skill to measure whether it actually improves performance. R
 - **Agents**: `skills/skill-benchmark/agents/` (runner.md, grader.md, reporter.md)
 - **References**: `skills/skill-benchmark/references/` (CONFIG.md, DIRECTORY-STRUCTURE.md)
 
+### workers-app-tester (`plugins/workers-app-tester/`)
+
+Penetration tests Android applications on a rooted device with ADB, mitmproxy, Frida, and UI Automator-driven workflows.
+
+- **Skill**: `skills/workers-app-tester/SKILL.md` (`/workers-app-tester`)
+- **Manifest**: `plugins/workers-app-tester/.claude-plugin/plugin.json`
+- **Scripts**: `skills/workers-app-tester/scripts/`
+- **References**: `skills/workers-app-tester/references/`
+
 ### fuzzer (`plugins/fuzzer/`)
 
 Coverage-guided fuzzing workflow for C/C++, Rust, and Go targets. Runs deep audit context building to locate suspicious code, writes targeted harnesses, builds with sanitizers, runs the fuzzer, and reports crashes.
@@ -60,12 +69,14 @@ Coverage-guided fuzzing workflow for C/C++, Rust, and Go targets. Runs deep audi
 ## Architecture
 
 ```
-.claude-plugin/marketplace.json    # Root marketplace catalog (all plugins)
+.claude-plugin/marketplace.json    # Claude Code marketplace catalog
+.agents/plugins/marketplace.json   # Codex marketplace catalog
 plugins/
   <plugin-name>/
-    .claude-plugin/plugin.json     # Plugin manifest
+    .claude-plugin/plugin.json     # Claude Code plugin manifest
+    .codex-plugin/plugin.json      # Codex plugin manifest
     skills/
       <skill-name>/SKILL.md        # Skill definition
 ```
 
-Each plugin is independent. To add a new plugin, create its directory under `plugins/`, add a manifest, define its skills, and register it in the root `marketplace.json`.
+Each plugin is independent. Keep Claude and Codex manifests aligned when plugin identity or version changes. If a future change reintroduces non-Codex workflow-specific behavior, gate that plugin in the Codex marketplace until the workflow is ported again.

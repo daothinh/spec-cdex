@@ -1,6 +1,6 @@
 # Kani Analyzer Agent
 
-Use the Agent tool with `subagent_type: "Explore"` and the following prompt to analyze the codebase before writing Kani proofs.
+Use a Codex subagent when available, and otherwise run the same prompt inline, to analyze the codebase before writing Kani proofs.
 
 ## Agent Prompt
 
@@ -116,11 +116,7 @@ Return this structured summary:
 
 ## Usage
 
-Before writing any proof, call:
-
-```
-Agent(subagent_type="Explore", prompt="[paste the agent prompt above, filling in the target function/codebase]")
-```
+Before writing any proof, launch a codebase-analysis subagent with the prompt above, or execute that same prompt inline if subagents are unavailable.
 
 Use the returned summary to:
 1. Set `#[kani::unwind(N)]` correctly

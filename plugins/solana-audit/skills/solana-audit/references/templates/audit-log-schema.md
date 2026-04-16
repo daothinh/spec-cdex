@@ -8,7 +8,7 @@ Formats used by the solana-audit skill for persisting audit data across sessions
 
 Append-only JSONL file. Each line is a JSON object representing one completed audit run.
 
-**Location:** `${CLAUDE_PLUGIN_DATA}/audit-log.jsonl`
+**Location:** `./.codex/solana-audit/audit-log.jsonl`
 
 ### Schema
 
@@ -46,7 +46,7 @@ Append-only JSONL file. Each line is a JSON object representing one completed au
 
 JSON file tracking findings the user has explicitly accepted as known risks.
 
-**Location:** `${CLAUDE_PLUGIN_DATA}/accepted-risks.json`
+**Location:** `./.codex/solana-audit/accepted-risks.json`
 
 ### Schema
 

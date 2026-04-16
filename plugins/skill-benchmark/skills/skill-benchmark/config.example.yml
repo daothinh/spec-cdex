@@ -12,9 +12,9 @@
 #   Just run: /skill-benchmark
 #   Uses the defaults below, asks you interactively for skill name
 
-# Models — use aliases (sonnet, opus, haiku) or full model IDs
-runner_model: sonnet        # Model that executes the benchmark tasks
-judge_model: opus           # Model that grades outputs (LLM-as-judge)
+# Models — use Codex model IDs, or "inherit" to use the local Codex default
+runner_model: inherit       # Model that executes the benchmark tasks
+judge_model: inherit        # Model that grades outputs (LLM-as-judge)
 
 # Skill to benchmark (optional — if set, skips the interactive prompt)
 # skill: code-commenter

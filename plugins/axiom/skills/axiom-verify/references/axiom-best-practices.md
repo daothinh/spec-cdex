@@ -164,7 +164,7 @@ Axiom offers three equivalent interfaces. Choose based on context:
 
 | Interface | Best for | Install |
 |---|---|---|
-| **CLI** (`axle`) | Local file operations, Claude Code | `pip install axiom-axle` |
+| **CLI** (`axle`) | Local file operations in Codex or Claude Code | `pip install axiom-axle` |
 | **HTTP API** (curl) | Dynamic/generated code, scripts, CI/CD | None needed |
 | **Python client** | Python scripts, notebooks | `pip install axiom-axle` |
 

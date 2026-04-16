@@ -1,6 +1,6 @@
 # Kani Linter Agent
 
-Use the Agent tool with `subagent_type: "Explore"` and the following prompt to lint a Kani proof harness before running expensive verification.
+Use a Codex subagent when available, and otherwise run the same prompt inline, to lint a Kani proof harness before running expensive verification.
 
 The linter statically detects 23 common anti-patterns in Kani harnesses (contradictory assumes, missing unwind, vacuity risks, over-constrained inputs, etc.) and reports structured diagnostics. Running it takes seconds vs minutes for `cargo kani`.
 
@@ -162,11 +162,7 @@ The linter checks for these categories of issues:
 
 ## Usage
 
-After writing a proof harness and before running the verifier, call:
-
-```
-Agent(subagent_type="Explore", prompt="[paste the agent prompt above, filling in the file path and working directory]")
-```
+After writing a proof harness and before running the verifier, launch a linting subagent with the prompt above, or execute that same prompt inline if subagents are unavailable.
 
 Use the returned diagnosis to:
 1. Fix all errors before attempting verification

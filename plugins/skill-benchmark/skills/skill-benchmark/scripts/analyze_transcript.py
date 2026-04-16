@@ -39,7 +39,7 @@ def analyze_transcript(transcript_path, output_path):
     for event in events:
         event_type = event.get("type", "")
 
-        # Count tool usage from assistant messages
+        # Legacy Claude stream format: tool usage inside assistant content blocks
         if event_type == "assistant":
             message = event.get("message", {})
             content = message.get("content", [])
@@ -59,7 +59,42 @@ def analyze_transcript(transcript_path, output_path):
                             consecutive_tool = tool_name
                             consecutive_count = 1
 
-        # Detect errors in tool results
+        # Codex exec JSONL format: item.completed carries tool execution records
+        elif event_type == "item.completed":
+            item = event.get("item", {})
+            item_type = item.get("type", "unknown")
+            if item_type != "agent_message":
+                tool_calls[item_type] += 1
+                total_tool_calls += 1
+
+                if item_type == consecutive_tool:
+                    consecutive_count += 1
+                    if consecutive_count >= 3:
+                        thrashing_detected = True
+                else:
+                    consecutive_tool = item_type
+                    consecutive_count = 1
+
+                exit_code = item.get("exit_code")
+                status = item.get("status")
+                content_str = str(item.get("aggregated_output", ""))
+                has_error = (
+                    (isinstance(exit_code, int) and exit_code != 0)
+                    or status not in (None, "completed")
+                    or any(
+                        indicator in content_str
+                        for indicator in ["error", "Error", "ERROR", "failed", "Failed", "FAIL", "exception", "Exception"]
+                    )
+                )
+                if has_error:
+                    if not last_was_error:
+                        errors_encountered += 1
+                        last_was_error = True
+                elif last_was_error:
+                    errors_recovered += 1
+                    last_was_error = False
+
+        # Detect errors in legacy tool/result events
         if event_type == "tool_result" or event_type == "result":
             content = event.get("content", "")
             is_error = event.get("is_error", False)
@@ -124,7 +159,7 @@ Outputs:
   <output_path>  JSON with tool call counts, thrashing detection, error analysis
 
 Behavioral signals detected:
-  tool_calls          Count of each tool used (Read, Write, Bash, etc.)
+  tool_calls          Count of each tool/item used (Read, Write, Bash, command_execution, etc.)
   total_tool_calls    Total number of tool invocations
   thrashing_detected  True if same tool called 3+ times consecutively
   errors_encountered  Number of error events detected

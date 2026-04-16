@@ -1,6 +1,6 @@
 # Clean-Analyze Agent
 
-Use the Agent tool with `subagent_type: "general-purpose"` and the following prompt to autonomously normalize, analyze, and clean a Lean 4 file.
+Use a general-purpose Codex subagent when available, and otherwise run the same prompt inline, to autonomously normalize, analyze, and clean a Lean 4 file.
 
 ## Agent Prompt
 
@@ -114,11 +114,7 @@ Return exactly this structure:
 
 ## Usage
 
-When the user wants to analyze or clean up a Lean 4 file, call:
-
-```
-Agent(subagent_type="general-purpose", prompt="[paste the agent prompt above, filling in the file path and environment]")
-```
+When the user wants to analyze or clean up a Lean 4 file, launch a general-purpose subagent with the prompt above, or execute that same workflow inline if subagents are unavailable.
 
 Use the returned analysis to:
 1. Give the user an overview of the file's proof structure

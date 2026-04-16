@@ -1,0 +1,41 @@
+{
+  "name": "axiom",
+  "version": "0.1.0",
+  "description": "Verify, check, transform, and repair Lean 4 proofs using the Axiom (Axle) API and CLI",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "axiom",
+    "lean4",
+    "proofs",
+    "formal-verification",
+    "theorem-proving"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Axiom",
+    "shortDescription": "Verify and repair Lean 4 proofs",
+    "longDescription": "Bring the Axiom proof verification workflow into Codex with the existing Lean 4 skill so proof checking and repair guidance can be invoked from the Codex plugin catalog.",
+    "developerName": "workers.io",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Check this Lean 4 proof and explain the failing step",
+      "Repair this theorem proof using the Axiom workflow",
+      "Review this proof script for invalid transformations"
+    ],
+    "brandColor": "#1F2937",
+    "screenshots": []
+  }
+}

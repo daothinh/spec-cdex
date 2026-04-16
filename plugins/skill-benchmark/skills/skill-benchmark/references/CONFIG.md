@@ -3,8 +3,8 @@
 ## Variables
 
 - `$RESULTS_DIR`: `<results_dir>/<skill-name>-<timestamp>/` (created in Step 1)
-- Default runner model: `sonnet`
-- Default judge model: `opus`
+- Default runner model: `inherit`
+- Default judge model: `inherit`
 - Default task count: `5` (+ 1 negative control)
 - Default runs: `1`
 - Default max turns: `10`
@@ -12,13 +12,13 @@
 ## Config File Support
 
 Users can create a `config.yml` to customize the benchmark. The file is auto-detected at:
-1. `.claude/skills/skill-benchmark/config.yml` (project-level — checked first)
-2. `~/.claude/skills/skill-benchmark/config.yml` (user-level — fallback)
+1. `config.yml` beside the skill (project-level — checked first)
+2. `~/.codex/skills/skill-benchmark/config.yml` (user-level — fallback)
 3. Passed as argument: `/skill-benchmark path/to/config.yml`
 
 To set up: copy `config.example.yml` to `config.yml` and edit:
 ```bash
-cp .claude/skills/skill-benchmark/config.example.yml .claude/skills/skill-benchmark/config.yml
+cp config.example.yml config.yml
 ```
 
 ## Expected format
@@ -26,9 +26,9 @@ cp .claude/skills/skill-benchmark/config.example.yml .claude/skills/skill-benchm
 All fields are optional — missing fields use defaults:
 
 ```yaml
-# Models — use aliases (sonnet, opus, haiku) or full model IDs
-runner_model: sonnet        # Model that executes tasks (default: sonnet)
-judge_model: opus           # Model that grades outputs (default: opus)
+# Models — use Codex model IDs, or "inherit" to use the local Codex default
+runner_model: inherit       # Model that executes tasks (default: inherit)
+judge_model: inherit        # Model that grades outputs (default: inherit)
 
 # Skill to benchmark (optional — overrides interactive prompt)
 skill: code-commenter       # Skill name or path to SKILL.md
