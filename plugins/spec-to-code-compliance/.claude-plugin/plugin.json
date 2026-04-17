@@ -1,0 +1,11 @@
+{
+  "name": "spec-to-code-compliance",
+  "version": "0.1.0",
+  "description": "Specification-to-code compliance checker for blockchain audits with evidence-based alignment analysis.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

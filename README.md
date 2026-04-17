@@ -18,6 +18,7 @@
 
 - [Quick Start](#quick-start)
 - [Codex User-Level Install](#codex-user-level-install)
+- [Codex Workspace Install](#codex-workspace-install)
 - [Plugins](#plugins)
   - [fuzzer](#fuzzer) — Coverage-guided fuzzing for C/C++, Rust, and Go
   - [kani-proof](#kani-proof) — Model checking for Rust and Solana
@@ -52,17 +53,32 @@ Individual plugins can be selected during installation. Once installed, invoke a
 /save              Save the current session as a reusable agent
 ```
 
-Codex support is included through repo-local metadata:
+Claude and Codex support are included through repo-local metadata:
 
+- Claude marketplace catalog: `.claude-plugin/marketplace.json`
 - Codex marketplace catalog: `.agents/plugins/marketplace.json`
 - Per-plugin Codex manifests: `plugins/<name>/.codex-plugin/plugin.json`
-- All repo plugins are marked `AVAILABLE` for Codex: `axiom`, `fuzzer`, `kani-proof`, `save`, `skill-benchmark`, `solana-audit`, `workers-app-tester`
+- The Claude marketplace currently exposes 45 plugins from the repo root
+- The Codex marketplace currently exposes 36 plugins: the original 7 Codex-ready plugins plus 29 low/medium-risk Claude-source ports staged under root `plugins/`
 
 To use this repo as a repo-scoped Codex marketplace:
 
 1. Keep the repository layout intact so `.agents/plugins/marketplace.json` can resolve `./plugins/<name>` relative to the repo root.
 2. Restart Codex after cloning the repo or after changing marketplace metadata.
 3. In Codex CLI, run `codex`, then `/plugins`, open the `workersio` marketplace, and install the plugins you want.
+
+Claude-source plugin ports are now managed from the root repo through:
+
+- `plugins/catalog.json` — root inventory for existing plugins and vendored Claude-source ports
+- `scripts/sync-root-plugins.mjs` — copies `skills/plugins/<name>` into root `plugins/<name>` and generates manifests
+- `scripts/validate-root-plugins.mjs` — validates manifest parity, marketplace drift, and `SKILL.md` relative links
+- `.codex-port/preserve-paths.json` inside any copied plugin — opt-in list of root-only files to restore after re-sync when a plugin gets Codex-specific adaptations
+
+Current port policy:
+
+- Codex marketplace publishes all low/medium-risk ports plus the original 7 Codex-ready plugins
+- 9 high-risk Claude workflows remain staged in root `plugins/` but blocked from the Codex marketplace until their hook/MCP/task-specific behavior is ported
+- Currently blocked from Codex marketplace: `fp-check`, `gh-cli`, `git-cleanup`, `modern-python`, `second-opinion`, `skill-improver`, `static-analysis`, `workflow-skill-design`, `zeroize-audit`
 
 ## Codex User-Level Install
 
@@ -99,6 +115,30 @@ For dry runs or custom targets, override the Codex home:
 ```powershell
 pwsh -ExecutionPolicy Bypass -File .\scripts\install-user-level.ps1 -Mode status -CodexHome D:\temp\codex-home
 ```
+
+## Codex Workspace Install
+
+If you want another workspace to reuse this repo's root-ported plugins, skills, and `AGENTS.md`, run the workspace installer from this repo:
+
+```bat
+scripts\install-workspace.bat "D:\path\to\target-repo"
+```
+
+What it does:
+
+- Creates repo-root junctions in the target workspace for `plugins\`, `skills\`, and `.agents\plugins`
+- Generates a workspace-safe `AGENTS.md` from this repo's rule prelude and preserves any target-local `AGENTS.md` content inside a managed block
+- Pre-enables every `AVAILABLE` `workersio` Codex plugin by linking `%USERPROFILE%\.codex\plugins\<name>` to the target workspace and writing `[plugins."<name>@workersio"] enabled = true` into `%USERPROFILE%\.codex\config.toml`
+
+Useful flags:
+
+```bat
+scripts\install-workspace.bat "D:\path\to\target-repo" -Force
+scripts\install-workspace.bat "D:\path\to\target-repo" -NoEnablePlugins
+scripts\install-workspace.bat "D:\path\to\target-repo" -CodexHome "D:\temp\codex-home"
+```
+
+`-Force` backs up conflicting target paths or existing Codex plugin links before replacing them. Restart Codex after running the installer.
 
 <br>
 

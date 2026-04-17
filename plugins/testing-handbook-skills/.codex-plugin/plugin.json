@@ -1,0 +1,39 @@
+{
+  "name": "testing-handbook-skills",
+  "version": "0.1.0",
+  "description": "Meta-skill that generates Codex skills from the Trail of Bits Application Security Testing Handbook.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "testing",
+    "handbook",
+    "skills",
+    "testing-handbook-skills",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Testing Handbook Skills",
+    "shortDescription": "Meta-skill that generates Codex skills from the Trail of Bits Applicati...",
+    "longDescription": "Meta-skill that generates Codex skills from the Trail of Bits Application Security Testing Handbook.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Testing Handbook Skills workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

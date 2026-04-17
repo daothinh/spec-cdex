@@ -1,0 +1,38 @@
+{
+  "name": "devcontainer-setup",
+  "version": "0.1.0",
+  "description": "Create pre-configured devcontainers with Codex and language-specific tooling.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "devcontainer",
+    "setup",
+    "devcontainer-setup",
+    "productivity",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Devcontainer Setup",
+    "shortDescription": "Create pre-configured devcontainers with Codex and language-specific to...",
+    "longDescription": "Create pre-configured devcontainers with Codex and language-specific tooling.",
+    "developerName": "Trail of Bits",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Devcontainer Setup workflow on this repository"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

@@ -87,6 +87,354 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Security"
+    },
+    {
+      "name": "agentic-actions-auditor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agentic-actions-auditor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "ask-questions-if-underspecified",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ask-questions-if-underspecified"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "audit-context-building",
+      "source": {
+        "source": "local",
+        "path": "./plugins/audit-context-building"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "building-secure-contracts",
+      "source": {
+        "source": "local",
+        "path": "./plugins/building-secure-contracts"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "burpsuite-project-parser",
+      "source": {
+        "source": "local",
+        "path": "./plugins/burpsuite-project-parser"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "claude-in-chrome-troubleshooting",
+      "source": {
+        "source": "local",
+        "path": "./plugins/claude-in-chrome-troubleshooting"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "constant-time-analysis",
+      "source": {
+        "source": "local",
+        "path": "./plugins/constant-time-analysis"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "culture-index",
+      "source": {
+        "source": "local",
+        "path": "./plugins/culture-index"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "debug-buttercup",
+      "source": {
+        "source": "local",
+        "path": "./plugins/debug-buttercup"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "devcontainer-setup",
+      "source": {
+        "source": "local",
+        "path": "./plugins/devcontainer-setup"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "differential-review",
+      "source": {
+        "source": "local",
+        "path": "./plugins/differential-review"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "dimensional-analysis",
+      "source": {
+        "source": "local",
+        "path": "./plugins/dimensional-analysis"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "dwarf-expert",
+      "source": {
+        "source": "local",
+        "path": "./plugins/dwarf-expert"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "entry-point-analyzer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/entry-point-analyzer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "firebase-apk-scanner",
+      "source": {
+        "source": "local",
+        "path": "./plugins/firebase-apk-scanner"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "insecure-defaults",
+      "source": {
+        "source": "local",
+        "path": "./plugins/insecure-defaults"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "let-fate-decide",
+      "source": {
+        "source": "local",
+        "path": "./plugins/let-fate-decide"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "mutation-testing",
+      "source": {
+        "source": "local",
+        "path": "./plugins/mutation-testing"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "property-based-testing",
+      "source": {
+        "source": "local",
+        "path": "./plugins/property-based-testing"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "seatbelt-sandboxer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/seatbelt-sandboxer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "semgrep-rule-creator",
+      "source": {
+        "source": "local",
+        "path": "./plugins/semgrep-rule-creator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "semgrep-rule-variant-creator",
+      "source": {
+        "source": "local",
+        "path": "./plugins/semgrep-rule-variant-creator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "sharp-edges",
+      "source": {
+        "source": "local",
+        "path": "./plugins/sharp-edges"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "spec-to-code-compliance",
+      "source": {
+        "source": "local",
+        "path": "./plugins/spec-to-code-compliance"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "supply-chain-risk-auditor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/supply-chain-risk-auditor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "testing-handbook-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/testing-handbook-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "trailmark",
+      "source": {
+        "source": "local",
+        "path": "./plugins/trailmark"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "variant-analysis",
+      "source": {
+        "source": "local",
+        "path": "./plugins/variant-analysis"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "yara-authoring",
+      "source": {
+        "source": "local",
+        "path": "./plugins/yara-authoring"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
     }
   ]
 }

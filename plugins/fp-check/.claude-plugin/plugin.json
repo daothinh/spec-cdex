@@ -1,0 +1,11 @@
+{
+  "name": "fp-check",
+  "version": "0.1.0",
+  "description": "enforces systematic false positive verification when verifying suspected security bugs.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

@@ -1,0 +1,38 @@
+{
+  "name": "second-opinion",
+  "version": "0.1.0",
+  "description": "Run code reviews using external LLM CLIs (OpenAI Codex, Google Gemini) on uncommitted changes, branch diffs, or specific commits.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "second",
+    "opinion",
+    "second-opinion",
+    "productivity",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Second Opinion",
+    "shortDescription": "Run code reviews using external LLM CLIs (OpenAI Codex, Google Gemini)...",
+    "longDescription": "Run code reviews using external LLM CLIs (OpenAI Codex, Google Gemini) on uncommitted changes, branch diffs, or specific commits. Staged in root repo but withheld from the Codex marketplace until its Claude-specific workflow is ported.",
+    "developerName": "Trail of Bits",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Second Opinion workflow on this repository"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

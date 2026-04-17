@@ -1,0 +1,39 @@
+{
+  "name": "building-secure-contracts",
+  "version": "0.1.0",
+  "description": "Comprehensive smart contract security toolkit based on Trail of Bits' Building Secure Contracts framework.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "building",
+    "secure",
+    "contracts",
+    "building-secure-contracts",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Building Secure Contracts",
+    "shortDescription": "Comprehensive smart contract security toolkit based on Trail of Bits' B...",
+    "longDescription": "Comprehensive smart contract security toolkit based on Trail of Bits' Building Secure Contracts framework.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Building Secure Contracts workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

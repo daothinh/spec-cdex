@@ -1,0 +1,40 @@
+{
+  "name": "semgrep-rule-variant-creator",
+  "version": "0.1.0",
+  "description": "A Codex skill for porting existing Semgrep rules to new target languages with proper applicability analysis and test-driven validation.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "semgrep",
+    "rule",
+    "variant",
+    "creator",
+    "semgrep-rule-variant-creator",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Semgrep Rule Variant Creator",
+    "shortDescription": "A Codex skill for porting existing Semgrep rules to new target language...",
+    "longDescription": "A Codex skill for porting existing Semgrep rules to new target languages with proper applicability analysis and test-driven validation.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Semgrep Rule Variant Creator workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

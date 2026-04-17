@@ -1,0 +1,39 @@
+{
+  "name": "burpsuite-project-parser",
+  "version": "0.1.0",
+  "description": "Search and extract data from Burp Suite project files (.burp) for use in Codex",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "burpsuite",
+    "project",
+    "parser",
+    "burpsuite-project-parser",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Burpsuite Project Parser",
+    "shortDescription": "Search and extract data from Burp Suite project files (.burp) for use i...",
+    "longDescription": "Search and extract data from Burp Suite project files (.burp) for use in Codex",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Burpsuite Project Parser workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

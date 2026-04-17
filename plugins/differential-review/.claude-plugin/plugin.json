@@ -1,0 +1,11 @@
+{
+  "name": "differential-review",
+  "version": "0.1.0",
+  "description": "Security-focused differential review of code changes with git history analysis and blast radius estimation.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

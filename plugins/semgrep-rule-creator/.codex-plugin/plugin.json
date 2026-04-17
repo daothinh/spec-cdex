@@ -1,0 +1,39 @@
+{
+  "name": "semgrep-rule-creator",
+  "version": "0.1.0",
+  "description": "Create production-quality Semgrep rules for detecting bug patterns and security vulnerabilities.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "semgrep",
+    "rule",
+    "creator",
+    "semgrep-rule-creator",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Semgrep Rule Creator",
+    "shortDescription": "Create production-quality Semgrep rules for detecting bug patterns and...",
+    "longDescription": "Create production-quality Semgrep rules for detecting bug patterns and security vulnerabilities.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Semgrep Rule Creator workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

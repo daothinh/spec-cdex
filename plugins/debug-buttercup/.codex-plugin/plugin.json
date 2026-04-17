@@ -1,0 +1,38 @@
+{
+  "name": "debug-buttercup",
+  "version": "0.1.0",
+  "description": "Debug the Buttercup CRS (Cyber Reasoning System) running on Kubernetes.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "debug",
+    "buttercup",
+    "debug-buttercup",
+    "productivity",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Debug Buttercup",
+    "shortDescription": "Debug the Buttercup CRS (Cyber Reasoning System) running on Kubernetes.",
+    "longDescription": "Debug the Buttercup CRS (Cyber Reasoning System) running on Kubernetes.",
+    "developerName": "Trail of Bits",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Debug Buttercup workflow on this repository"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

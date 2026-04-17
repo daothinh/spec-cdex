@@ -1,0 +1,11 @@
+{
+  "name": "insecure-defaults",
+  "version": "0.1.0",
+  "description": "Security skill for detecting insecure default configurations that create vulnerabilities when applications run with missing or incomplete configuration.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

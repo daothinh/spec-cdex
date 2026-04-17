@@ -1,0 +1,40 @@
+{
+  "name": "spec-to-code-compliance",
+  "version": "0.1.0",
+  "description": "Specification-to-code compliance checker for blockchain audits with evidence-based alignment analysis.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "spec",
+    "to",
+    "code",
+    "compliance",
+    "spec-to-code-compliance",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Spec To Code Compliance",
+    "shortDescription": "Specification-to-code compliance checker for blockchain audits with evi...",
+    "longDescription": "Specification-to-code compliance checker for blockchain audits with evidence-based alignment analysis.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Spec To Code Compliance workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

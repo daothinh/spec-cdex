@@ -1,0 +1,39 @@
+{
+  "name": "agentic-actions-auditor",
+  "version": "0.1.0",
+  "description": "Audits GitHub Actions workflows for security vulnerabilities in AI agent integrations. Detects misconfigurations and attack vectors specific to Codex Action, Gemini CLI, OpenAI Codex, and GitHub AI Inference when used in CI/CD pipelines.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "agentic",
+    "actions",
+    "auditor",
+    "agentic-actions-auditor",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agentic Actions Auditor",
+    "shortDescription": "Audits GitHub Actions workflows for security vulnerabilities in AI agen...",
+    "longDescription": "Audits GitHub Actions workflows for security vulnerabilities in AI agent integrations. Detects misconfigurations and attack vectors specific to Codex Action, Gemini CLI, OpenAI Codex, and GitHub AI Inference when used in CI/CD pipelines.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Agentic Actions Auditor workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

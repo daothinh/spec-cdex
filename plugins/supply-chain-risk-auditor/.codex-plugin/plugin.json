@@ -1,0 +1,40 @@
+{
+  "name": "supply-chain-risk-auditor",
+  "version": "0.1.0",
+  "description": "Generate a report on the supply-chain threat landscape of a project's direct dependencies, considering factors like popularity, number of maintainers, CVE history, and frequency of maintenance. Flag dependencies that have high-risk factors and suggest alternatives if any are available.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "supply",
+    "chain",
+    "risk",
+    "auditor",
+    "supply-chain-risk-auditor",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Supply Chain Risk Auditor",
+    "shortDescription": "Generate a report on the supply-chain threat landscape of a project's d...",
+    "longDescription": "Generate a report on the supply-chain threat landscape of a project's direct dependencies, considering factors like popularity, number of maintainers, CVE history, and frequency of maintenance. Flag dependencies that have high-risk factors and suggest alternatives if any are available.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Supply Chain Risk Auditor workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

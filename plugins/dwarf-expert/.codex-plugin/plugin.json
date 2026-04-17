@@ -1,0 +1,38 @@
+{
+  "name": "dwarf-expert",
+  "version": "0.1.0",
+  "description": "Interact with and analyze DWARF debug files, understand the DWARF debug format/standard, and write code that parses DWARF data.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "dwarf",
+    "expert",
+    "dwarf-expert",
+    "coding",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "DWARF Expert",
+    "shortDescription": "Interact with and analyze DWARF debug files, understand the DWARF debug...",
+    "longDescription": "Interact with and analyze DWARF debug files, understand the DWARF debug format/standard, and write code that parses DWARF data.",
+    "developerName": "Trail of Bits",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the DWARF Expert workflow on this repository"
+    ],
+    "brandColor": "#1F2937",
+    "screenshots": []
+  }
+}

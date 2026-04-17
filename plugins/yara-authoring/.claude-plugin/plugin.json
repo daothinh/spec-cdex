@@ -1,0 +1,11 @@
+{
+  "name": "yara-authoring",
+  "version": "0.1.0",
+  "description": "A behavior-driven skill for authoring high-quality YARA-X detection rules, teaching you to think and act like an expert YARA author.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

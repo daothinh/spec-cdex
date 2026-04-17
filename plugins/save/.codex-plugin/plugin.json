@@ -1,7 +1,7 @@
 {
   "name": "save",
   "version": "0.4.0",
-  "description": "Convert sessions into reusable Codex agents",
+  "description": "Convert sessions into reusable agents",
   "author": {
     "name": "workers.io",
     "email": "chai+spec@workers.io",

@@ -1,0 +1,38 @@
+{
+  "name": "skill-improver",
+  "version": "0.1.0",
+  "description": "Iteratively reviews and fixes Codex skill quality issues until they meet standards. Runs automated fix-review cycles using the skill-reviewer agent from the plugin-dev plugin.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "skill",
+    "improver",
+    "skill-improver",
+    "productivity",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Skill Improver",
+    "shortDescription": "Iteratively reviews and fixes Codex skill quality issues until they mee...",
+    "longDescription": "Iteratively reviews and fixes Codex skill quality issues until they meet standards. Runs automated fix-review cycles using the skill-reviewer agent from the plugin-dev plugin. Staged in root repo but withheld from the Codex marketplace until its Claude-specific workflow is ported.",
+    "developerName": "Trail of Bits",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Skill Improver workflow on this repository"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

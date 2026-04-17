@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "defaults": {
+    "skillsSourceRoot": "./skills/plugins",
+    "skillsLicense": "CC-BY-SA-4.0",
+    "skillsAuthorName": "Trail of Bits",
+    "codexCapabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ]
+  },
+  "claudeMarketplace": {
+    "name": "workersio",
+    "owner": {
+      "name": "workersio",
+      "email": "chai+spec@workers.io"
+    }
+  },
+  "codexMarketplace": {
+    "name": "workersio",
+    "interface": {
+      "displayName": "workers.io"
+    }
+  },
+  "plugins": [
+    {
+      "name": "save",
+      "sourceKind": "root",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "kani-proof",
+      "sourceKind": "root",
+      "category": "Coding",
+      "codexStatus": "available"
+    },
+    {
+      "name": "solana-audit",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "axiom",
+      "sourceKind": "root",
+      "category": "Coding",
+      "codexStatus": "available"
+    },
+    {
+      "name": "skill-benchmark",
+      "sourceKind": "root",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "workers-app-tester",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "fuzzer",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "agentic-actions-auditor",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "ask-questions-if-underspecified",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "audit-context-building",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "building-secure-contracts",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "burpsuite-project-parser",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "claude-in-chrome-troubleshooting",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "constant-time-analysis",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "culture-index",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "debug-buttercup",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "devcontainer-setup",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "differential-review",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "dimensional-analysis",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "dwarf-expert",
+      "sourceKind": "skills",
+      "category": "Coding",
+      "codexStatus": "available"
+    },
+    {
+      "name": "entry-point-analyzer",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "firebase-apk-scanner",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "fp-check",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "gh-cli",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "git-cleanup",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "insecure-defaults",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "let-fate-decide",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "available"
+    },
+    {
+      "name": "modern-python",
+      "sourceKind": "skills",
+      "category": "Coding",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "mutation-testing",
+      "sourceKind": "skills",
+      "category": "Coding",
+      "codexStatus": "available"
+    },
+    {
+      "name": "property-based-testing",
+      "sourceKind": "skills",
+      "category": "Coding",
+      "codexStatus": "available"
+    },
+    {
+      "name": "seatbelt-sandboxer",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "second-opinion",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "semgrep-rule-creator",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "semgrep-rule-variant-creator",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "sharp-edges",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "skill-improver",
+      "sourceKind": "skills",
+      "category": "Productivity",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "spec-to-code-compliance",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "static-analysis",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "supply-chain-risk-auditor",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "testing-handbook-skills",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "trailmark",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "variant-analysis",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "workflow-skill-design",
+      "sourceKind": "skills",
+      "category": "Coding",
+      "codexStatus": "blocked"
+    },
+    {
+      "name": "yara-authoring",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
+      "name": "zeroize-audit",
+      "sourceKind": "skills",
+      "category": "Security",
+      "codexStatus": "blocked"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "variant-analysis",
+  "version": "0.1.0",
+  "description": "Find similar vulnerabilities and bugs across codebases using pattern-based analysis.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

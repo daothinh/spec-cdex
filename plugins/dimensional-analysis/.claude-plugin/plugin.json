@@ -1,0 +1,11 @@
+{
+  "name": "dimensional-analysis",
+  "version": "0.1.0",
+  "description": "Add dimensional annotations to codebases and detect dimensional bugs. Uses an annotation format inspired by Reserve Protocol's Solidity conventions, but applicable to any language or protocol performing numeric arithmetic with mixed units, precisions, or scaling factors.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

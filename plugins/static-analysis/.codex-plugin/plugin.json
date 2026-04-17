@@ -1,0 +1,38 @@
+{
+  "name": "static-analysis",
+  "version": "0.1.0",
+  "description": "A comprehensive static analysis toolkit with CodeQL, Semgrep, and SARIF parsing for security vulnerability detection.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "static",
+    "analysis",
+    "static-analysis",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Static Analysis",
+    "shortDescription": "A comprehensive static analysis toolkit with CodeQL, Semgrep, and SARIF...",
+    "longDescription": "A comprehensive static analysis toolkit with CodeQL, Semgrep, and SARIF parsing for security vulnerability detection. Staged in root repo but withheld from the Codex marketplace until its Claude-specific workflow is ported.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Static Analysis workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

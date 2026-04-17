@@ -1,7 +1,7 @@
 {
   "name": "save",
   "version": "0.4.0",
-  "description": "Convert Claude Code sessions into reusable agents",
+  "description": "Convert sessions into reusable agents",
   "author": {
     "name": "workers.io"
   },

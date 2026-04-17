@@ -1,0 +1,38 @@
+{
+  "name": "seatbelt-sandboxer",
+  "version": "0.1.0",
+  "description": "Generate a MacOS Seatbelt configuration that sandboxes the target with the minimum set of permissions necessary for it to operate normally.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "seatbelt",
+    "sandboxer",
+    "seatbelt-sandboxer",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Seatbelt Sandboxer",
+    "shortDescription": "Generate a MacOS Seatbelt configuration that sandboxes the target with...",
+    "longDescription": "Generate a MacOS Seatbelt configuration that sandboxes the target with the minimum set of permissions necessary for it to operate normally.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Seatbelt Sandboxer workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

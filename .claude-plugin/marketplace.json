@@ -8,7 +8,7 @@
     {
       "name": "save",
       "source": "./plugins/save",
-      "description": "Convert Claude Code sessions into reusable agents"
+      "description": "Convert sessions into reusable agents"
     },
     {
       "name": "kani-proof",
@@ -39,6 +39,196 @@
       "name": "fuzzer",
       "source": "./plugins/fuzzer",
       "description": "Coverage-guided fuzzing workflow for C/C++, Rust, and Go with deep audit context building"
+    },
+    {
+      "name": "agentic-actions-auditor",
+      "source": "./plugins/agentic-actions-auditor",
+      "description": "Audits GitHub Actions workflows for security vulnerabilities in AI agent integrations. Detects misconfigurations and attack vectors specific to Codex Action, Gemini CLI, OpenAI Codex, and GitHub AI Inference when used in CI/CD pipelines."
+    },
+    {
+      "name": "ask-questions-if-underspecified",
+      "source": "./plugins/ask-questions-if-underspecified",
+      "description": "Ask the minimum set of clarifying questions needed to avoid wrong work."
+    },
+    {
+      "name": "audit-context-building",
+      "source": "./plugins/audit-context-building",
+      "description": "Build deep architectural context through ultra-granular code analysis before vulnerability hunting."
+    },
+    {
+      "name": "building-secure-contracts",
+      "source": "./plugins/building-secure-contracts",
+      "description": "Comprehensive smart contract security toolkit based on Trail of Bits' Building Secure Contracts framework."
+    },
+    {
+      "name": "burpsuite-project-parser",
+      "source": "./plugins/burpsuite-project-parser",
+      "description": "Search and extract data from Burp Suite project files (.burp) for use in Codex"
+    },
+    {
+      "name": "claude-in-chrome-troubleshooting",
+      "source": "./plugins/claude-in-chrome-troubleshooting",
+      "description": "Diagnose and fix Claude in Chrome MCP extension connectivity issues."
+    },
+    {
+      "name": "constant-time-analysis",
+      "source": "./plugins/constant-time-analysis",
+      "description": "A portable tool for detecting timing side-channel vulnerabilities in compiled cryptographic code. Analyzes assembly output from multiple compilers and architectures to detect instructions that could leak secret data through execution timing."
+    },
+    {
+      "name": "culture-index",
+      "source": "./plugins/culture-index",
+      "description": "Interprets Culture Index survey results for individuals and teams."
+    },
+    {
+      "name": "debug-buttercup",
+      "source": "./plugins/debug-buttercup",
+      "description": "Debug the Buttercup CRS (Cyber Reasoning System) running on Kubernetes."
+    },
+    {
+      "name": "devcontainer-setup",
+      "source": "./plugins/devcontainer-setup",
+      "description": "Create pre-configured devcontainers with Codex and language-specific tooling."
+    },
+    {
+      "name": "differential-review",
+      "source": "./plugins/differential-review",
+      "description": "Security-focused differential review of code changes with git history analysis and blast radius estimation."
+    },
+    {
+      "name": "dimensional-analysis",
+      "source": "./plugins/dimensional-analysis",
+      "description": "Add dimensional annotations to codebases and detect dimensional bugs. Uses an annotation format inspired by Reserve Protocol's Solidity conventions, but applicable to any language or protocol performing numeric arithmetic with mixed units, precisions, or scaling factors."
+    },
+    {
+      "name": "dwarf-expert",
+      "source": "./plugins/dwarf-expert",
+      "description": "Interact with and analyze DWARF debug files, understand the DWARF debug format/standard, and write code that parses DWARF data."
+    },
+    {
+      "name": "entry-point-analyzer",
+      "source": "./plugins/entry-point-analyzer",
+      "description": "A Codex skill for systematically identifying **state-changing** entry points in smart contract codebases to guide security audits."
+    },
+    {
+      "name": "firebase-apk-scanner",
+      "source": "./plugins/firebase-apk-scanner",
+      "description": "Scan Android APKs for Firebase security misconfigurations including open databases, exposed storage buckets, and authentication bypasses."
+    },
+    {
+      "name": "fp-check",
+      "source": "./plugins/fp-check",
+      "description": "enforces systematic false positive verification when verifying suspected security bugs."
+    },
+    {
+      "name": "gh-cli",
+      "source": "./plugins/gh-cli",
+      "description": "intercepts GitHub URL fetches and redirects Claude to use the authenticated gh CLI instead."
+    },
+    {
+      "name": "git-cleanup",
+      "source": "./plugins/git-cleanup",
+      "description": "A Codex skill for safely cleaning up accumulated git worktrees and local branches."
+    },
+    {
+      "name": "insecure-defaults",
+      "source": "./plugins/insecure-defaults",
+      "description": "Security skill for detecting insecure default configurations that create vulnerabilities when applications run with missing or incomplete configuration."
+    },
+    {
+      "name": "let-fate-decide",
+      "source": "./plugins/let-fate-decide",
+      "description": "A Codex skill that draws Tarot cards using secrets to inject entropy into vague or underspecified planning decisions."
+    },
+    {
+      "name": "modern-python",
+      "source": "./plugins/modern-python",
+      "description": "Modern Python tooling and best practices using uv, ruff, ty, and pytest. Based on patterns from trailofbits/cookiecutter-python."
+    },
+    {
+      "name": "mutation-testing",
+      "source": "./plugins/mutation-testing",
+      "description": "Helps configure mewt or muton mutation testing campaigns — scoping targets, tuning timeouts, and optimizing long-running runs so you can execute mewt run or muton run with confidence."
+    },
+    {
+      "name": "property-based-testing",
+      "source": "./plugins/property-based-testing",
+      "description": "Property-based testing guidance for multiple languages and smart contracts."
+    },
+    {
+      "name": "seatbelt-sandboxer",
+      "source": "./plugins/seatbelt-sandboxer",
+      "description": "Generate a MacOS Seatbelt configuration that sandboxes the target with the minimum set of permissions necessary for it to operate normally."
+    },
+    {
+      "name": "second-opinion",
+      "source": "./plugins/second-opinion",
+      "description": "Run code reviews using external LLM CLIs (OpenAI Codex, Google Gemini) on uncommitted changes, branch diffs, or specific commits."
+    },
+    {
+      "name": "semgrep-rule-creator",
+      "source": "./plugins/semgrep-rule-creator",
+      "description": "Create production-quality Semgrep rules for detecting bug patterns and security vulnerabilities."
+    },
+    {
+      "name": "semgrep-rule-variant-creator",
+      "source": "./plugins/semgrep-rule-variant-creator",
+      "description": "A Codex skill for porting existing Semgrep rules to new target languages with proper applicability analysis and test-driven validation."
+    },
+    {
+      "name": "sharp-edges",
+      "source": "./plugins/sharp-edges",
+      "description": "Identifies error-prone APIs, dangerous configurations, and footgun designs that enable security mistakes through developer confusion, laziness, or malice."
+    },
+    {
+      "name": "skill-improver",
+      "source": "./plugins/skill-improver",
+      "description": "Iteratively reviews and fixes Codex skill quality issues until they meet standards. Runs automated fix-review cycles using the skill-reviewer agent from the plugin-dev plugin."
+    },
+    {
+      "name": "spec-to-code-compliance",
+      "source": "./plugins/spec-to-code-compliance",
+      "description": "Specification-to-code compliance checker for blockchain audits with evidence-based alignment analysis."
+    },
+    {
+      "name": "static-analysis",
+      "source": "./plugins/static-analysis",
+      "description": "A comprehensive static analysis toolkit with CodeQL, Semgrep, and SARIF parsing for security vulnerability detection."
+    },
+    {
+      "name": "supply-chain-risk-auditor",
+      "source": "./plugins/supply-chain-risk-auditor",
+      "description": "Generate a report on the supply-chain threat landscape of a project's direct dependencies, considering factors like popularity, number of maintainers, CVE history, and frequency of maintenance. Flag dependencies that have high-risk factors and suggest alternatives if any are available."
+    },
+    {
+      "name": "testing-handbook-skills",
+      "source": "./plugins/testing-handbook-skills",
+      "description": "Meta-skill that generates Codex skills from the Trail of Bits Application Security Testing Handbook."
+    },
+    {
+      "name": "trailmark",
+      "source": "./plugins/trailmark",
+      "description": "**Source code graph analysis for security auditing.** Parses code into queryable graphs of functions, classes, and calls, then uses that structure for diagram generation, mutation testing triage, protocol verification, and differential review."
+    },
+    {
+      "name": "variant-analysis",
+      "source": "./plugins/variant-analysis",
+      "description": "Find similar vulnerabilities and bugs across codebases using pattern-based analysis."
+    },
+    {
+      "name": "workflow-skill-design",
+      "source": "./plugins/workflow-skill-design",
+      "description": "teaches design patterns for building workflow-based skills and provides a review agent for auditing existing skills."
+    },
+    {
+      "name": "yara-authoring",
+      "source": "./plugins/yara-authoring",
+      "description": "A behavior-driven skill for authoring high-quality YARA-X detection rules, teaching you to think and act like an expert YARA author."
+    },
+    {
+      "name": "zeroize-audit",
+      "source": "./plugins/zeroize-audit",
+      "description": "Audits C/C++/Rust code for missing zeroization and compiler-removed wipes. Pipeline: source scan → MCP/LSP semantic context → IR diff → assembly/MIR checks."
     }
   ]
 }

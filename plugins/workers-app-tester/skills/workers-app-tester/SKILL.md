@@ -19,7 +19,7 @@ Pentest Android apps through a rooted device. Drives the device UI, intercepts n
 For detailed guides, load these on demand:
 - [references/testing-methodology.md](references/testing-methodology.md) — IDOR, auth, exposure, local storage, deeplinks, exported components, logging
 - [references/frida.md](references/frida.md) — SSL bypass, root bypass, codeshare scripts, hooking patterns, custom certs
-- [agents/reverse-agent.md](agents/reverse-agent.md) — APK decompilation sub-agent, reads codebase for endpoints, secrets, components
+- [agents/reverse-agent.md](references/agents/reverse-agent.md) — APK decompilation sub-agent, reads codebase for endpoints, secrets, components
 
 ## Session Setup
 

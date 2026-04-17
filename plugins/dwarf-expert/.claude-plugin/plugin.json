@@ -1,0 +1,11 @@
+{
+  "name": "dwarf-expert",
+  "version": "0.1.0",
+  "description": "Interact with and analyze DWARF debug files, understand the DWARF debug format/standard, and write code that parses DWARF data.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

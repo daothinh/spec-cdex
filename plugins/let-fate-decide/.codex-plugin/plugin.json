@@ -1,0 +1,39 @@
+{
+  "name": "let-fate-decide",
+  "version": "0.1.0",
+  "description": "A Codex skill that draws Tarot cards using secrets to inject entropy into vague or underspecified planning decisions.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "let",
+    "fate",
+    "decide",
+    "let-fate-decide",
+    "productivity",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Let Fate Decide",
+    "shortDescription": "A Codex skill that draws Tarot cards using secrets to inject entropy in...",
+    "longDescription": "A Codex skill that draws Tarot cards using secrets to inject entropy into vague or underspecified planning decisions.",
+    "developerName": "Trail of Bits",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Let Fate Decide workflow on this repository"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

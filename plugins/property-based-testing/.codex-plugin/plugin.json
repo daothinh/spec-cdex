@@ -1,0 +1,39 @@
+{
+  "name": "property-based-testing",
+  "version": "0.1.0",
+  "description": "Property-based testing guidance for multiple languages and smart contracts.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "property",
+    "based",
+    "testing",
+    "property-based-testing",
+    "coding",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Property Based Testing",
+    "shortDescription": "Property-based testing guidance for multiple languages and smart contra...",
+    "longDescription": "Property-based testing guidance for multiple languages and smart contracts.",
+    "developerName": "Trail of Bits",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Property Based Testing workflow on this repository"
+    ],
+    "brandColor": "#1F2937",
+    "screenshots": []
+  }
+}

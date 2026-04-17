@@ -1,0 +1,38 @@
+{
+  "name": "modern-python",
+  "version": "0.1.0",
+  "description": "Modern Python tooling and best practices using uv, ruff, ty, and pytest. Based on patterns from trailofbits/cookiecutter-python.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "modern",
+    "python",
+    "modern-python",
+    "coding",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Modern Python",
+    "shortDescription": "Modern Python tooling and best practices using uv, ruff, ty, and pytest...",
+    "longDescription": "Modern Python tooling and best practices using uv, ruff, ty, and pytest. Based on patterns from trailofbits/cookiecutter-python. Staged in root repo but withheld from the Codex marketplace until its Claude-specific workflow is ported.",
+    "developerName": "Trail of Bits",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Modern Python workflow on this repository"
+    ],
+    "brandColor": "#1F2937",
+    "screenshots": []
+  }
+}

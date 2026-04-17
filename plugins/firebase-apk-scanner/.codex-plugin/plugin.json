@@ -1,0 +1,39 @@
+{
+  "name": "firebase-apk-scanner",
+  "version": "0.1.0",
+  "description": "Scan Android APKs for Firebase security misconfigurations including open databases, exposed storage buckets, and authentication bypasses.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "firebase",
+    "apk",
+    "scanner",
+    "firebase-apk-scanner",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Firebase APK Scanner",
+    "shortDescription": "Scan Android APKs for Firebase security misconfigurations including ope...",
+    "longDescription": "Scan Android APKs for Firebase security misconfigurations including open databases, exposed storage buckets, and authentication bypasses.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Firebase APK Scanner workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

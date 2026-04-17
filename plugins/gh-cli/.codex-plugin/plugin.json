@@ -1,0 +1,38 @@
+{
+  "name": "gh-cli",
+  "version": "0.1.0",
+  "description": "intercepts GitHub URL fetches and redirects Claude to use the authenticated gh CLI instead.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "gh",
+    "cli",
+    "gh-cli",
+    "productivity",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "GH CLI",
+    "shortDescription": "intercepts GitHub URL fetches and redirects Claude to use the authentic...",
+    "longDescription": "intercepts GitHub URL fetches and redirects Claude to use the authenticated gh CLI instead. Staged in root repo but withheld from the Codex marketplace until its Claude-specific workflow is ported.",
+    "developerName": "Trail of Bits",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the GH CLI workflow on this repository"
+    ],
+    "brandColor": "#475569",
+    "screenshots": []
+  }
+}

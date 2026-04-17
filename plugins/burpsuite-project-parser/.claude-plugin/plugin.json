@@ -1,0 +1,11 @@
+{
+  "name": "burpsuite-project-parser",
+  "version": "0.1.0",
+  "description": "Search and extract data from Burp Suite project files (.burp) for use in Codex",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

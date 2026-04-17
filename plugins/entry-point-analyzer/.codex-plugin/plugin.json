@@ -1,0 +1,39 @@
+{
+  "name": "entry-point-analyzer",
+  "version": "0.1.0",
+  "description": "A Codex skill for systematically identifying **state-changing** entry points in smart contract codebases to guide security audits.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "entry",
+    "point",
+    "analyzer",
+    "entry-point-analyzer",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Entry Point Analyzer",
+    "shortDescription": "A Codex skill for systematically identifying **state-changing** entry p...",
+    "longDescription": "A Codex skill for systematically identifying **state-changing** entry points in smart contract codebases to guide security audits.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Entry Point Analyzer workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

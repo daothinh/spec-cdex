@@ -1,0 +1,11 @@
+{
+  "name": "mutation-testing",
+  "version": "0.1.0",
+  "description": "Helps configure mewt or muton mutation testing campaigns — scoping targets, tuning timeouts, and optimizing long-running runs so you can execute mewt run or muton run with confidence.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

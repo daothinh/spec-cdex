@@ -1,0 +1,11 @@
+{
+  "name": "modern-python",
+  "version": "0.1.0",
+  "description": "Modern Python tooling and best practices using uv, ruff, ty, and pytest. Based on patterns from trailofbits/cookiecutter-python.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

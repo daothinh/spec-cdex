@@ -1,0 +1,11 @@
+{
+  "name": "seatbelt-sandboxer",
+  "version": "0.1.0",
+  "description": "Generate a MacOS Seatbelt configuration that sandboxes the target with the minimum set of permissions necessary for it to operate normally.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

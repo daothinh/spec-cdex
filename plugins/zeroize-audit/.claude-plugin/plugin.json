@@ -1,0 +1,11 @@
+{
+  "name": "zeroize-audit",
+  "version": "0.1.0",
+  "description": "Audits C/C++/Rust code for missing zeroization and compiler-removed wipes. Pipeline: source scan → MCP/LSP semantic context → IR diff → assembly/MIR checks.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "gh-cli",
+  "version": "0.1.0",
+  "description": "intercepts GitHub URL fetches and redirects Claude to use the authenticated gh CLI instead.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

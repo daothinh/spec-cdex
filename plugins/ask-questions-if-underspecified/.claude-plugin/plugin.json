@@ -1,0 +1,11 @@
+{
+  "name": "ask-questions-if-underspecified",
+  "version": "0.1.0",
+  "description": "Ask the minimum set of clarifying questions needed to avoid wrong work.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0"
+}

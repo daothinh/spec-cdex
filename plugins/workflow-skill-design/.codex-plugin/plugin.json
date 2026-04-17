@@ -1,0 +1,39 @@
+{
+  "name": "workflow-skill-design",
+  "version": "0.1.0",
+  "description": "teaches design patterns for building workflow-based skills and provides a review agent for auditing existing skills.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "workflow",
+    "skill",
+    "design",
+    "workflow-skill-design",
+    "coding",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Workflow Skill Design",
+    "shortDescription": "teaches design patterns for building workflow-based skills and provides...",
+    "longDescription": "teaches design patterns for building workflow-based skills and provides a review agent for auditing existing skills. Staged in root repo but withheld from the Codex marketplace until its Claude-specific workflow is ported.",
+    "developerName": "Trail of Bits",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the Workflow Skill Design workflow on this repository"
+    ],
+    "brandColor": "#1F2937",
+    "screenshots": []
+  }
+}

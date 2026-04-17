@@ -1,0 +1,38 @@
+{
+  "name": "yara-authoring",
+  "version": "0.1.0",
+  "description": "A behavior-driven skill for authoring high-quality YARA-X detection rules, teaching you to think and act like an expert YARA author.",
+  "author": {
+    "name": "Trail of Bits"
+  },
+  "homepage": "https://github.com/daothinh/spec-codex",
+  "repository": "https://github.com/daothinh/spec-codex",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "yara",
+    "authoring",
+    "yara-authoring",
+    "security",
+    "codex",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "YARA Authoring",
+    "shortDescription": "A behavior-driven skill for authoring high-quality YARA-X detection rul...",
+    "longDescription": "A behavior-driven skill for authoring high-quality YARA-X detection rules, teaching you to think and act like an expert YARA author.",
+    "developerName": "Trail of Bits",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/daothinh/spec-codex",
+    "defaultPrompt": [
+      "Use the YARA Authoring workflow on this repository"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}
