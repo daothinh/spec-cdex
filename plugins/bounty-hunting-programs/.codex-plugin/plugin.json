@@ -1,0 +1,42 @@
+{
+  "name": "bounty-hunting-programs",
+  "version": "0.1.0",
+  "description": "Standardized bounty hunting workflows for web, Android, smart contract, and native targets using Codex-ready security skills from this repo.",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "bug-bounty",
+    "web",
+    "android",
+    "smart-contract",
+    "native"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Bounty Hunting Programs",
+    "shortDescription": "Standard bug bounty playbooks by target class",
+    "longDescription": "Choose a standardized bug bounty workflow for web/API, Android, smart contract, and native targets while reusing the Codex-ready security plugins already bundled in this repository.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Triage this repo and choose the right bounty hunting lane",
+      "Run the web bounty hunting workflow on this target",
+      "Map this codebase to a smart contract or native audit playbook"
+    ],
+    "brandColor": "#7C2D12",
+    "screenshots": []
+  }
+}

@@ -22,6 +22,34 @@ function Normalize-Path {
     return [System.IO.Path]::GetFullPath($Path)
 }
 
+function Test-PathInside {
+    param(
+        [Parameter(Mandatory = $true)][string]$ChildPath,
+        [Parameter(Mandatory = $true)][string]$RootPath
+    )
+
+    $normalizedChild = Normalize-Path $ChildPath
+    $normalizedRoot = (Normalize-Path $RootPath).TrimEnd('\')
+
+    if ([string]::Equals($normalizedChild, $normalizedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    return $normalizedChild.StartsWith("$normalizedRoot\", [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Remove-LinkPath {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.PSIsContainer) {
+        [System.IO.Directory]::Delete($Path)
+        return
+    }
+
+    [System.IO.File]::Delete($Path)
+}
+
 function Write-Utf8NoBom {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -294,7 +322,8 @@ function Ensure-AgentFile {
 function Ensure-PluginConfigEnabled {
     param(
         [Parameter(Mandatory = $true)][string]$ConfigPath,
-        [Parameter(Mandatory = $true)][string[]]$PluginKeys
+        [Parameter(Mandatory = $true)][string[]]$PluginKeys,
+        [Parameter(Mandatory = $true)][string]$MarketplaceName
     )
 
     $original = if (Test-Path -LiteralPath $ConfigPath) {
@@ -304,11 +333,25 @@ function Ensure-PluginConfigEnabled {
     }
 
     $updated = $original
+    $desiredKeys = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($pluginKey in $PluginKeys) {
+        $desiredKeys.Add($pluginKey) | Out-Null
+    }
+
+    $sectionPattern = '(?ms)^\[plugins\."(?<key>[^"]+)"\]\r?\n(?<body>.*?)(?=^\[|\z)'
+    $staleSections = [regex]::Matches($updated, $sectionPattern)
+    for ($index = $staleSections.Count - 1; $index -ge 0; $index -= 1) {
+        $match = $staleSections[$index]
+        $key = $match.Groups["key"].Value
+        if ($key -like "*@$MarketplaceName" -and -not $desiredKeys.Contains($key)) {
+            $updated = $updated.Remove($match.Index, $match.Length)
+        }
+    }
 
     foreach ($pluginKey in $PluginKeys) {
         $sectionHeader = "[plugins.`"$pluginKey`"]"
-        $sectionPattern = '(?ms)^\[plugins\."' + [regex]::Escape($pluginKey) + '"\]\r?\n(?<body>.*?)(?=^\[|\z)'
-        $match = [regex]::Match($updated, $sectionPattern)
+        $pluginSectionPattern = '(?ms)^\[plugins\."' + [regex]::Escape($pluginKey) + '"\]\r?\n(?<body>.*?)(?=^\[|\z)'
+        $match = [regex]::Match($updated, $pluginSectionPattern)
 
         if ($match.Success) {
             $body = $match.Groups["body"].Value
@@ -366,6 +409,39 @@ function Ensure-PluginConfigEnabled {
     }
 }
 
+function Remove-ManagedLink {
+    param([Parameter(Mandatory = $true)]$Entry)
+
+    if (-not (Test-Path -LiteralPath $Entry.LinkPath)) {
+        return [pscustomobject]@{
+            Name = $Entry.Name
+            State = "missing"
+            LinkPath = $Entry.LinkPath
+            TargetPath = $Entry.TargetPath
+        }
+    }
+
+    $item = Get-Item -LiteralPath $Entry.LinkPath -Force
+    $linkType = if ($item.PSObject.Properties.Name -contains "LinkType") { [string]$item.LinkType } else { "" }
+    if (-not $linkType) {
+        return [pscustomobject]@{
+            Name = $Entry.Name
+            State = "exists-not-link"
+            LinkPath = $Entry.LinkPath
+            TargetPath = $Entry.TargetPath
+        }
+    }
+
+    Remove-LinkPath -Path $Entry.LinkPath
+
+    return [pscustomobject]@{
+        Name = $Entry.Name
+        State = "removed"
+        LinkPath = $Entry.LinkPath
+        TargetPath = $Entry.TargetPath
+    }
+}
+
 if (-not (Test-Path -LiteralPath $TargetRepo -PathType Container)) {
     throw "Target repo does not exist or is not a directory: $TargetRepo"
 }
@@ -417,8 +493,82 @@ if (-not $NoEnablePlugins) {
 
     $pluginResults = $pluginEntries | ForEach-Object { Ensure-Link -Entry $_ }
 
+    try {
+        $desiredPluginNames = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($entry in $pluginEntries) {
+            $desiredPluginNames.Add((Split-Path -Leaf $entry.LinkPath)) | Out-Null
+        }
+    } catch {
+        throw "Failed to compute desired plugin names: $($_.Exception.Message)"
+    }
+
+    try {
+        $stalePluginEntries = @()
+        $pluginsRoot = Normalize-Path (Join-Path $codexHome "plugins")
+        $managedRoots = @(
+            (Normalize-Path (Join-Path $targetRepo "plugins")).TrimEnd('\'),
+            (Normalize-Path (Join-Path $sourceRepo "plugins")).TrimEnd('\')
+        )
+
+        if (Test-Path -LiteralPath $pluginsRoot -PathType Container) {
+            foreach ($item in Get-ChildItem -LiteralPath $pluginsRoot -Force) {
+                $pluginName = $item.Name
+                if ($desiredPluginNames.Contains($pluginName)) {
+                    continue
+                }
+
+                $currentTarget = Get-LinkTargetPath -Item $item -ReferencePath $item.FullName
+                $currentResolvedTarget = if ($currentTarget) { Resolve-FinalPath $currentTarget } else { $null }
+                $targetCandidate = if ($currentResolvedTarget) { [string]$currentResolvedTarget } else { [string]$currentTarget }
+                if (-not $targetCandidate) {
+                    continue
+                }
+
+                $normalizedTarget = Normalize-Path $targetCandidate
+                $isManaged = $false
+                foreach ($managedRoot in $managedRoots) {
+                    if (
+                        [string]::Equals($normalizedTarget, $managedRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+                        $normalizedTarget.StartsWith("$managedRoot\", [System.StringComparison]::OrdinalIgnoreCase)
+                    ) {
+                        $isManaged = $true
+                        break
+                    }
+                }
+
+                if (-not $isManaged) {
+                    continue
+                }
+
+                $stalePluginEntries += [pscustomobject]@{
+                    Name = "stale-codex-plugin:$pluginName"
+                    LinkPath = $item.FullName
+                    TargetPath = $targetCandidate
+                }
+            }
+        }
+    } catch {
+        throw "Failed to identify stale plugin links: $($_.Exception.Message)"
+    }
+
+    try {
+        $stalePluginResults = @(
+            $stalePluginEntries |
+                ForEach-Object { Remove-ManagedLink -Entry $_ }
+        )
+    } catch {
+        throw "Failed to remove stale plugin links: $($_.Exception.Message)"
+    }
+
     $pluginKeys = @($marketplace.plugins | ForEach-Object { "$($_.name)@$($marketplace.name)" })
-    $configResult = Ensure-PluginConfigEnabled -ConfigPath (Normalize-Path (Join-Path $codexHome "config.toml")) -PluginKeys $pluginKeys
+    try {
+        $configResult = Ensure-PluginConfigEnabled `
+            -ConfigPath (Normalize-Path (Join-Path $codexHome "config.toml")) `
+            -PluginKeys $pluginKeys `
+            -MarketplaceName $marketplace.name
+    } catch {
+        throw "Failed to sync Codex config: $($_.Exception.Message)"
+    }
 }
 
 Write-Host ""
@@ -433,6 +583,12 @@ if (-not $NoEnablePlugins) {
     Write-Host ""
     Write-Host "Codex plugin links:"
     $pluginResults | Format-Table Name, State, LinkPath, TargetPath -AutoSize
+
+    if ($stalePluginResults.Count -gt 0) {
+        Write-Host ""
+        Write-Host "Removed stale managed plugin links:"
+        $stalePluginResults | Format-Table Name, State, LinkPath, TargetPath -AutoSize
+    }
 
     Write-Host ""
     Write-Host "Codex config:"

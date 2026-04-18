@@ -1,0 +1,13 @@
+{
+  "name": "bounty-hunting-programs",
+  "version": "0.1.0",
+  "description": "Standardized bounty hunting workflows for web, Android, smart contract, and native targets using Codex-ready security skills from this repo.",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT"
+}

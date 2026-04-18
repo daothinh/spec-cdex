@@ -66,11 +66,6 @@
       "description": "Search and extract data from Burp Suite project files (.burp) for use in Codex"
     },
     {
-      "name": "claude-in-chrome-troubleshooting",
-      "source": "./plugins/claude-in-chrome-troubleshooting",
-      "description": "Diagnose and fix Claude in Chrome MCP extension connectivity issues."
-    },
-    {
       "name": "constant-time-analysis",
       "source": "./plugins/constant-time-analysis",
       "description": "A portable tool for detecting timing side-channel vulnerabilities in compiled cryptographic code. Analyzes assembly output from multiple compilers and architectures to detect instructions that could leak secret data through execution timing."
@@ -229,6 +224,11 @@
       "name": "zeroize-audit",
       "source": "./plugins/zeroize-audit",
       "description": "Audits C/C++/Rust code for missing zeroization and compiler-removed wipes. Pipeline: source scan → MCP/LSP semantic context → IR diff → assembly/MIR checks."
+    },
+    {
+      "name": "bounty-hunting-programs",
+      "source": "./plugins/bounty-hunting-programs",
+      "description": "Standardized bounty hunting workflows for web, Android, smart contract, and native targets using Codex-ready security skills from this repo."
     }
   ]
 }

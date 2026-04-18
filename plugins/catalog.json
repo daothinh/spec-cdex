@@ -97,12 +97,6 @@
       "codexStatus": "available"
     },
     {
-      "name": "claude-in-chrome-troubleshooting",
-      "sourceKind": "skills",
-      "category": "Productivity",
-      "codexStatus": "available"
-    },
-    {
       "name": "constant-time-analysis",
       "sourceKind": "skills",
       "category": "Security",
@@ -293,6 +287,12 @@
       "sourceKind": "skills",
       "category": "Security",
       "codexStatus": "blocked"
+    },
+    {
+      "name": "bounty-hunting-programs",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
     }
   ]
 }

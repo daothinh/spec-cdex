@@ -19,6 +19,34 @@ function Normalize-Path {
     return [System.IO.Path]::GetFullPath($Path)
 }
 
+function Test-PathInside {
+    param(
+        [Parameter(Mandatory = $true)][string]$ChildPath,
+        [Parameter(Mandatory = $true)][string]$RootPath
+    )
+
+    $normalizedChild = Normalize-Path $ChildPath
+    $normalizedRoot = (Normalize-Path $RootPath).TrimEnd('\')
+
+    if ([string]::Equals($normalizedChild, $normalizedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    return $normalizedChild.StartsWith("$normalizedRoot\", [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Remove-LinkPath {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $item = Get-Item -LiteralPath $Path -Force
+    if ($item.PSIsContainer) {
+        [System.IO.Directory]::Delete($Path)
+        return
+    }
+
+    [System.IO.File]::Delete($Path)
+}
+
 function Get-LinkEntries {
     $catalog = Get-Content -Raw $marketplacePath | ConvertFrom-Json
     $entries = @(
@@ -40,6 +68,53 @@ function Get-LinkEntries {
     }
 
     return $entries
+}
+
+function Get-StaleManagedPluginLinks {
+    param([Parameter(Mandatory = $true)][object[]]$DesiredEntries)
+
+    $desiredNames = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($entry in $DesiredEntries) {
+        if ($entry.Name -like "plugin:*") {
+            $desiredNames.Add((Split-Path -Leaf $entry.LinkPath)) | Out-Null
+        }
+    }
+
+    $pluginsRoot = Normalize-Path (Join-Path $CodexHome "plugins")
+    if (-not (Test-Path -LiteralPath $pluginsRoot -PathType Container)) {
+        return @()
+    }
+
+    $results = @()
+
+    foreach ($item in Get-ChildItem -LiteralPath $pluginsRoot -Force) {
+        $pluginName = $item.Name
+        if ($desiredNames.Contains($pluginName)) {
+            continue
+        }
+
+        $state = Get-LinkState -Entry ([pscustomobject]@{
+                Name = "plugin:$pluginName"
+                LinkPath = $item.FullName
+                TargetPath = ""
+            })
+
+        if (-not $state.CurrentTarget) {
+            continue
+        }
+
+        if (-not (Test-PathInside -ChildPath $state.CurrentTarget -RootPath (Join-Path $repoRoot "plugins"))) {
+            continue
+        }
+
+        $results += [pscustomobject]@{
+            Name = "stale-plugin:$pluginName"
+            LinkPath = $item.FullName
+            TargetPath = $state.CurrentTarget
+        }
+    }
+
+    return $results
 }
 
 function Get-LinkState {
@@ -131,30 +206,51 @@ function Remove-Link {
         return $state
     }
 
-    Remove-Item -LiteralPath $Entry.LinkPath -Force
+    Remove-LinkPath -Path $Entry.LinkPath
     return Get-LinkState -Entry $Entry
 }
 
 $entries = Get-LinkEntries
+$staleEntries = Get-StaleManagedPluginLinks -DesiredEntries $entries
 
 switch ($Mode) {
     "status" {
-        $entries |
-            ForEach-Object { Get-LinkState -Entry $_ } |
+        (
+            $entries |
+                ForEach-Object { Get-LinkState -Entry $_ }
+        ) + (
+            $staleEntries |
+                ForEach-Object { Get-LinkState -Entry $_ }
+        ) |
             Format-Table Name, State, LinkPath, TargetPath, CurrentTarget -AutoSize
         break
     }
     "install" {
-        $entries |
-            ForEach-Object { Ensure-Link -Entry $_ } |
+        $linkResults = $entries |
+            ForEach-Object { Ensure-Link -Entry $_ }
+        $staleResults = @(
+            $staleEntries |
+                ForEach-Object { Remove-Link -Entry $_ }
+        )
+
+        $linkResults |
             Format-Table Name, State, LinkPath, TargetPath -AutoSize
+
+        if ($staleResults.Count -gt 0) {
+            Write-Host ""
+            Write-Host "Removed stale managed plugin links:"
+            $staleResults | Format-Table Name, State, LinkPath, TargetPath -AutoSize
+        }
+
         Write-Host ""
         Write-Host "User-level install is linked to: $repoRoot"
         Write-Host "Restart Codex after install or after future repo updates."
         break
     }
     "uninstall" {
-        $entries |
+        (
+            $entries + $staleEntries
+        ) |
             ForEach-Object { Remove-Link -Entry $_ } |
             Format-Table Name, State, LinkPath, TargetPath -AutoSize
         break

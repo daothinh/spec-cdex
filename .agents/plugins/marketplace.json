@@ -149,18 +149,6 @@
       "category": "Security"
     },
     {
-      "name": "claude-in-chrome-troubleshooting",
-      "source": {
-        "source": "local",
-        "path": "./plugins/claude-in-chrome-troubleshooting"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    },
-    {
       "name": "constant-time-analysis",
       "source": {
         "source": "local",
@@ -429,6 +417,18 @@
       "source": {
         "source": "local",
         "path": "./plugins/yara-authoring"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
+    },
+    {
+      "name": "bounty-hunting-programs",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bounty-hunting-programs"
       },
       "policy": {
         "installation": "AVAILABLE",
