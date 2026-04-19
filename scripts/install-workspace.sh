@@ -16,16 +16,11 @@ need_command() {
 
 normalize_path() {
   local path="$1"
-  if command -v realpath >/dev/null 2>&1; then
-    realpath -m -- "$path"
-    return
-  fi
-
   python3 - "$path" <<'PY'
 import os
 import sys
 
-print(os.path.realpath(sys.argv[1]))
+print(os.path.abspath(os.path.expanduser(sys.argv[1])))
 PY
 }
 
@@ -132,7 +127,7 @@ ensure_link() {
   local link_path="$2"
   local target_path="$3"
   local accept_targets="${4-}"
-  local state_record state backup
+  local state_record state backup resolved_link_path resolved_target_path
 
   state_record="$(get_link_state "$name" "$link_path" "$target_path" "$accept_targets")"
   IFS=$'\t' read -r _ _ _ state _ _ <<< "$state_record"
@@ -146,6 +141,12 @@ ensure_link() {
     (( force == 1 )) || die "Refusing to replace '$link_path' because it is '$state'. Re-run with -Force to back it up and replace it."
     backup="$(backup_conflict "$link_path")"
     printf 'Backed up %s -> %s\n' "$link_path" "$backup" >&2
+  fi
+
+  resolved_link_path="$(resolve_final_path "$link_path")"
+  resolved_target_path="$(resolve_final_path "$target_path")"
+  if [[ "$resolved_link_path" == "$resolved_target_path" ]]; then
+    die "Refusing to create self-referential link '$link_path' -> '$target_path'. The link path resolves to the same location as the target. Re-run with -CodexHome pointing outside the managed workspace or plugin tree."
   fi
 
   mkdir -p -- "$(dirname "$link_path")"
