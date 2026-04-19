@@ -126,9 +126,9 @@ scripts\install-workspace.bat "D:\path\to\target-repo"
 
 What it does:
 
-- Creates repo-root junctions in the target workspace for `plugins\`, `skills\`, and `.agents\plugins`
+- Creates repo-root links in the target workspace for `plugins\`, `skills\`, and `.agents\plugins`
 - Generates a workspace-safe `AGENTS.md` from this repo's rule prelude and preserves any target-local `AGENTS.md` content inside a managed block
-- Pre-enables every `AVAILABLE` `workersio` Codex plugin by linking `%USERPROFILE%\.codex\plugins\<name>` to the target workspace and writing `[plugins."<name>@workersio"] enabled = true` into `%USERPROFILE%\.codex\config.toml`
+- Pre-enables every `AVAILABLE` `workersio` Codex plugin by linking `%USERPROFILE%\.codex\plugins\<name>` or `$HOME/.codex/plugins/<name>` to the target workspace and writing `[plugins."<name>@workersio"] enabled = true` into the matching Codex `config.toml`
 
 Useful flags:
 
