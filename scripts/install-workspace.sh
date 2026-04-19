@@ -341,9 +341,9 @@ format_link_results() {
   for entry in "$@"; do
     IFS=$'\t' read -r name link_path target_path state _ current_resolved <<< "$entry"
     if [[ -n "$current_resolved" ]]; then
-      printf '- [%s] %s -> %s (resolved: %s)\n' "$state" "$link_path" "$target_path" "$current_resolved"
+      printf -- '- [%s] %s -> %s (resolved: %s)\n' "$state" "$link_path" "$target_path" "$current_resolved"
     else
-      printf '- [%s] %s -> %s\n' "$state" "$link_path" "$target_path"
+      printf -- '- [%s] %s -> %s\n' "$state" "$link_path" "$target_path"
     fi
   done
 }
@@ -356,9 +356,9 @@ format_simple_results() {
   for entry in "$@"; do
     IFS=$'\t' read -r name state path target_path <<< "$entry"
     if [[ -n "${target_path-}" ]]; then
-      printf '- [%s] %s -> %s\n' "$state" "$path" "$target_path"
+      printf -- '- [%s] %s -> %s\n' "$state" "$path" "$target_path"
     else
-      printf '- [%s] %s\n' "$state" "$path"
+      printf -- '- [%s] %s\n' "$state" "$path"
     fi
   done
 }
