@@ -42,17 +42,17 @@ mkdir -p "$SESSION_DIR"
 Set `PRESERVE_AUTH=1` so auth headers are logged in full, not redacted.
 
 ```bash
-adb shell settings put global http_proxy 10.0.2.2:8080
+adb shell settings put global http_proxy 10.0.2.2:18088
 
 ANDROID_APP_TESTER_OUT_DIR="$SESSION_DIR" \
 ANDROID_APP_TESTER_PACKAGE="<package>" \
 ANDROID_APP_TESTER_PRESERVE_AUTH=1 \
-nohup mitmdump --set block_global=false --listen-host 0.0.0.0 --listen-port 8080 \
+nohup mitmdump --set block_global=false --listen-host 0.0.0.0 --listen-port 18088 \
   -s scripts/capture.py >"$SESSION_DIR/mitmdump.log" 2>&1 &
 echo $! >"$SESSION_DIR/mitmdump.pid"
 ```
 
-For physical devices, replace `10.0.2.2` with the host IP.
+For physical devices, replace `10.0.2.2` with the host IP and keep the proxy on port `18088`.
 
 ### 4. Launch the app
 

@@ -32,7 +32,7 @@ Load these references on demand:
    - storage locations and debug toggles
 3. Reuse Codex-ready building blocks when installed:
    - `firebase-apk-scanner` for Firebase keys, project IDs, storage, and leaked mobile config
-   - `workers-app-tester` for rooted-device traffic interception, UI driving, and Frida-based checks
+   - `workers-app-tester` for rooted-device traffic interception on proxy port `18088`, UI driving, and Frida-based checks
    - `burpsuite-project-parser` when prior traffic evidence exists
    - `supply-chain-risk-auditor` for mobile dependency risk if source code is also in scope
 4. Prioritize bug classes in this order:

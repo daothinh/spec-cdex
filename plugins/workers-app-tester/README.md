@@ -37,7 +37,7 @@ Tell the agent to test an app:
 Test com.example.app. creds: user@example.com / password123
 ```
 
-The agent will set up the proxy, launch the app, login, intercept traffic, and find vulnerabilities.
+The agent will set up the proxy on port `18088`, launch the app, login, intercept traffic, and find vulnerabilities.
 
 ## The loop
 
