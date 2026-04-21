@@ -10,13 +10,28 @@ Start from `form-schema.json`, then write only the content the live form actuall
 
 ## Title
 
-Use this shape:
+Use the same preferred structure as the email workflow:
 
-`[bug class] in [asset] allows [actor] to [impact]`
+`[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
 
 Examples:
-- `IDOR in invoice download endpoint allows tenant data disclosure`
-- `Stored XSS in support ticket body allows session theft for agents`
+- `[Silo Protocol V3] Reentrancy vulnerability in withdraw() function leads to fund drain`
+- `[Android App v2.4] Hardcoded API credentials in classes.dex leads to AWS access`
+- `[api.target.com] IDOR on /v1/users/profile leads to Account Takeover`
+
+Build the title from four technical parts:
+- `Target`: domain, app name, protocol, repository, or contract name
+- `Vulnerability Type`: precise class such as `IDOR`, `RCE`, `Reentrancy`, `SSRF`
+- `Location`: endpoint, function, route, file, component, panel, or config path
+- `Impact`: highest observed consequence such as `Account Takeover`, `Data Leak`, `Fund Drain`, `System Compromise`
+
+Title rules:
+- Prefer observed impact over speculative worst case.
+- Keep it professional and information-dense, not emotional.
+- Avoid generic titles such as `Critical issue in your app` or `Serious bug found`.
+- Keep it near 60-80 characters when the facts still fit cleanly, but keep the decisive technical detail if tradeoffs are required.
+- If the form title field is very short, preserve target, vuln type, and impact first, then compress the location.
+- If the platform has no dedicated title field, reuse this structure in the nearest summary or subject-like field.
 
 ## Summary Paragraph
 

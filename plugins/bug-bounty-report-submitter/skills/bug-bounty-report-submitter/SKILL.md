@@ -6,7 +6,7 @@ description: >
   and attachment flow.
 metadata:
   author: workers.io
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # Bug Bounty Report Submitter
@@ -45,7 +45,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 1. Open the submission URL with Playwright MCP before drafting anything long-form.
 2. Snapshot the rendered form, complete login if needed, expand hidden sections, and record required fields, custom prompts, enums, validators, character limits, and attachment rules in `form-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, and store the replayable exploit path in `poc.md`.
-4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered.
+4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and derive any title or subject-like field from the target, vuln type, location, and max observed impact.
 5. Draft `report.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/report-structure.md](references/report-structure.md). Write to the actual field labels and limits from `form-schema.json`.
 6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md). Every major claim must map to an artifact or be marked as an explicit assumption.
 7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form, upload proof, preview or save draft, and submit only after the visible form matches `submission.json`.
@@ -55,6 +55,9 @@ Create `bug-bounty-reports/<slug>/` and keep:
 
 - Lead with the bug and affected asset, not background.
 - Discover the live form schema before drafting prose.
+- Use the same title structure as the email workflow when the form has a title-like field: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
+- Keep the title technical and professional. Use exact vuln names, concrete locations, and the highest observed impact.
+- Keep the title compact when the platform is narrow, but do not collapse it into vague filler.
 - Prefer short paragraphs and numbered reproduction steps.
 - Tie impact to the program context: auth bypass, account takeover, data exposure, privilege gain, funds risk, or availability.
 - State prerequisites honestly. If auth, timing, or rare roles are required, say so.
@@ -69,10 +72,11 @@ Create `bug-bounty-reports/<slug>/` and keep:
 ## Form-Fill Rules
 
 - Use `browser_snapshot` before any drafting, before the first fill, and after each major section.
-- Fill metadata fields first because severity or asset choices may reveal extra required prompts.
+- Fill metadata fields first because severity or asset choices may reveal extra required prompts. That includes the report title when the form has one.
 - Prefer `browser_fill_form` for standard controls and `browser_type` for editors with live validation.
 - Update `form-schema.json` if hidden or dynamic fields appear after a selection.
 - Use `browser_file_upload` only after `submission.json`, `artifacts.json`, and local artifact paths are final.
+- Before final submit, confirm the visible title still matches the target, vuln type, location, and impact formula and was not truncated into ambiguity.
 - If a field strips markdown or truncates text, rewrite for that field instead of forcing the template.
 - If the platform supports drafts, save one before final submit.
 - If a captcha or MFA gate blocks submission, stop after the draft and report the blocker.
