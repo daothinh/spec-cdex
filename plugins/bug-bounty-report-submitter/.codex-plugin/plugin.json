@@ -1,7 +1,7 @@
 {
   "name": "bug-bounty-report-submitter",
-  "version": "0.1.0",
-  "description": "Inspect live bug bounty forms with Playwright MCP, then draft and submit evidence-backed reports that match the discovered fields and proof requirements.",
+  "version": "0.2.0",
+  "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver evidence-backed reports that match the discovered fields, proof requirements, and delivery flow.",
   "author": {
     "name": "workers.io",
     "email": "chai+spec@workers.io",
@@ -15,6 +15,8 @@
     "bounty",
     "report",
     "submission",
+    "email",
+    "webmail",
     "playwright",
     "security"
   ],
@@ -22,7 +24,7 @@
   "interface": {
     "displayName": "Bug Bounty Report Submitter",
     "shortDescription": "Draft and submit bug bounty reports",
-    "longDescription": "Inspect the live bug bounty form with Playwright MCP, derive the actual field schema, then draft and submit an evidence-backed report with proof uploads and captured confirmation details.",
+    "longDescription": "Inspect a live bug bounty form or webmail UI with Playwright MCP, derive the actual delivery schema, then draft and deliver an evidence-backed report with proof uploads and captured confirmation details.",
     "developerName": "workers.io",
     "category": "Security",
     "capabilities": [
@@ -33,8 +35,9 @@
     "websiteURL": "https://github.com/workersio/spec",
     "defaultPrompt": [
       "Draft and submit this bug bounty report through the program form",
+      "Draft this finding as a bug bounty email and send it to the specified address",
       "Open this submission URL, write a natural report from my findings, and submit it",
-      "Turn these notes into a polished bug bounty submission and file it"
+      "Turn these notes into a polished bug bounty submission and deliver it"
     ],
     "brandColor": "#7C2D12",
     "screenshots": []
