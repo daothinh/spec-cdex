@@ -454,6 +454,7 @@ workspace_results=()
 workspace_results+=("$(ensure_link "workspace:.agents/plugins" "$(normalize_path "$target_repo/.agents/plugins")" "$(normalize_path "$source_repo/.agents/plugins")")")
 workspace_results+=("$(ensure_link "workspace:plugins" "$(normalize_path "$target_repo/plugins")" "$(normalize_path "$source_repo/plugins")")")
 workspace_results+=("$(ensure_link "workspace:skills" "$(normalize_path "$target_repo/skills")" "$(normalize_path "$source_repo/skills")")")
+workspace_results+=("$(ensure_link "workspace:.codex/agents" "$(normalize_path "$target_repo/.codex/agents")" "$(normalize_path "$source_repo/.codex/agents")")")
 
 agent_result="$(ensure_agent_file "$(normalize_path "$target_repo/AGENTS.md")")"
 
