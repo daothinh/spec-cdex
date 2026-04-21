@@ -1,6 +1,6 @@
 {
   "name": "bug-bounty-report-submitter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver evidence-backed reports that match the discovered fields, proof requirements, and delivery flow.",
   "author": {
     "name": "workers.io",

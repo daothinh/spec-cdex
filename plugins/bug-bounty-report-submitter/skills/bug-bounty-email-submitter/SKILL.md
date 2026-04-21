@@ -5,7 +5,7 @@ description: >
   UI with Playwright MCP, using the user-specified recipient and verified proof.
 metadata:
   author: workers.io
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # Bug Bounty Email Submitter
@@ -46,7 +46,7 @@ Create `bug-bounty-reports/<slug>/email/` and keep:
 2. Open the mailbox with Playwright MCP before drafting anything long-form. Snapshot the inbox, login flow, compose button, editor type, attachment control, draft affordance, and success indicator. Store the observed UI contract in `mail-ui-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, and store the replayable exploit path in `poc.md`.
 4. Build `mail-envelope.json` from the verified recipient and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
-5. Draft `email-draft.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/email-report-structure.md](references/email-report-structure.md). Keep the subject and opening sentence specific to the bug and asset.
+5. Draft `email-draft.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/email-report-structure.md](references/email-report-structure.md). Build the subject with the target, vuln type, location, and max observed impact. Keep the opening sentence specific to the bug and asset.
 6. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md). Every major claim must map to an artifact or be marked as an explicit assumption.
 7. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, upload proof, and save a draft when the provider supports it.
 8. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
@@ -54,6 +54,12 @@ Create `bug-bounty-reports/<slug>/email/` and keep:
 ## Email Rules
 
 - Lead with the bug and affected asset, not generic disclosure filler.
+- Prefer this subject formula: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
+- Use precise technical names in the subject: `IDOR`, `RCE`, `Reentrancy`, `SSRF`, not vague wording.
+- Name the concrete location in the subject when known: endpoint, function, route, file, panel, or component.
+- Put the highest observed consequence in the subject: `Account Takeover`, `Data Leak`, `Fund Drain`, `System Compromise`.
+- Keep the subject professional, information-dense, and ideally within about 60-80 characters when the facts still fit cleanly.
+- Add a severity tag such as `[CRITICAL]` or `[HIGH]` only when it is evidence-backed and useful to the program.
 - Use the user-specified recipient exactly. Do not rewrite or expand the address list unless the user asks.
 - Keep the message readable in plain text even if the provider uses a rich-text editor.
 - Prefer short paragraphs and numbered reproduction steps.
@@ -61,6 +67,7 @@ Create `bug-bounty-reports/<slug>/email/` and keep:
 - Separate observed impact from reasoned extension.
 - Mention prerequisites honestly. If auth, rare roles, or timing are required, say so.
 - Keep remediation short and optional unless the program explicitly asks for it.
+- Do not use emotional or adversarial subjects such as `Critical Bug Found!!!` or `I hacked your database`.
 - Do not send from the browser until the compose view matches `mail-envelope.json` and `email-draft.md`.
 - Do not claim the report was sent unless a visible provider confirmation was captured.
 

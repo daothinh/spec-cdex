@@ -4,15 +4,28 @@ Write to the actual disclosure channel: an email read by a triager, not a form f
 
 ## Subject
 
-Use one line:
+Use one line with this preferred formula:
 
-`[bug class] in [asset] allows [impact]`
+`[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
 
 Examples:
-- `IDOR in invoice export API allows cross-tenant PDF access`
-- `Stored XSS in support portal allows agent-session theft`
+- `[Silo Protocol V3] Reentrancy vulnerability in withdraw() function leads to fund drain`
+- `[Android App v2.4] Hardcoded API credentials in classes.dex leads to AWS access`
+- `[api.target.com] IDOR on /v1/users/profile leads to Account Takeover`
 
-If the program requires a prefix such as `[Bug Bounty]` or a program name, prepend it without changing the core structure.
+Break the subject into four technical parts:
+- `Target`: domain, app name, protocol, repository, or contract name
+- `Vulnerability Type`: precise technical class such as `IDOR`, `RCE`, `Reentrancy`, `SSRF`
+- `Location`: endpoint, function, file, route, component, panel, or config path
+- `Impact`: highest observed consequence such as `Account Takeover`, `Data Leak`, `Fund Drain`, `System Compromise`
+
+Subject rules:
+- Prefer observed impact over speculative worst case.
+- Keep it professional and information-dense, not emotional.
+- Avoid generic or hostile subjects such as `Critical Bug Found!!!`, `I hacked your database`, or `Serious issue in your system`.
+- Keep it near 60-80 characters when possible, but do not drop decisive technical detail just to hit the limit.
+- Add a severity tag like `[CRITICAL]` or `[HIGH]` only when it is supported by the actual finding and helps triage.
+- If the program requires a prefix such as `[Bug Bounty]`, prepend it without changing the core structure.
 
 ## Body Order
 
