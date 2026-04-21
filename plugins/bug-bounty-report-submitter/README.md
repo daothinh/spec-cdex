@@ -7,6 +7,7 @@ Inspect live bug bounty forms or webmail with Playwright MCP, then draft and del
 | Path | Purpose |
 |------|---------|
 | `skills/bug-bounty-report-submitter/SKILL.md` | Core live-form draft-and-submit workflow |
+| `skills/bug-bounty-report-submitter/references/report-writing-rules.md` | Shared impact-first bug bounty report rules, severity discipline, and checklist |
 | `skills/bug-bounty-report-submitter/references/report-structure.md` | Report section and field mapping for form workflows |
 | `skills/bug-bounty-report-submitter/references/writing-style.md` | Shared natural writing and anti-template pass |
 | `skills/bug-bounty-report-submitter/references/playwright-submit.md` | Playwright MCP submission sequence for forms |

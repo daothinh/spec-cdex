@@ -4,14 +4,14 @@ Write to the actual disclosure channel: an email read by a triager, not a form f
 
 ## Subject
 
-Use one line with this preferred formula:
+Use one line with the same core formula as `report-writing-rules.md`:
 
 `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
 
 Examples:
-- `[Silo Protocol V3] Reentrancy vulnerability in withdraw() function leads to fund drain`
-- `[Android App v2.4] Hardcoded API credentials in classes.dex leads to AWS access`
-- `[api.target.com] IDOR on /v1/users/profile leads to Account Takeover`
+- `[api.target.com] IDOR at GET /api/v2/invoices/{id} leads to invoice data exposure`
+- `[admin.target.com] Missing auth at POST /api/admin/users leads to admin account creation`
+- `[Support Dashboard] Stored XSS at ticket title field leads to account takeover`
 
 Break the subject into four technical parts:
 - `Target`: domain, app name, protocol, repository, or contract name
@@ -55,9 +55,19 @@ Avoid:
 
 Keep the opening to 2-4 sentences:
 - name the affected asset and entry point
-- state the bug in one plain sentence
-- state the practical impact
+- state the bug and exact practical impact in one plain sentence
 - add prerequisites only if they materially change severity
+- mention the decisive proof when the body length allows it
+
+## Vulnerability Details In Email
+
+If the bug is primarily in code, do not make the triager jump to attachments first.
+
+- Name the vulnerable file and function in the body.
+- Include the shortest decisive snippet inline when the mail client allows readable formatting.
+- Use repo-relative names or GitHub links, never local absolute paths from your machine.
+- Explain the exact broken assumption right below the snippet.
+- If the full exploit is long, keep the full code in `poc.md` or an attachment and keep only the decisive excerpt inline.
 
 ## Steps To Reproduce
 
@@ -75,6 +85,7 @@ Tie impact to what was directly shown:
 - which boundary fails
 - what data or action becomes exposed
 - whether the issue repeats across tenants, projects, or accounts
+- quantified records, funds, or role scope when known
 
 Keep inferred extension separate with language such as `Based on the observed behavior...`
 
@@ -86,6 +97,10 @@ Mention proof naturally in prose:
 - `The included poc.md contains the exact request sequence.`
 
 Attach only files that support a claim in the body.
+
+For code-heavy findings:
+- summarize `Output from POC` in the body with the most convincing logs or deltas
+- then attach the full PoC or point to `poc.md`
 
 ## Optional Remediation
 

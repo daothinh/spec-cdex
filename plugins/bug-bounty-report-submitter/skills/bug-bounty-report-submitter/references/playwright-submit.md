@@ -9,7 +9,7 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 3. Complete login if needed, then snapshot again.
 4. Expand tabs, accordions, and conditional sections before drafting.
 5. Record the live schema in `form-schema.json`: label, field type, required flag, options, character limit, validation note, and attachment policy.
-6. Build `submission.json` from `form-schema.json`. Draft the report only after the schema is known. If the form has a title or subject-like field, set it with `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
+6. Build `submission.json` from `form-schema.json`. Draft the report only after the schema is known. If the form has a title or subject-like field, set it with the shared title formula from `report-writing-rules.md`.
 7. Fill metadata fields first with `browser_fill_form` or `browser_select_option`.
 8. Snapshot again if asset, severity, or classification choices reveal new prompts. Update `form-schema.json` and `submission.json` when they do.
 9. Fill long-form fields with `browser_type` when editors have live validation or markdown quirks.

@@ -14,6 +14,7 @@ metadata:
 Inspect the live submission form first, then turn validated findings into an evidence-backed report bundle and submit it through Playwright MCP.
 
 Load these on demand:
+- [references/report-writing-rules.md](references/report-writing-rules.md) for impact-first report rules, title formula, severity discipline, and final checklist
 - [references/report-structure.md](references/report-structure.md) for field mapping and section order
 - [references/writing-style.md](references/writing-style.md) for natural prose rules and anti-template cleanup
 - [references/playwright-submit.md](references/playwright-submit.md) for the browser automation sequence
@@ -47,9 +48,9 @@ Create `bug-bounty-reports/<slug>/` and keep:
 2. Snapshot the rendered form, complete login if needed, expand hidden sections, and record required fields, custom prompts, enums, validators, character limits, and attachment rules in `form-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, and store the replayable exploit path in `poc.md`.
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
-4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and derive any title or subject-like field from the target, vuln type, location, and max observed impact.
-5. Draft `report.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/report-structure.md](references/report-structure.md). Write to the actual field labels and limits from `form-schema.json`.
-6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md). Every major claim must map to an artifact or be marked as an explicit assumption.
+4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts only.
+5. Draft `report.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/report-structure.md](references/report-structure.md) and [references/report-writing-rules.md](references/report-writing-rules.md). Write to the actual field labels and limits from `form-schema.json`.
+6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale.
 7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form, upload proof, preview or save draft, and submit only after the visible form matches `submission.json`.
 8. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
@@ -57,18 +58,24 @@ Create `bug-bounty-reports/<slug>/` and keep:
 
 - Lead with the bug and affected asset, not background.
 - Discover the live form schema before drafting prose.
-- Use the same title structure as the email workflow when the form has a title-like field: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
-- Keep the title technical and professional. Use exact vuln names, concrete locations, and the highest observed impact.
-- Keep the title compact when the platform is narrow, but do not collapse it into vague filler.
+- Use the title formula from [references/report-writing-rules.md](references/report-writing-rules.md) when the form has a title-like field.
+- Keep the title technical and professional. Use target, exact vuln names, concrete locations, and the highest observed impact.
+- First sentence must state the practical impact in plain English, not background or jargon.
 - Prefer short paragraphs and numbered reproduction steps.
+- For smart contract or code-heavy bugs, make `Vulnerability Details` code-first: show the vulnerable function or exact snippet immediately, then explain why that code path fails.
+- When the bug is code-driven, include file path plus repo or GitHub line reference whenever it exists.
 - Tie impact to the program context: auth bypass, account takeover, data exposure, privilege gain, funds risk, or availability.
 - When the bug is on-chain or exchange-related, separate observed fund movement, permission gain, or market-state change from the larger blast radius you infer.
 - State prerequisites honestly. If auth, timing, or rare roles are required, say so.
+- Use two identities when claiming an authorization boundary failure unless the boundary is visible without that setup.
 - Mention observed result before expected result.
 - Keep observed impact separate from reasoned extension.
+- Fill severity and CVSS only when the program asks or the field exists, and keep both evidence-backed.
 - Reference evidence naturally in the text or attachment notes; do not leave important claims unsupported.
 - Mention the PoC when it is needed to replay the issue or understand exploitability.
+- Prefer an `Output from POC` or equivalent evidence block before the full PoC when logs, balances, tx results, or assertions make the impact obvious faster than code alone.
 - Never inflate severity with generic breach language.
+- Never use `could potentially`, `may allow`, or similar hedging for the main claim.
 - Never invent screenshots, logs, identifiers, or attachments.
 - Rewrite for the actual field label and limit, not a mail-merge template.
 

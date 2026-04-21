@@ -11,14 +11,14 @@ Start from `form-schema.json`, then write only the content the live form actuall
 
 ## Title
 
-Use the same preferred structure as the email workflow:
+Default formula from `report-writing-rules.md`:
 
 `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
 
 Examples:
-- `[Silo Protocol V3] Reentrancy vulnerability in withdraw() function leads to fund drain`
-- `[Android App v2.4] Hardcoded API credentials in classes.dex leads to AWS access`
-- `[api.target.com] IDOR on /v1/users/profile leads to Account Takeover`
+- `[api.target.com] IDOR at GET /api/v2/invoices/{id} leads to invoice data exposure`
+- `[admin.target.com] Missing auth at POST /api/admin/users leads to admin account creation`
+- `[target.com] SSRF at image import URL handler leads to AWS metadata access`
 
 Build the title from four technical parts:
 - `Target`: domain, app name, protocol, repository, or contract name
@@ -38,11 +38,29 @@ Title rules:
 
 Keep the first paragraph to 2-4 sentences:
 1. Name the affected asset and entry point.
-2. State the bug in one plain sentence.
-3. State the practical impact.
-4. Add the prerequisite only if it materially changes severity.
+2. State the bug and exact impact in plain English.
+3. Add the prerequisite only if it materially changes severity.
+4. Point to the decisive proof when the field length allows it.
 
 If the form has separate summary and impact fields, keep the summary factual and move consequence detail to impact.
+
+## Vulnerability Details
+
+For code-driven bugs, use this order:
+
+1. One sentence naming the vulnerable file, function, or endpoint.
+2. The smallest decisive code snippet.
+3. A repo or GitHub line link when available. Never use a local absolute filesystem path in the report body.
+4. One short paragraph explaining the exact broken assumption.
+5. If needed, one extra snippet for the downstream effect or call chain.
+
+Strong pattern from live Critical Immunefi reports:
+- `The bug is in the internal function _claimable(..) of RevenueHandler. Here's the relevant part:`
+- code snippet
+- GitHub line link
+- plain-English explanation of the faulty loop, missing check, or accounting error
+
+Do not wait until the PoC section to show the vulnerable code if the bug is primarily in code.
 
 ## Reproduction Steps
 
@@ -65,6 +83,7 @@ Prefer:
 - what data or action becomes exposed
 - whether the issue is repeatable across tenants, projects, or accounts
 - what was directly observed versus what is inferred from the observed behavior
+- quantified funds, records, or role scope when known
 
 Avoid:
 - generic "could lead to complete compromise" claims
@@ -76,6 +95,9 @@ Avoid:
 - Track each proof item in `artifacts.json`: ID, filename, description, and which claim it supports.
 - Use `poc.md` for replay steps, requests, payloads, or code that would be noisy inside the form.
 - Mention attachments naturally: `Attached HAR shows the cross-tenant response.` Avoid dumping raw filenames without context.
+- When the exploit is code-heavy, add an `Output from POC` block before the full PoC if the platform supports headings or separate fields.
+- `Output from POC` should show the shortest decisive evidence: balances, logs, tx deltas, claim amounts, changed state, or assertion results.
+- After the output block, include the runnable PoC or point to `poc.md`.
 
 ## Web3 / Exchange Proof Details
 
@@ -103,8 +125,9 @@ Keep remediation short and implementation-agnostic unless the program asks for d
 | --- | --- |
 | Title | final title line |
 | Scope / asset | hostname, app, endpoint, package, or contract |
-| Severity | program scale plus evidence-backed rationale |
-| Severity rationale | brief justification tied to observed impact and proof |
+| Severity | program scale plus evidence-backed rationale only |
+| Severity rationale | brief justification tied to observed impact, prerequisites, and proof |
+| CVSS | vector and score when the form asks for it |
 | Prerequisites | auth state, role, race window, or special setup |
 | Summary | first paragraph |
 | Steps to reproduce | numbered list |

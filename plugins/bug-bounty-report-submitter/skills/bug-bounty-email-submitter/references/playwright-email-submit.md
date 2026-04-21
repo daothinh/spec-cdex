@@ -15,7 +15,7 @@ Use Playwright MCP to discover the live webmail UI and send without assuming pro
 9. Fill the subject, then the body. Use `browser_type` for editors that need real keystrokes or preserve line breaks.
 10. Upload attachments with `browser_file_upload` only after the evidence list is final.
 11. Save a draft if the provider supports it, then snapshot the draft for verification.
-12. Verify the visible recipient, subject, body, and attachments match the local bundle. Check that the subject still follows `[Target] - [Vulnerability Type] at [Location] leads to [Impact]` and was not truncated or auto-rewritten by the UI.
+12. Verify the visible recipient, subject, body, and attachments match the local bundle. Check that the subject still follows the shared title formula from `report-writing-rules.md` and was not truncated or auto-rewritten by the UI.
 13. Send with `browser_click`, then capture the success toast, sent-folder item, message ID, or resulting URL.
 
 ## Practical Rules
