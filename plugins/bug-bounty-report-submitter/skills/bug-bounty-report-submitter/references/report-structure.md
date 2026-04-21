@@ -7,6 +7,7 @@ Start from `form-schema.json`, then write only the content the live form actuall
 - Read the live labels, help text, validators, and limits from `form-schema.json`.
 - Build `submission.json` from those fields first.
 - Treat `artifacts.json` and `poc.md` as required inputs, not optional extras.
+- For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
 
 ## Title
 
@@ -76,6 +77,19 @@ Avoid:
 - Use `poc.md` for replay steps, requests, payloads, or code that would be noisy inside the form.
 - Mention attachments naturally: `Attached HAR shows the cross-tenant response.` Avoid dumping raw filenames without context.
 
+## Web3 / Exchange Proof Details
+
+When applicable, surface the identifiers that make the issue replayable:
+
+- chain and network
+- contract or wallet address
+- transaction hash and block number
+- market, pool, vault, or order identifiers
+- user role or auth prerequisite
+- observed token or balance delta
+
+Keep observed state change separate from inferred total blast radius. Example: "Observed unauthorized withdrawal of 0.5 ETH from vault X in tx Y" is stronger than "all TVL is at risk" unless the broader claim is also proved.
+
 ## Remediation
 
 Keep remediation short and implementation-agnostic unless the program asks for detail:
@@ -98,5 +112,6 @@ Keep remediation short and implementation-agnostic unless the program asks for d
 | PoC / evidence | attachment summary plus `poc.md` when needed |
 | Remediation | short fix guidance |
 | Attachments | screenshots, logs, HAR, video, PoC |
+| Chain / contract / tx / market | verified Web3 or exchange identifiers when the form provides dedicated fields |
 
 If the platform adds custom fields, source them from `form-schema.json` and store the final mapping in `submission.json`.

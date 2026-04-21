@@ -12,7 +12,7 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname, urlopen
 
-SUPPORTED_TARGET_TYPES = {"whitebox", "android"}
+SUPPORTED_TARGET_TYPES = {"whitebox", "android", "smart-contract"}
 APK_SUFFIXES = (".apk", ".xapk", ".apks")
 ARCHIVE_SUFFIXES = (".zip", ".tgz", ".tar.gz", ".tar", ".tar.bz2", ".tar.xz")
 ANDROID_MARKERS = {
@@ -43,6 +43,29 @@ WEB_MARKERS = {
     "go.mod",
 }
 NATIVE_MARKERS = {"cargo.toml", "cmakelists.txt", "meson.build", "makefile"}
+FOCUS_AREA_ALIASES = {
+    "wallet": "Wallet",
+    "wallets": "Wallet",
+    "wallet extension": "Wallet",
+    "browser extension": "Wallet",
+    "smart contract": "Smart Contract",
+    "smart-contract": "Smart Contract",
+    "smart contracts": "Smart Contract",
+    "contracts": "Smart Contract",
+    "blockchain": "Blockchain",
+    "blockchains": "Blockchain",
+    "web3": "Web3",
+    "exchange": "Exchange",
+    "exchanges": "Exchange",
+    "dex": "Exchange",
+    "cex": "Exchange",
+}
+LANE_SIGNAL_TO_LANE = {
+    "android": "bounty-program-mobile-android",
+    "native": "bounty-program-native",
+    "smart-contract": "bounty-program-smart-contracts",
+    "web": "bounty-program-web",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -107,12 +130,36 @@ def normalize_target(raw: Any) -> dict[str, Any]:
         supported = ", ".join(sorted(SUPPORTED_TARGET_TYPES))
         raise ValueError(f"target_type must be one of: {supported}")
 
-    artifacts = normalize_artifacts(raw)
+    smart_contracts = normalize_smart_contracts(raw)
+    repo_urls = unique_text_list(
+        flatten_values(
+            raw.get("repo_urls"),
+            raw.get("source_repos"),
+            [contract.get("repo_url") for contract in smart_contracts],
+        )
+    )
+    source_code_urls = unique_text_list(
+        flatten_values(
+            raw.get("source_code_urls"),
+            raw.get("source_urls"),
+            raw.get("source_links"),
+            [contract.get("source_url") for contract in smart_contracts],
+        )
+    )
+    explorer_urls = unique_text_list(
+        flatten_values(
+            raw.get("explorer_urls"),
+            raw.get("block_explorer_urls"),
+            [contract.get("explorer_url") for contract in smart_contracts],
+        )
+    )
+    artifacts = normalize_artifacts(raw, smart_contracts=smart_contracts)
 
     return {
         "program_name": program_name,
         "program_url": program_url,
         "target_type": target_type,
+        "focus_areas": normalize_focus_areas(raw.get("focus_areas"), target_type),
         "slug": slugify(clean_text(raw.get("slug")) or program_name),
         "scope_summary": clean_text(raw.get("scope_summary")),
         "in_scope": unique_text_list(raw.get("in_scope") or raw.get("scope") or raw.get("allowed_assets")),
@@ -125,25 +172,58 @@ def normalize_target(raw: Any) -> dict[str, Any]:
         "program_notes": unique_text_list(raw.get("program_notes")),
         "auth_notes": unique_text_list(raw.get("auth_notes")),
         "environment_notes": unique_text_list(raw.get("environment_notes")),
-        "repo_urls": unique_text_list(raw.get("repo_urls") or raw.get("source_repos")),
+        "repo_urls": repo_urls,
+        "source_code_urls": source_code_urls,
         "package_names": unique_text_list(raw.get("package_names")),
         "app_urls": unique_text_list(raw.get("app_urls") or raw.get("store_urls")),
+        "web_urls": unique_text_list(raw.get("web_urls") or raw.get("web_app_urls") or raw.get("portal_urls")),
+        "api_urls": unique_text_list(raw.get("api_urls") or raw.get("api_base_urls") or raw.get("base_urls")),
+        "rpc_urls": unique_text_list(raw.get("rpc_urls")),
+        "ws_urls": unique_text_list(raw.get("ws_urls") or raw.get("websocket_urls")),
+        "docs_urls": unique_text_list(
+            raw.get("docs_urls") or raw.get("documentation_urls") or raw.get("reference_urls")
+        ),
+        "api_spec_urls": unique_text_list(
+            raw.get("api_spec_urls")
+            or raw.get("openapi_urls")
+            or raw.get("swagger_urls")
+            or raw.get("postman_urls")
+        ),
+        "audit_report_urls": unique_text_list(raw.get("audit_report_urls") or raw.get("audit_urls")),
+        "registry_urls": unique_text_list(
+            raw.get("registry_urls") or raw.get("package_registry_urls") or raw.get("sdk_urls")
+        ),
+        "explorer_urls": explorer_urls,
+        "smart_contracts": smart_contracts,
         "raw_scope_notes": clean_text(raw.get("raw_scope_notes")),
         "artifacts": artifacts,
     }
 
 
-def normalize_artifacts(raw: dict[str, Any]) -> list[dict[str, str]]:
+def normalize_artifacts(
+    raw: dict[str, Any], *, smart_contracts: list[dict[str, str]] | None = None
+) -> list[dict[str, str]]:
     combined: list[Any] = []
     for key in ("artifacts", "artifact_urls"):
         value = raw.get(key)
         if value is not None:
             combined.extend(value if isinstance(value, list) else [value])
 
-    for key, kind in (("apk_urls", "apk"), ("source_archive_urls", "source-archive")):
+    for key, kind in (
+        ("apk_urls", "apk"),
+        ("source_archive_urls", "source-archive"),
+        ("abi_urls", "abi"),
+        ("audit_report_urls", "audit-report"),
+        ("api_spec_urls", "api-spec"),
+    ):
         value = raw.get(key)
         for item in value if isinstance(value, list) else ([value] if value else []):
             combined.append({"url": item, "kind": kind})
+
+    for contract in smart_contracts or []:
+        abi_url = clean_text(contract.get("abi_url"))
+        if abi_url:
+            combined.append({"url": abi_url, "kind": "abi"})
 
     artifacts: list[dict[str, str]] = []
     seen_urls: set[str] = set()
@@ -165,6 +245,66 @@ def normalize_artifacts(raw: dict[str, Any]) -> list[dict[str, str]]:
         artifacts.append({"url": url, "kind": kind or "other", "filename": filename})
 
     return artifacts
+
+
+def normalize_smart_contracts(raw: dict[str, Any]) -> list[dict[str, str]]:
+    contracts = raw.get("smart_contracts") or raw.get("contracts") or raw.get("deployed_contracts")
+    if contracts is None:
+        return []
+
+    normalized: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for item in contracts if isinstance(contracts, list) else [contracts]:
+        if isinstance(item, str):
+            text = clean_text(item)
+            if not text:
+                continue
+            contract = {
+                "name": "",
+                "kind": "",
+                "chain": "",
+                "chain_id": "",
+                "network": "",
+                "vm": "",
+                "address": "" if text.startswith(("http://", "https://")) else text,
+                "proxy_address": "",
+                "implementation_address": "",
+                "explorer_url": text if text.startswith(("http://", "https://")) else "",
+                "abi_url": "",
+                "source_url": "",
+                "repo_url": "",
+                "language": "",
+                "notes": "",
+            }
+        elif isinstance(item, dict):
+            contract = {
+                "name": clean_text(item.get("name")),
+                "kind": clean_text(item.get("kind")),
+                "chain": clean_text(item.get("chain")),
+                "chain_id": clean_text(item.get("chain_id")),
+                "network": clean_text(item.get("network")),
+                "vm": clean_text(item.get("vm") or item.get("platform")),
+                "address": clean_text(item.get("address") or item.get("contract_address")),
+                "proxy_address": clean_text(item.get("proxy_address")),
+                "implementation_address": clean_text(item.get("implementation_address")),
+                "explorer_url": clean_text(item.get("explorer_url") or item.get("explorer")),
+                "abi_url": clean_text(item.get("abi_url")),
+                "source_url": clean_text(item.get("source_url") or item.get("source_code_url")),
+                "repo_url": clean_text(item.get("repo_url")),
+                "language": clean_text(item.get("language")),
+                "notes": clean_text(item.get("notes")),
+            }
+        else:
+            continue
+
+        if not any(contract.values()):
+            continue
+        marker = json.dumps(contract, sort_keys=True)
+        if marker in seen:
+            continue
+        seen.add(marker)
+        normalized.append(contract)
+    return normalized
 
 
 def bootstrap_target(
@@ -194,24 +334,35 @@ def bootstrap_target(
     artifact_results = download_artifacts(
         target["artifacts"], artifacts_dir, repo_root=repo_root, skip_downloads=skip_downloads
     )
-    suggested_lane, lane_reason = suggest_lane(target["target_type"], repo_results, repo_root=repo_root)
+    suggested_lane, lane_reason, surface_signals, follow_on_lanes = suggest_lane(
+        target, repo_results, repo_root=repo_root
+    )
 
     target_record = dict(target)
     target_record["repo_results"] = repo_results
     target_record["artifact_results"] = artifact_results
     target_record["suggested_lane"] = suggested_lane
     target_record["suggested_lane_reason"] = lane_reason
+    target_record["surface_signals"] = surface_signals
+    target_record["follow_on_lanes"] = follow_on_lanes
 
     write_json(scope_dir / "input.json", raw_input)
     write_json(scope_dir / "target.json", target_record)
-    write_text(scope_dir / "raw-scope-notes.md", render_raw_notes(target))
-    write_text(scope_dir / "summary.md", render_scope_summary(target, repo_results, artifact_results))
+    write_text(scope_dir / "raw-scope-notes.md", render_raw_notes(target_record))
+    write_text(scope_dir / "summary.md", render_scope_summary(target_record, repo_results, artifact_results))
     write_text(scope_dir / "in-scope.md", render_scope_bucket("In Scope", target["in_scope"]))
     write_text(scope_dir / "out-of-scope.md", render_scope_bucket("Out Of Scope", target["out_of_scope"]))
     write_text(scope_dir / "rules.md", render_scope_bucket("Rules", target["rules"]))
-    write_text(scope_dir / "program-notes.md", render_program_notes(target))
-    write_text(prep_dir / "asset-inventory.md", render_inventory(target, repo_results, artifact_results))
-    write_text(prep_dir / "ready-for-bounty.md", render_ready_for_bounty(target, suggested_lane, lane_reason))
+    write_text(scope_dir / "program-notes.md", render_program_notes(target_record))
+    write_text(scope_dir / "target-surface.md", render_target_surface(target_record, repo_results, artifact_results))
+    write_text(scope_dir / "smart-contracts.md", render_smart_contracts(target["smart_contracts"]))
+    write_text(prep_dir / "asset-inventory.md", render_inventory(target_record, repo_results, artifact_results))
+    write_text(prep_dir / "tried-and-ruled-out.md", render_tried_and_ruled_out())
+    write_text(prep_dir / "finding-pipeline.md", render_finding_pipeline())
+    write_text(
+        prep_dir / "ready-for-bounty.md",
+        render_ready_for_bounty(target_record, suggested_lane, lane_reason, surface_signals, follow_on_lanes),
+    )
     write_text(target_root / "README.md", render_target_readme(target, suggested_lane))
 
     failures = [
@@ -230,6 +381,8 @@ def bootstrap_target(
         "scope_file": relative_path(scope_dir / "target.json", repo_root),
         "ready_file": relative_path(prep_dir / "ready-for-bounty.md", repo_root),
         "suggested_lane": suggested_lane,
+        "surface_signals": surface_signals,
+        "follow_on_lanes": follow_on_lanes,
         "repo_results": repo_results,
         "artifact_results": artifact_results,
     }
@@ -300,10 +453,18 @@ def download_artifacts(
 
 
 def suggest_lane(
-    target_type: str, repo_results: list[dict[str, str]], *, repo_root: Path
-) -> tuple[str, str]:
+    target: dict[str, Any], repo_results: list[dict[str, str]], *, repo_root: Path
+) -> tuple[str, str, list[str], list[str]]:
+    target_type = target["target_type"]
     if target_type == "android":
-        return "bounty-program-mobile-android", "explicit android target type from scope page"
+        return "bounty-program-mobile-android", "explicit android target type from scope page", ["android"], [
+            "bounty-program-mobile-android"
+        ]
+    if target_type == "smart-contract":
+        return "bounty-program-smart-contracts", "explicit smart-contract target type from scope page", [
+            "smart-contract",
+            *sorted(collect_context_signals(target)),
+        ], ["bounty-program-smart-contracts"]
 
     available_paths = [
         Path(item["local_path"])
@@ -311,17 +472,71 @@ def suggest_lane(
         if item["status"] == "cloned" and item["local_path"]
     ]
     markers = collect_markers(available_paths, repo_root=repo_root)
-    if "android" in markers:
-        return "bounty-program-mobile-android", "android build markers detected in cloned source"
-    if "smart-contract" in markers:
-        return "bounty-program-smart-contracts", "smart contract build markers detected in cloned source"
-    if "web" in markers:
-        return "bounty-program-web", "web or API application markers detected in cloned source"
-    if "native" in markers:
-        return "bounty-program-native", "native build markers detected in cloned source"
+    surface_signals = collect_surface_signals(target, markers)
+    lane_signals = [signal for signal in surface_signals if signal in LANE_SIGNAL_TO_LANE]
+    follow_on_lanes = unique_preserve_order([LANE_SIGNAL_TO_LANE[signal] for signal in lane_signals])
+
+    if len(lane_signals) > 1:
+        labels = ", ".join(lane_signals)
+        return (
+            "bounty-program-triage",
+            f"target surface spans multiple executable lanes: {labels}",
+            surface_signals,
+            follow_on_lanes,
+        )
+    if "android" in surface_signals:
+        return (
+            "bounty-program-mobile-android",
+            "android app signals detected from source or scope metadata",
+            surface_signals,
+            follow_on_lanes,
+        )
+    if "smart-contract" in surface_signals:
+        return (
+            "bounty-program-smart-contracts",
+            "smart contract signals detected from source or scope metadata",
+            surface_signals,
+            follow_on_lanes,
+        )
+    if "web" in surface_signals:
+        return ("bounty-program-web", "web or API signals detected from source or scope metadata", surface_signals, follow_on_lanes)
+    if "native" in surface_signals:
+        return ("bounty-program-native", "native build markers detected in cloned source", surface_signals, follow_on_lanes)
     if available_paths:
-        return "bounty-program-triage", "source cloned but stack fingerprint stayed inconclusive"
-    return "bounty-program-triage", "whitebox scope provided no cloned source to fingerprint"
+        return ("bounty-program-triage", "source cloned but stack fingerprint stayed inconclusive", surface_signals, follow_on_lanes)
+    return (
+        "bounty-program-triage",
+        "scope capture produced metadata only; deeper fingerprinting still required",
+        surface_signals,
+        follow_on_lanes,
+    )
+
+
+def collect_surface_signals(target: dict[str, Any], repo_markers: set[str]) -> list[str]:
+    signals = set(repo_markers)
+    artifact_kinds = {artifact.get("kind", "") for artifact in target["artifacts"]}
+
+    if target["package_names"]:
+        signals.add("android")
+    if target["smart_contracts"] or (
+        "Smart Contract" in target["focus_areas"] and (target["explorer_urls"] or target["rpc_urls"] or artifact_kinds & {"abi"})
+    ):
+        signals.add("smart-contract")
+    if target["web_urls"] or target["api_urls"] or target["ws_urls"]:
+        signals.add("web")
+    if target["rpc_urls"] or target["explorer_urls"] or "Blockchain" in target["focus_areas"] or "Web3" in target["focus_areas"]:
+        signals.add("blockchain")
+    signals.update(collect_context_signals(target))
+    return sorted(signals)
+
+
+def collect_context_signals(target: dict[str, Any]) -> set[str]:
+    signals: set[str] = set()
+    if "Wallet" in target["focus_areas"]:
+        signals.add("wallet")
+    if "Exchange" in target["focus_areas"]:
+        signals.add("exchange")
+    return signals
 
 
 def collect_markers(repo_paths: list[Path], *, repo_root: Path) -> set[str]:
@@ -377,10 +592,18 @@ def render_scope_summary(
         f"- Program: {target['program_name']}",
         f"- URL: {target['program_url']}",
         f"- Target Type: {target['target_type']}",
+        f"- Focus Areas: {', '.join(target['focus_areas']) if target['focus_areas'] else 'Not captured'}",
         f"- Scope Summary: {target['scope_summary'] or 'Not captured'}",
         "",
-        "## In Scope",
+        "## Surface Signals",
     ]
+    lines.extend(render_list(target.get("surface_signals", [])))
+    lines.extend(["", "## Follow-On Lanes"])
+    lines.extend(render_list(target.get("follow_on_lanes", [])))
+    lines.extend([
+        "",
+        "## In Scope",
+    ])
     lines.extend(render_list(target["in_scope"]))
     lines.extend(["", "## Out Of Scope"])
     lines.extend(render_list(target["out_of_scope"]))
@@ -396,6 +619,10 @@ def render_scope_summary(
     lines.extend(render_list(target["auth_notes"]))
     lines.extend(["", "## Environment Notes"])
     lines.extend(render_list(target["environment_notes"]))
+    lines.extend(["", "## Target Surface"])
+    lines.extend(render_target_surface_items(target))
+    lines.extend(["", "## Smart Contracts"])
+    lines.extend(render_contract_list(target["smart_contracts"]))
     lines.extend(["", "## Source Repositories"])
     lines.extend(render_status_list(repo_results))
     lines.extend(["", "## Artifacts"])
@@ -411,9 +638,17 @@ def render_inventory(
         "",
         f"- Program: {target['program_name']}",
         f"- Target Type: {target['target_type']}",
+        f"- Focus Areas: {', '.join(target['focus_areas']) if target['focus_areas'] else 'None recorded'}",
+        "",
+        "## Surface Signals",
+    ]
+    lines.extend(render_list(target.get("surface_signals", [])))
+    lines.extend(["", "## Follow-On Lanes"])
+    lines.extend(render_list(target.get("follow_on_lanes", [])))
+    lines.extend([
         "",
         "## In Scope",
-    ]
+    ])
     lines.extend(render_list(target["in_scope"]))
     lines.extend(["", "## Out Of Scope"])
     lines.extend(render_list(target["out_of_scope"]))
@@ -423,10 +658,32 @@ def render_inventory(
     lines.extend(render_status_list(repo_results))
     lines.extend(["", "## Artifact URLs"])
     lines.extend(render_status_list(artifact_results, include_kind=True))
+    lines.extend(["", "## Source Code URLs"])
+    lines.extend(render_list(target["source_code_urls"]))
     lines.extend(["", "## Package Names"])
     lines.extend(render_list(target["package_names"]))
     lines.extend(["", "## App URLs"])
     lines.extend(render_list(target["app_urls"]))
+    lines.extend(["", "## Web URLs"])
+    lines.extend(render_list(target["web_urls"]))
+    lines.extend(["", "## API URLs"])
+    lines.extend(render_list(target["api_urls"]))
+    lines.extend(["", "## RPC URLs"])
+    lines.extend(render_list(target["rpc_urls"]))
+    lines.extend(["", "## WebSocket URLs"])
+    lines.extend(render_list(target["ws_urls"]))
+    lines.extend(["", "## Documentation URLs"])
+    lines.extend(render_list(target["docs_urls"]))
+    lines.extend(["", "## API Specification URLs"])
+    lines.extend(render_list(target["api_spec_urls"]))
+    lines.extend(["", "## Explorer URLs"])
+    lines.extend(render_list(target["explorer_urls"]))
+    lines.extend(["", "## Audit Report URLs"])
+    lines.extend(render_list(target["audit_report_urls"]))
+    lines.extend(["", "## Registry URLs"])
+    lines.extend(render_list(target["registry_urls"]))
+    lines.extend(["", "## Smart Contracts"])
+    lines.extend(render_contract_list(target["smart_contracts"]))
     lines.extend(["", "## Program Notes"])
     lines.extend(render_list(target["program_notes"]))
     lines.extend(["", "## Safe Harbor"])
@@ -460,12 +717,120 @@ def render_program_notes(target: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def render_ready_for_bounty(target: dict[str, Any], suggested_lane: str, lane_reason: str) -> str:
+def render_target_surface(
+    target: dict[str, Any], repo_results: list[dict[str, str]], artifact_results: list[dict[str, str]]
+) -> str:
+    lines = [
+        "# Target Surface",
+        "",
+        f"- Program: {target['program_name']}",
+        f"- Target Type: {target['target_type']}",
+        f"- Focus Areas: {', '.join(target['focus_areas']) if target['focus_areas'] else 'None recorded'}",
+        "",
+        "## Surface Signals",
+    ]
+    lines.extend(render_list(target.get("surface_signals", [])))
+    lines.extend(["", "## Follow-On Lanes"])
+    lines.extend(render_list(target.get("follow_on_lanes", [])))
+    lines.extend([
+        "",
+        "## Host-Provided Assets",
+    ])
+    lines.extend(render_target_surface_items(target))
+    lines.extend(["", "## Smart Contracts"])
+    lines.extend(render_contract_list(target["smart_contracts"]))
+    lines.extend(["", "## Local Clone Status"])
+    lines.extend(render_status_list(repo_results))
+    lines.extend(["", "## Local Artifact Status"])
+    lines.extend(render_status_list(artifact_results, include_kind=True))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_target_surface_items(target: dict[str, Any]) -> list[str]:
+    sections = [
+        ("Repo URLs", target["repo_urls"]),
+        ("Source Code URLs", target["source_code_urls"]),
+        ("Package Names", target["package_names"]),
+        ("App URLs", target["app_urls"]),
+        ("Web URLs", target["web_urls"]),
+        ("API URLs", target["api_urls"]),
+        ("RPC URLs", target["rpc_urls"]),
+        ("WebSocket URLs", target["ws_urls"]),
+        ("Documentation URLs", target["docs_urls"]),
+        ("API Specification URLs", target["api_spec_urls"]),
+        ("Explorer URLs", target["explorer_urls"]),
+        ("Audit Report URLs", target["audit_report_urls"]),
+        ("Registry URLs", target["registry_urls"]),
+    ]
+    lines: list[str] = []
+    for title, values in sections:
+        lines.append(f"- {title}:")
+        if values:
+            lines.extend([f"  - {value}" for value in values])
+        else:
+            lines.append("  - None recorded")
+    return lines
+
+
+def render_smart_contracts(contracts: list[dict[str, str]]) -> str:
+    lines = ["# Smart Contracts", ""]
+    if not contracts:
+        lines.append("- None recorded")
+        return "\n".join(lines).rstrip() + "\n"
+
+    for index, contract in enumerate(contracts, start=1):
+        label = contract["name"] or contract["address"] or contract["explorer_url"] or f"Contract {index}"
+        lines.extend(
+            [
+                f"## {label}",
+                "",
+                f"- Kind: {contract['kind'] or 'Not captured'}",
+                f"- Chain: {contract['chain'] or 'Not captured'}",
+                f"- Chain ID: {contract['chain_id'] or 'Not captured'}",
+                f"- Network: {contract['network'] or 'Not captured'}",
+                f"- VM: {contract['vm'] or 'Not captured'}",
+                f"- Address: {contract['address'] or 'Not captured'}",
+                f"- Proxy Address: {contract['proxy_address'] or 'Not captured'}",
+                f"- Implementation Address: {contract['implementation_address'] or 'Not captured'}",
+                f"- Explorer URL: {contract['explorer_url'] or 'Not captured'}",
+                f"- ABI URL: {contract['abi_url'] or 'Not captured'}",
+                f"- Source URL: {contract['source_url'] or 'Not captured'}",
+                f"- Repo URL: {contract['repo_url'] or 'Not captured'}",
+                f"- Language: {contract['language'] or 'Not captured'}",
+                f"- Notes: {contract['notes'] or 'Not captured'}",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_contract_list(contracts: list[dict[str, str]]) -> list[str]:
+    if not contracts:
+        return ["- None recorded"]
+    rendered = []
+    for contract in contracts:
+        parts = [
+            contract["name"] or "Unnamed contract",
+            f"chain={contract['chain']}" if contract["chain"] else "",
+            f"network={contract['network']}" if contract["network"] else "",
+            f"vm={contract['vm']}" if contract["vm"] else "",
+            f"address={contract['address']}" if contract["address"] else "",
+            f"explorer={contract['explorer_url']}" if contract["explorer_url"] else "",
+        ]
+        rendered.append("- " + " | ".join(part for part in parts if part))
+    return rendered
+
+
+def render_ready_for_bounty(
+    target: dict[str, Any], suggested_lane: str, lane_reason: str, surface_signals: list[str], follow_on_lanes: list[str]
+) -> str:
     lines = [
         "# Ready For Bounty",
         "",
         f"- Suggested Lane: `{suggested_lane}`",
         f"- Reason: {lane_reason}",
+        f"- Surface Signals: {', '.join(surface_signals) if surface_signals else 'None recorded'}",
+        f"- Follow-On Lanes: {', '.join(follow_on_lanes) if follow_on_lanes else 'None recorded'}",
         "",
         "## Next Step",
     ]
@@ -474,6 +839,20 @@ def render_ready_for_bounty(target: dict[str, Any], suggested_lane: str, lane_re
             [
                 "- Activate `bounty-program-mobile-android`.",
                 "- Use the downloaded APKs and package names from `scope/target.json`.",
+            ]
+        )
+    elif suggested_lane == "bounty-program-smart-contracts":
+        lines.extend(
+            [
+                "- Activate `bounty-program-smart-contracts`.",
+                "- Start from `scope/smart-contracts.md`, `scope/target-surface.md`, and any cloned repos or downloaded ABI files.",
+            ]
+        )
+    elif suggested_lane == "bounty-program-triage":
+        lines.extend(
+            [
+                "- Activate `bounty-program-triage` first because the host-provided target surface spans multiple lanes or remains incomplete.",
+                "- Use `scope/target-surface.md` to decide whether the first deep pass belongs to web, mobile, smart contract, or native review.",
             ]
         )
     else:
@@ -490,7 +869,11 @@ def render_ready_for_bounty(target: dict[str, Any], suggested_lane: str, lane_re
             "- `scope/target.json` for the normalized contract",
             "- `scope/in-scope.md`, `scope/out-of-scope.md`, and `scope/rules.md` for persisted scope buckets",
             "- `scope/raw-scope-notes.md` for exact copied scope text",
+            "- `scope/target-surface.md` for host-provided target assets and references",
+            "- `scope/smart-contracts.md` for deployed addresses and chain metadata",
             "- `prep/asset-inventory.md` for local paths and download or clone status",
+            "- `prep/tried-and-ruled-out.md` to track attack paths that were tested and discarded",
+            "- `prep/finding-pipeline.md` to track candidate and validated findings",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
@@ -501,12 +884,40 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"# {target['program_name']}",
         "",
         f"- Target Type: {target['target_type']}",
+        f"- Focus Areas: {', '.join(target['focus_areas']) if target['focus_areas'] else 'None recorded'}",
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/summary.md` for the full scope digest, and `prep/ready-for-bounty.md` for the handoff.",
+        "See `scope/target.json` for the machine-readable contract, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/summary.md` for the full scope digest, and `prep/ready-for-bounty.md` for the handoff.",
     ]
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_tried_and_ruled_out() -> str:
+    return (
+        "# Tried And Ruled Out\n\n"
+        "Track attack paths that were tested and ruled out so the engagement does not loop.\n\n"
+        "## Entries\n\n"
+        "- Path: \n"
+        "  - Status: untested | ruled-out | revisit\n"
+        "  - Why ruled out: \n"
+        "  - Evidence: \n"
+        "  - Revisit trigger: \n"
+    )
+
+
+def render_finding_pipeline() -> str:
+    return (
+        "# Finding Pipeline\n\n"
+        "Use this file to track candidate findings from first hypothesis to validated report.\n\n"
+        "## Candidate Findings\n\n"
+        "| ID | Surface | Hypothesis | Status | Evidence |\n"
+        "| --- | --- | --- | --- | --- |\n"
+        "| CAND-001 |  |  | untested |  |\n\n"
+        "## Validated Findings\n\n"
+        "| ID | Title | Severity | Evidence | Reported |\n"
+        "| --- | --- | --- | --- | --- |\n"
+    )
 
 
 def render_list(items: list[str]) -> list[str]:
@@ -607,6 +1018,12 @@ def suffix_for_kind(kind: str) -> str:
         return ".apk"
     if kind == "source-archive":
         return ".zip"
+    if kind == "abi":
+        return ".json"
+    if kind == "audit-report":
+        return ".pdf"
+    if kind == "api-spec":
+        return ".json"
     return ".bin"
 
 
@@ -616,6 +1033,14 @@ def infer_artifact_kind(url: str) -> str:
         return "apk"
     if lowered.endswith(ARCHIVE_SUFFIXES):
         return "source-archive"
+    if lowered.endswith(".abi") or lowered.endswith(".abi.json") or ("abi" in lowered and lowered.endswith(".json")):
+        return "abi"
+    if any(token in lowered for token in ("audit", "report")) and lowered.endswith((".pdf", ".md", ".html", ".txt")):
+        return "audit-report"
+    if any(token in lowered for token in ("openapi", "swagger", "postman")) and lowered.endswith(
+        (".json", ".yaml", ".yml")
+    ):
+        return "api-spec"
     return "other"
 
 
@@ -633,6 +1058,37 @@ def clean_text(value: Any) -> str:
     return str(value).strip()
 
 
+def flatten_values(*values: Any) -> list[Any]:
+    items: list[Any] = []
+    for value in values:
+        if value is None:
+            continue
+        if isinstance(value, list):
+            items.extend(value)
+        else:
+            items.append(value)
+    return items
+
+
+def normalize_focus_areas(value: Any, target_type: str) -> list[str]:
+    items = flatten_values(value)
+    if target_type == "smart-contract":
+        items.append("smart-contract")
+
+    seen: set[str] = set()
+    normalized: list[str] = []
+    for item in items:
+        key = clean_text(item).lower()
+        if not key:
+            continue
+        label = FOCUS_AREA_ALIASES.get(key, clean_text(item))
+        if label in seen:
+            continue
+        seen.add(label)
+        normalized.append(label)
+    return normalized
+
+
 def unique_text_list(value: Any) -> list[str]:
     if value is None:
         return []
@@ -645,6 +1101,17 @@ def unique_text_list(value: Any) -> list[str]:
             continue
         seen.add(text)
         output.append(text)
+    return output
+
+
+def unique_preserve_order(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    output: list[str] = []
+    for item in items:
+        if not item or item in seen:
+            continue
+        seen.add(item)
+        output.append(item)
     return output
 
 

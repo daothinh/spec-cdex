@@ -11,7 +11,7 @@ This plugin is designed for the root-ported marketplace in this repository. It d
 
 ## Included Skills
 
-- `/bounty-program-triage` — normalize program rules, fingerprint the target, and route to the correct lane
+- `/bounty-program-triage` — normalize program rules, fingerprint the target, and route to the correct lane or mixed-surface sequence
 - `/bounty-program-web` — web/API workflow across common server frameworks
 - `/bounty-program-mobile-android` — Android pentest workflow for APKs and rooted-device testing
 - `/bounty-program-smart-contracts` — chain-specific workflow for EVM, Solana, Cosmos, Cairo, Substrate, TON, and Algorand
@@ -54,6 +54,12 @@ Every playbook follows the same reportable sequence:
 5. Reproduce the issue with the least-destructive evidence that still proves impact.
 6. Expand to variants only after the first issue is understood.
 7. Package evidence using the shared reporting checklist.
+
+The routing layer now keeps hybrid Web3 targets honest:
+
+- wallet, blockchain, and exchange context stay visible during triage
+- smart-contract review now classifies protocol archetypes before deep review
+- hybrid targets can keep follow-on lanes in scope instead of forcing a fake single-lane answer
 
 ## Recommended Install Set
 

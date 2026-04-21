@@ -9,10 +9,12 @@ The bootstrap script expects one JSON object.
 - `target_type`
 
 `target_type` must be `whitebox` or `android`.
+`target_type` must be `whitebox`, `android`, or `smart-contract`.
 
 ## Optional Keys
 
 - `slug`
+- `focus_areas`
 - `scope_summary`
 - `in_scope`
 - `out_of_scope`
@@ -27,11 +29,24 @@ The bootstrap script expects one JSON object.
 - `environment_notes`
 - `repo_urls`
 - `source_repos`
+- `source_code_urls`
 - `artifacts`
 - `artifact_urls`
 - `package_names`
 - `app_urls`
 - `store_urls`
+- `web_urls`
+- `api_urls`
+- `rpc_urls`
+- `ws_urls`
+- `docs_urls`
+- `api_spec_urls`
+- `audit_report_urls`
+- `registry_urls`
+- `explorer_urls`
+- `smart_contracts`
+- `contracts`
+- `deployed_contracts`
 - `raw_scope_notes`
 - `ignored_assets`
 
@@ -49,6 +64,32 @@ Each artifact entry may be a string URL or an object:
 
 `kind` is optional. The script infers `apk` and `source-archive` from the URL when omitted.
 
+Supported explicit `kind` values now include `apk`, `source-archive`, `abi`, `api-spec`, `audit-report`, and `other`.
+
+## Smart Contract Shape
+
+Each `smart_contracts` entry may include:
+
+```json
+{
+  "name": "VaultProxy",
+  "kind": "proxy",
+  "chain": "Ethereum",
+  "chain_id": "1",
+  "network": "mainnet",
+  "vm": "EVM",
+  "address": "0x1234...",
+  "proxy_address": "0x1234...",
+  "implementation_address": "0xabcd...",
+  "explorer_url": "https://etherscan.io/address/0x1234...",
+  "abi_url": "https://target.local/contracts/vault-proxy-abi.json",
+  "source_url": "https://github.com/acme/protocol/blob/main/src/VaultProxy.sol",
+  "repo_url": "https://github.com/acme/protocol.git",
+  "language": "Solidity",
+  "notes": "Host marks this as the primary production proxy."
+}
+```
+
 ## Minimal Example
 
 ```json
@@ -56,6 +97,7 @@ Each artifact entry may be a string URL or an object:
   "program_name": "Acme Whitebox",
   "program_url": "https://program.local/acme",
   "target_type": "whitebox",
+  "focus_areas": ["Exchange", "Blockchain"],
   "scope_summary": "GitHub repos are in scope for authenticated whitebox review.",
   "in_scope": [
     "https://git.local/acme/api.git"
@@ -65,6 +107,24 @@ Each artifact entry may be a string URL or an object:
   ],
   "repo_urls": [
     "https://git.local/acme/api.git"
+  ],
+  "web_urls": [
+    "https://app.acme.local"
+  ],
+  "api_urls": [
+    "https://api.acme.local"
+  ],
+  "rpc_urls": [
+    "https://rpc.acme.local"
+  ],
+  "smart_contracts": [
+    {
+      "name": "SettlementProxy",
+      "chain": "Ethereum",
+      "network": "mainnet",
+      "address": "0x1234...",
+      "explorer_url": "https://etherscan.local/address/0x1234..."
+    }
   ],
   "rules": [
     "Stay inside staging."
@@ -86,16 +146,26 @@ Each artifact entry may be a string URL or an object:
 - `scope/out-of-scope.md`
 - `scope/rules.md`
 - `scope/program-notes.md`
+- `scope/target-surface.md`
+- `scope/smart-contracts.md`
 - `source/repos/`
 - `source/artifacts/`
 - `prep/asset-inventory.md`
+- `prep/tried-and-ruled-out.md`
+- `prep/finding-pipeline.md`
 - `prep/ready-for-bounty.md`
 
 ## Lane Routing
 
 - `android` -> `bounty-program-mobile-android`
+- `smart-contract` -> `bounty-program-smart-contracts`
 - `whitebox` -> script fingerprints cloned source and suggests:
   - `bounty-program-web`
   - `bounty-program-native`
   - `bounty-program-smart-contracts`
   - or fallback `bounty-program-triage`
+
+The generated `scope/target.json` also records:
+
+- `surface_signals` - observed mix such as `web`, `smart-contract`, `wallet`, or `exchange`
+- `follow_on_lanes` - any executable lanes that should stay in scope after the first deep pass

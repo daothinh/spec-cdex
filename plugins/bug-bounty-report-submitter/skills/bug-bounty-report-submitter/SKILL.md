@@ -25,6 +25,7 @@ Load these on demand:
 - Know the affected asset, prerequisites, impact, and evidence set.
 - Have the submission URL and any login requirements.
 - Have a minimal PoC or replayable proof path for the bug.
+- For Web3, blockchain, or exchange findings, know the chain, contract or account identifiers, and any tx hash, block number, order ID, or session identifier that makes the proof concrete.
 
 If any precondition is missing, gather it before submission work starts.
 
@@ -45,6 +46,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 1. Open the submission URL with Playwright MCP before drafting anything long-form.
 2. Snapshot the rendered form, complete login if needed, expand hidden sections, and record required fields, custom prompts, enums, validators, character limits, and attachment rules in `form-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, and store the replayable exploit path in `poc.md`.
+   - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
 4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and derive any title or subject-like field from the target, vuln type, location, and max observed impact.
 5. Draft `report.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/report-structure.md](references/report-structure.md). Write to the actual field labels and limits from `form-schema.json`.
 6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md). Every major claim must map to an artifact or be marked as an explicit assumption.
@@ -60,6 +62,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - Keep the title compact when the platform is narrow, but do not collapse it into vague filler.
 - Prefer short paragraphs and numbered reproduction steps.
 - Tie impact to the program context: auth bypass, account takeover, data exposure, privilege gain, funds risk, or availability.
+- When the bug is on-chain or exchange-related, separate observed fund movement, permission gain, or market-state change from the larger blast radius you infer.
 - State prerequisites honestly. If auth, timing, or rare roles are required, say so.
 - Mention observed result before expected result.
 - Keep observed impact separate from reasoned extension.
@@ -80,6 +83,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - If a field strips markdown or truncates text, rewrite for that field instead of forcing the template.
 - If the platform supports drafts, save one before final submit.
 - If a captcha or MFA gate blocks submission, stop after the draft and report the blocker.
+- If the platform has dedicated fields for chain, contract, transaction, asset, market, or environment, fill them from verified facts instead of repeating a generic summary.
 
 ## Output
 
