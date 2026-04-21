@@ -447,6 +447,18 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Security"
+    },
+    {
+      "name": "bug-bounty-report-submitter",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bug-bounty-report-submitter"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Security"
     }
   ]
 }

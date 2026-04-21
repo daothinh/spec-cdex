@@ -234,6 +234,11 @@
       "name": "bounty-target-bootstrap",
       "source": "./plugins/bounty-target-bootstrap",
       "description": "Bootstrap a whitebox or Android bounty target from a program URL with Playwright MCP, local scope capture, source pull, and Bounty Hunting Program handoff."
+    },
+    {
+      "name": "bug-bounty-report-submitter",
+      "source": "./plugins/bug-bounty-report-submitter",
+      "description": "Inspect live bug bounty forms with Playwright MCP, then draft and submit evidence-backed reports that match the discovered fields and proof requirements."
     }
   ]
 }

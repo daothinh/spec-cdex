@@ -299,6 +299,12 @@
       "sourceKind": "root",
       "category": "Security",
       "codexStatus": "available"
+    },
+    {
+      "name": "bug-bounty-report-submitter",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
     }
   ]
 }

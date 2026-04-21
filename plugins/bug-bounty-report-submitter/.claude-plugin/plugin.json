@@ -1,0 +1,13 @@
+{
+  "name": "bug-bounty-report-submitter",
+  "version": "0.1.0",
+  "description": "Inspect live bug bounty forms with Playwright MCP, then draft and submit evidence-backed reports that match the discovered fields and proof requirements.",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT"
+}
