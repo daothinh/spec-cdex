@@ -1,0 +1,13 @@
+{
+  "name": "bounty-target-bootstrap",
+  "version": "0.1.0",
+  "description": "Bootstrap a whitebox or Android bounty target from a program URL with Playwright MCP, local scope capture, source pull, and Bounty Hunting Program handoff.",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT"
+}

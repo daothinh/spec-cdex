@@ -293,6 +293,12 @@
       "sourceKind": "root",
       "category": "Security",
       "codexStatus": "available"
+    },
+    {
+      "name": "bounty-target-bootstrap",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
     }
   ]
 }

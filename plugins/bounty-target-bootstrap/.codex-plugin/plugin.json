@@ -1,0 +1,41 @@
+{
+  "name": "bounty-target-bootstrap",
+  "version": "0.1.0",
+  "description": "Bootstrap a whitebox or Android bounty target from a program URL with Playwright MCP, local scope capture, source pull, and Bounty Hunting Program handoff.",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "bug-bounty",
+    "playwright",
+    "whitebox",
+    "android"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Bounty Target Bootstrap",
+    "shortDescription": "Bootstrap whitebox or Android targets",
+    "longDescription": "Use Playwright MCP to read a scope page, persist the normalized target in-repo, clone source or APK artifacts, and prepare the next Bounty Hunting Program lane.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Open this bounty scope URL with Playwright and bootstrap the target locally",
+      "Normalize this Android scope page and download the in-scope APK artifacts",
+      "Clone the whitebox source repos from this program page and prepare the next bounty lane"
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

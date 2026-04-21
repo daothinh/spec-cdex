@@ -229,6 +229,11 @@
       "name": "bounty-hunting-programs",
       "source": "./plugins/bounty-hunting-programs",
       "description": "Standardized bounty hunting workflows for web, Android, smart contract, and native targets using Codex-ready security skills from this repo."
+    },
+    {
+      "name": "bounty-target-bootstrap",
+      "source": "./plugins/bounty-target-bootstrap",
+      "description": "Bootstrap a whitebox or Android bounty target from a program URL with Playwright MCP, local scope capture, source pull, and Bounty Hunting Program handoff."
     }
   ]
 }
