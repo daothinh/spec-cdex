@@ -1,3 +1,6 @@
+name = "security-target-auto-pipeline"
+description = "Bootstrap a scoped security target from URL or local source, route it to the right audit lane, confirm exploitability, and produce reusable artifacts."
+
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
