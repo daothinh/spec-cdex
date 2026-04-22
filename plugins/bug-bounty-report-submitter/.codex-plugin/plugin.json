@@ -1,7 +1,7 @@
 {
   "name": "bug-bounty-report-submitter",
-  "version": "0.2.2",
-  "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver evidence-backed reports that match the discovered fields, proof requirements, and delivery flow.",
+  "version": "0.3.1",
+  "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver self-contained evidence-backed reports that match the discovered fields while enforcing an Immunefi-style detail body with exact bug location, exploit path, PoC output, minimal exploit excerpts, and attachment discipline.",
   "author": {
     "name": "workers.io",
     "email": "chai+spec@workers.io",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "Bug Bounty Report Submitter",
     "shortDescription": "Draft and submit bug bounty reports",
-    "longDescription": "Inspect a live bug bounty form or webmail UI with Playwright MCP, derive the actual delivery schema, then draft and deliver an evidence-backed report with proof uploads and captured confirmation details.",
+    "longDescription": "Inspect a live bug bounty form or webmail UI with Playwright MCP, derive the actual delivery schema, then draft and deliver a self-contained evidence-backed report that follows an Immunefi-style detail template: vulnerable function or endpoint first, root cause and exploit walkthrough next, PoC output before full proof, and attachments used only as supplemental evidence or a markdown appendix when mandatory.",
     "developerName": "workers.io",
     "category": "Security",
     "capabilities": [

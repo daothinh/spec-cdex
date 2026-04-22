@@ -7,7 +7,24 @@ Start from `form-schema.json`, then write only the content the live form actuall
 - Read the live labels, help text, validators, and limits from `form-schema.json`.
 - Build `submission.json` from those fields first.
 - Treat `artifacts.json` and `poc.md` as required inputs, not optional extras.
+- Treat attachments as optional by default, not part of the primary report payload.
 - For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
+- Draft the full local body with [immunefi-body-template.md](immunefi-body-template.md) before compressing or splitting it for platform-specific fields.
+
+## Long-Form Detail Body
+
+Use the shared order from [immunefi-body-template.md](immunefi-body-template.md):
+
+1. `Brief/Intro`
+2. `Vulnerability Details`
+3. `The Vulnerable Function` or `Affected Endpoint` or `Affected Component`
+4. `Why The Check Fails` or `Root Cause`
+5. `Attack Vector Explained` or `Exploit Walkthrough`
+6. `Impact Details`
+7. `Output from POC`
+8. `Proof of Concept`
+
+This is the default skeleton even when the live form later forces the content into smaller buckets.
 
 ## Title
 
@@ -54,13 +71,34 @@ For code-driven bugs, use this order:
 4. One short paragraph explaining the exact broken assumption.
 5. If needed, one extra snippet for the downstream effect or call chain.
 
+This is strong enough for the triager to answer:
+- where the bug lives
+- why the code or path is wrong
+- which exact lines or branch matter
+
 Strong pattern from live Critical Immunefi reports:
-- `The bug is in the internal function _claimable(..) of RevenueHandler. Here's the relevant part:`
-- code snippet
-- GitHub line link
-- plain-English explanation of the faulty loop, missing check, or accounting error
+- name the exact function or handler
+- show the decisive snippet
+- give the repo link
+- explain the faulty loop, missing check, bad comparison, or accounting mistake in plain English
 
 Do not wait until the PoC section to show the vulnerable code if the bug is primarily in code.
+
+If the bug is not code-driven, replace the snippet with the smallest decisive request, state transition, or UI fragment that carries the same explanatory weight.
+
+## Attack Vector Explained
+
+After showing the vulnerable function or endpoint, walk the triager through the exploit path:
+
+1. setup or attacker identity
+2. trigger of the vulnerable path
+3. critical incorrect state change or computation
+4. observed result
+
+Use actor names when a boundary matters:
+- `Account A` and `Account B`
+- `Attacker` and `Victim`
+- named smart-contract actors when a scenario is easier to read that way
 
 ## Reproduction Steps
 
@@ -91,13 +129,19 @@ Avoid:
 
 ## Evidence And PoC
 
-- Put every uploadable proof file in `evidence/`.
+- Keep every local proof file in `evidence/`, but upload only the smallest necessary subset.
 - Track each proof item in `artifacts.json`: ID, filename, description, and which claim it supports.
 - Use `poc.md` for replay steps, requests, payloads, or code that would be noisy inside the form.
-- Mention attachments naturally: `Attached HAR shows the cross-tenant response.` Avoid dumping raw filenames without context.
+- Mention attachments naturally only when they are truly needed: `Attached HAR shows the cross-tenant response.` Avoid dumping raw filenames without context.
 - When the exploit is code-heavy, add an `Output from POC` block before the full PoC if the platform supports headings or separate fields.
 - `Output from POC` should show the shortest decisive evidence: balances, logs, tx deltas, claim amounts, changed state, or assertion results.
-- After the output block, include the runnable PoC or point to `poc.md`.
+- After the output block, include the minimal runnable PoC excerpt inline. Keep `poc.md` as a local drafting artifact, not as something the submitted report depends on.
+- Show the exploit function, test case, or request sequence, not the whole helper file.
+- If a full helper file is needed for local replay, keep it in `poc.md` or `evidence/` and keep only the decisive excerpt in the body.
+- If a coded PoC is impossible, say why and replace it with a replayable actor timeline or transaction sequence.
+- Do not upload raw source files or archives by default.
+- If the platform requires a file upload or the field length makes the report incomplete, create `report-appendix.md` and upload that markdown appendix before considering any raw code file.
+- Even when `report-appendix.md` is uploaded, the main report fields must still contain the full bug narrative, root cause, exploit path, and decisive PoC output.
 
 ## Web3 / Exchange Proof Details
 
@@ -132,9 +176,9 @@ Keep remediation short and implementation-agnostic unless the program asks for d
 | Summary | first paragraph |
 | Steps to reproduce | numbered list |
 | Impact | dedicated impact section |
-| PoC / evidence | attachment summary plus `poc.md` when needed |
+| PoC / evidence | inline `Output from POC` plus inline exploit excerpt, with supplemental attachment notes only when needed |
 | Remediation | short fix guidance |
-| Attachments | screenshots, logs, HAR, video, PoC |
+| Attachments | optional supporting screenshots, logs, HAR, video, or `report-appendix.md` when the platform requires a file |
 | Chain / contract / tx / market | verified Web3 or exchange identifiers when the form provides dedicated fields |
 
 If the platform adds custom fields, source them from `form-schema.json` and store the final mapping in `submission.json`.

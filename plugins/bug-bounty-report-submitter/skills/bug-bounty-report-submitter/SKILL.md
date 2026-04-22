@@ -6,7 +6,7 @@ description: >
   and attachment flow.
 metadata:
   author: workers.io
-  version: "0.1.1"
+  version: "0.2.1"
 ---
 
 # Bug Bounty Report Submitter
@@ -16,6 +16,7 @@ Inspect the live submission form first, then turn independently re-verified find
 Load these on demand:
 - [references/report-writing-rules.md](references/report-writing-rules.md) for impact-first report rules, title formula, severity discipline, and final checklist
 - [references/report-structure.md](references/report-structure.md) for field mapping and section order
+- [references/immunefi-body-template.md](references/immunefi-body-template.md) for the default long-form body skeleton based on recurring accepted Immunefi report patterns
 - [references/writing-style.md](references/writing-style.md) for natural prose rules and anti-template cleanup
 - [references/playwright-submit.md](references/playwright-submit.md) for the browser automation sequence
 - `plugins/bounty-hunting-programs/skills/bounty-program-triage/SKILL.md` if target scope or program constraints are still unclear
@@ -38,6 +39,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - `form-schema.json` - live form fields, options, limits, and notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
+- `report-appendix.md` - optional markdown appendix used only when the platform requires an attachment or the field limits cannot honestly hold the full detail body
 - `reverify.md` - independent re-verification verdict and blockers already checked
 - `report.md` - final prose draft
 - `submission.json` - field-to-value map for the form
@@ -51,9 +53,9 @@ Create `bug-bounty-reports/<slug>/` and keep:
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
 4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts only.
-5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, and `reverify.md` using [references/report-structure.md](references/report-structure.md) and [references/report-writing-rules.md](references/report-writing-rules.md). Write to the actual field labels and limits from `form-schema.json`.
-6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form, upload proof, preview or save draft, and submit only after the visible form matches `submission.json`.
+5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, and `reverify.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Draft the full detail body locally even if the live platform later splits it across several smaller fields.
+6. Run the evidence, structure, and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the local draft does not clearly show the vulnerable function, exact broken code or path, exploit walkthrough, and PoC output in the expected order, fix it before any submission work. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
+7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Submit only after the visible form matches `submission.json`.
 8. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
 ## Report Rules
@@ -63,9 +65,13 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - Use the title formula from [references/report-writing-rules.md](references/report-writing-rules.md) when the form has a title-like field.
 - Keep the title technical and professional. Use target, exact vuln names, concrete locations, and the highest observed impact.
 - First sentence must state the practical impact in plain English, not background or jargon.
+- The default body order is `Brief/Intro -> Vulnerability Details -> The Vulnerable Function or Affected Endpoint -> Why The Check Fails -> Attack Vector Explained -> Impact Details -> Output from POC -> Proof of Concept`.
 - Prefer short paragraphs and numbered reproduction steps.
 - For smart contract or code-heavy bugs, make `Vulnerability Details` code-first: show the vulnerable function or exact snippet immediately, then explain why that code path fails.
 - When the bug is code-driven, include file path plus repo or GitHub line reference whenever it exists.
+- The detail body must answer three questions without making the triager open a full attachment first: where the bug is, why the code or path is wrong, and how to replay the exploit.
+- Show the exploit function, test case, or request sequence that triggers the bug. Do not paste the whole file unless the program explicitly requires it.
+- The report body is the primary source of truth. Do not offload core bug details, exploit reasoning, or replay steps to attachments.
 - Tie impact to the program context: auth bypass, account takeover, data exposure, privilege gain, funds risk, or availability.
 - When the bug is on-chain or exchange-related, separate observed fund movement, permission gain, or market-state change from the larger blast radius you infer.
 - State prerequisites honestly. If auth, timing, or rare roles are required, say so.
@@ -75,8 +81,13 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - Fill severity and CVSS only when the program asks or the field exists, and keep both evidence-backed.
 - Reference evidence naturally in the text or attachment notes; do not leave important claims unsupported.
 - Mention the PoC when it is needed to replay the issue or understand exploitability.
+- `Output from POC` or its field-equivalent must appear before the full PoC whenever a PoC exists.
 - Use the independent re-verification verdict to sharpen the report claim, not to pad it with generic certainty language.
 - Prefer an `Output from POC` or equivalent evidence block before the full PoC when logs, balances, tx results, or assertions make the impact obvious faster than code alone.
+- If a coded PoC is impossible, state exactly why and replace it with a replayable actor timeline, transaction sequence, or state-machine walkthrough.
+- Do not attach raw source files, exploit scripts, full test suites, archives, or random code dumps by default.
+- If the platform requires a file upload or the field limit makes a fully honest report impossible inline, attach `report-appendix.md` with the same self-contained detail structure instead of a raw `.sol`, `.py`, `.js`, `.t.sol`, or archive file whenever the platform accepts markdown or plain text.
+- Supporting artifacts such as screenshots, HAR, video, or logs may be uploaded only as evidence supplements. They must never be the only place where the triager can learn the core bug mechanics.
 - Never inflate severity with generic breach language.
 - Never use `could potentially`, `may allow`, or similar hedging for the main claim.
 - Never invent screenshots, logs, identifiers, or attachments.

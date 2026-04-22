@@ -35,11 +35,16 @@ Use this order unless the program email template requires another:
 2. Summary paragraph
 3. Affected asset
 4. Prerequisites
-5. Steps to reproduce
-6. Observed impact
-7. Evidence and attachments
-8. Optional remediation
-9. Availability for follow-up
+5. `Vulnerability Details`
+6. `The Vulnerable Function` or `Affected Endpoint` or `Affected Component`
+7. `Why The Check Fails` or `Root Cause`
+8. `Attack Vector Explained`
+9. `Impact Details`
+10. `Output from POC`
+11. `Proof of Concept`
+12. Evidence and attachments
+13. Optional remediation
+14. Availability for follow-up
 
 ## Greeting
 
@@ -59,6 +64,8 @@ Keep the opening to 2-4 sentences:
 - add prerequisites only if they materially change severity
 - mention the decisive proof when the body length allows it
 
+After the summary, follow the shared long-form logic from `../../bug-bounty-report-submitter/references/immunefi-body-template.md` even when the mail client is plain text.
+
 ## Vulnerability Details In Email
 
 If the bug is primarily in code, do not make the triager jump to attachments first.
@@ -68,6 +75,15 @@ If the bug is primarily in code, do not make the triager jump to attachments fir
 - Use repo-relative names or GitHub links, never local absolute paths from your machine.
 - Explain the exact broken assumption right below the snippet.
 - If the full exploit is long, keep the full code in `poc.md` or an attachment and keep only the decisive excerpt inline.
+- If the bug is not code-driven, replace the snippet with the shortest decisive request, state transition, DOM fragment, or response pair.
+- The email must still stand on its own if attachments are ignored.
+
+## Attack Vector Explained
+
+- Use numbered steps or short actor-driven phases.
+- Show attacker setup, trigger, critical state change, and observed result.
+- For auth boundaries, use two identities such as `Account A` and `Account B`.
+- For smart contract bugs, include the relevant actor roles, token IDs, markets, pools, epochs, or timestamps when they make the exploit path concrete.
 
 ## Steps To Reproduce
 
@@ -78,7 +94,7 @@ Use numbered steps. Each step should contain:
 - observed result
 - proof anchor: artifact ID, attachment name, or `poc.md`
 
-## Observed Impact
+## Impact Details
 
 Tie impact to what was directly shown:
 - what the attacker gains
@@ -96,11 +112,22 @@ Mention proof naturally in prose:
 - `The attached video demonstrates the full replay on a fresh account.`
 - `The included poc.md contains the exact request sequence.`
 
-Attach only files that support a claim in the body.
+Attach only files that support a claim already explained in the body.
 
 For code-heavy findings:
 - summarize `Output from POC` in the body with the most convincing logs or deltas
-- then attach the full PoC or point to `poc.md`
+- then include the minimal exploit excerpt inline; keep `poc.md` as a local drafting artifact rather than something the recipient must open
+- include the exploit function or replay sequence in the body, not just a statement that code is attached
+- do not paste an entire helper file when a short exploit excerpt will do
+
+Attachment discipline:
+- do not attach raw source files, exploit scripts, or archives by default
+- if an attachment is required, prefer `report-appendix.md` or a plain-text appendix that mirrors the same self-contained report structure
+- screenshots, HAR, video, and logs remain supplemental only
+
+If a coded PoC is impossible:
+- say exactly why
+- replace it with a replayable actor timeline or transaction sequence
 
 ## Optional Remediation
 
@@ -115,3 +142,46 @@ End with a short follow-up note:
 - `I can provide additional traces or retest a fix if useful.`
 
 Do not pad the ending with gratitude templates or severity sales language.
+
+## Plain-Text Skeleton
+
+```text
+Hello security team,
+
+[Summary paragraph]
+
+Affected asset: [asset]
+Prerequisites: [auth / role / timing / none]
+
+Vulnerability Details
+[Short explanation of the vulnerable workflow]
+
+The Vulnerable Function / Affected Endpoint
+File / route / component: [exact location]
+Reference: [repo or GitHub link]
+[short decisive snippet or request]
+
+Why The Check Fails
+[Explain the broken assumption]
+
+Attack Vector Explained
+1. ...
+2. ...
+3. ...
+
+Impact Details
+[Observed impact]
+
+Output from POC
+[short decisive output]
+
+Proof of Concept
+[minimal exploit function / request sequence / replay steps]
+
+Evidence and attachments
+[artifact references, if any]
+
+[Optional remediation]
+
+I can provide additional traces or retest a fix if useful.
+```

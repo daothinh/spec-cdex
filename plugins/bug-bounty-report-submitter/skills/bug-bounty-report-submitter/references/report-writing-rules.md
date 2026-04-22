@@ -9,6 +9,22 @@ Use after validation and before any submit action. Write for a tired triager: im
 - If the broader consequence is only inferred, label it as inferred and keep it out of the main title and severity claim.
 - Separate observed impact from broader blast radius.
 - Do not report until the issue reproduces from a fresh state with the saved proof path.
+- The report body must stand on its own. The triager should not need an attachment to understand the core bug.
+
+## Immunefi-Style Detail Body Is The Default
+
+Unless the live program forces a different field layout, draft the long-form body in this order:
+
+1. `Brief/Intro`
+2. `Vulnerability Details`
+3. `The Vulnerable Function` or `Affected Endpoint` or `Affected Component`
+4. `Why The Check Fails` or `Root Cause`
+5. `Attack Vector Explained` or `Exploit Walkthrough`
+6. `Impact Details`
+7. `Output from POC`
+8. `Proof of Concept`
+
+Do not skip the vulnerable-location section for code-driven bugs. The triager should not have to hunt through the PoC to discover where the bug actually lives.
 
 ## Title And Subject Formula
 
@@ -45,12 +61,39 @@ For smart contract, parser, auth logic, and other code-centric findings, do not 
 - After the snippet, explain exactly what the bad branch, missing check, stale variable, or accounting mistake does.
 - If one snippet is not enough, show the call chain in 2-3 short snippets instead of a giant paste.
 - Redact unrelated lines with `...` rather than pasting the whole file.
+- Do not write `see attached PoC for details` before naming the exact function, endpoint, or component where the bug is.
+- If the bug is endpoint-driven rather than source-driven, show the shortest decisive request and response pair with the same level of precision.
 
 Good pattern:
 - vulnerable snippet
 - one short explanation paragraph
 - `Output from POC` with balances, logs, tx result, or assertion delta
 - full PoC after the impact is already obvious
+
+## Exploit Walkthrough Rules
+
+- Show how the exploit is performed, not just why the bug exists.
+- Use numbered steps or short actor-driven phases after the vulnerable function section.
+- Include the attacker setup, the trigger, the critical state change, and the observed result.
+- For multi-actor bugs, use distinct identities such as `Account A` and `Account B`.
+- For smart contract bugs, include the relevant actor roles, timestamps, pools, token IDs, markets, or epochs when they make the replay path unambiguous.
+
+## Exploit Function Rules
+
+- Include the exploit function, test case, or request sequence that actually triggers the bug.
+- Do not paste the entire PoC file into the main body unless the platform explicitly requires it.
+- Keep helpers and boilerplate out of the body. Put them in `poc.md` locally, not in the submitted report unless unavoidable.
+- If the exploit spans multiple functions, show only the decisive chain.
+- If a run command is needed to replay the test, include it near `Output from POC`.
+
+## Attachment Discipline
+
+- Do not default to attachments.
+- Do not attach raw source files, exploit scripts, or full test suites when the same information can be expressed inline.
+- Do not write `see attachment for the PoC` as a substitute for the inline exploit walkthrough.
+- If the platform requires an attachment or field limits make inline detail impossible, attach a markdown appendix such as `report-appendix.md` that mirrors the same self-contained structure.
+- Upload screenshots, HAR files, videos, and logs only as supporting evidence for claims already made inline.
+- If an attachment is optional and adds no decisive evidence, do not upload it.
 
 ## Steps To Reproduce
 
@@ -75,6 +118,8 @@ Good pattern:
 - Use logs that show impact numerically: balance before and after, claim amount, stolen funds, changed role, wrong return value, or failing assertion.
 - Then include the runnable PoC, test, or replay script.
 - For Forge or Foundry-style reports, include the exact run command when it matters.
+- If a coded PoC is impossible, say exactly why and replace it with a replayable sequence of actors, calls, or transactions.
+- The full exploit should still be a minimal excerpt in the report body, not a hand-off to an uploaded source file.
 
 ## Severity And CVSS
 
@@ -99,10 +144,16 @@ Good pattern:
 
 - Title follows the formula and names exact impact.
 - First sentence states the bug and practical consequence.
+- The detail body follows the Immunefi-style order or a platform-constrained equivalent.
+- The report names the exact vulnerable function, endpoint, or component.
 - Steps contain exact requests, IDs, or UI actions.
-- Response or proof showing the bug is attached or quoted.
+- Core proof and exploit logic are present inline, even if supporting evidence is also attached.
+- Response or proof showing the bug is quoted inline or supported by a supplemental artifact.
 - Vulnerable code snippet appears in `Vulnerability Details` for code-driven findings.
+- The broken assumption or root cause is explained right below the decisive snippet or request.
+- The exploit function or replay sequence is shown without dumping a full unrelated file.
 - POC output shows the impact before the full PoC body.
+- No raw source file or archive is uploaded unless there is a documented reason it was unavoidable.
 - Two identities are used where an authorization boundary is claimed.
 - Severity or CVSS matches the observed impact and prerequisites.
 - Remediation is short and optional unless the program asks for it.

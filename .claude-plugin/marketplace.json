@@ -238,7 +238,7 @@
     {
       "name": "bug-bounty-report-submitter",
       "source": "./plugins/bug-bounty-report-submitter",
-      "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver evidence-backed reports that match the discovered fields, proof requirements, and delivery flow."
+      "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver evidence-backed reports using an Immunefi-style detail body with exact bug location, exploit path, PoC output, and minimal exploit excerpts."
     }
   ]
 }
