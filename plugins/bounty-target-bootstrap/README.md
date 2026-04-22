@@ -22,6 +22,7 @@ Generated target folders include:
 - `scope/program-notes.md`
 - `scope/target-surface.md`
 - `scope/smart-contracts.md`
+- `findings/README.md`
 - `prep/asset-inventory.md`
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
@@ -48,3 +49,8 @@ The generated `scope/target.json` also records:
 
 - `surface_signals` for the mixed target surface
 - `follow_on_lanes` for any executable lanes that should stay in scope after the first deep pass
+
+The generated finding state also supports the closed-loop pipeline:
+
+- `prep/finding-pipeline.md` tracks `untested -> confirmed -> reverify-pending -> true-positive|false-positive|needs-more-evidence -> report-ready -> reported`
+- `findings/README.md` defines the per-finding bundle contract used by independent re-verification

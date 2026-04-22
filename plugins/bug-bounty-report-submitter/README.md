@@ -17,8 +17,8 @@ Inspect live bug bounty forms or webmail with Playwright MCP, then draft and del
 
 ## Usage
 
-1. Gather verified findings, evidence, PoC, and either the program submission URL or the recipient email plus sender mailbox URL.
+1. Gather independently re-verified findings, evidence, PoC, and either the program submission URL or the recipient email plus sender mailbox URL.
 2. Choose the matching skill:
    - `bug-bounty-report-submitter` for live submission forms
    - `bug-bounty-email-submitter` for disclosure by email through webmail
-3. Let Codex inspect the live surface with Playwright MCP, build `bug-bounty-reports/<slug>/`, draft the report, then submit or send and capture the confirmation state.
+3. Let Codex inspect the live surface with Playwright MCP, build `bug-bounty-reports/<slug>/`, carry the `reverify.md` verdict into the bundle, then draft, submit, or send and capture the confirmation state.

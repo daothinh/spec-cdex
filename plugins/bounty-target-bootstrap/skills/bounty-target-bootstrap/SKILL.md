@@ -52,6 +52,7 @@ Load these on demand:
    - `prep/asset-inventory.md`
    - `prep/tried-and-ruled-out.md`
    - `prep/finding-pipeline.md`
+   - `findings/README.md`
 
 ## Playwright Extraction Rules
 
@@ -71,7 +72,7 @@ Load these on demand:
 - Preserve both raw notes and normalized JSON.
 - Write dedicated files for `in-scope`, `out-of-scope`, `rules`, and program notes.
 - Write dedicated files for the host-provided target surface and smart-contract inventory.
-- Write a reusable handoff state bundle for asset inventory, tried paths, and finding candidates.
+- Write a reusable handoff state bundle for asset inventory, tried paths, finding lifecycle state, and the per-finding evidence contract.
 - Clone source repos when a git URL exists.
 - Download APK or source archives when direct URLs exist and are explicitly in scope.
 - Download ABI, API spec, or audit-report artifacts when the host exposes direct file URLs.

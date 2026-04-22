@@ -11,7 +11,7 @@ metadata:
 
 # Bug Bounty Report Submitter
 
-Inspect the live submission form first, then turn validated findings into an evidence-backed report bundle and submit it through Playwright MCP.
+Inspect the live submission form first, then turn independently re-verified findings into an evidence-backed report bundle and submit it through Playwright MCP.
 
 Load these on demand:
 - [references/report-writing-rules.md](references/report-writing-rules.md) for impact-first report rules, title formula, severity discipline, and final checklist
@@ -23,6 +23,7 @@ Load these on demand:
 ## Preconditions
 
 - Reproduce the issue end to end.
+- Have an independent re-verification verdict for the finding. The closed-loop standard expects `TRUE POSITIVE` from `security-finding-reverify` before any submission work begins.
 - Know the affected asset, prerequisites, impact, and evidence set.
 - Have the submission URL and any login requirements.
 - Have a minimal PoC or replayable proof path for the bug.
@@ -37,6 +38,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - `form-schema.json` - live form fields, options, limits, and notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
+- `reverify.md` - independent re-verification verdict and blockers already checked
 - `report.md` - final prose draft
 - `submission.json` - field-to-value map for the form
 - `evidence/` - screenshots, HAR, video, logs, payloads, PoC files
@@ -46,11 +48,11 @@ Create `bug-bounty-reports/<slug>/` and keep:
 
 1. Open the submission URL with Playwright MCP before drafting anything long-form.
 2. Snapshot the rendered form, complete login if needed, expand hidden sections, and record required fields, custom prompts, enums, validators, character limits, and attachment rules in `form-schema.json`.
-3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, and store the replayable exploit path in `poc.md`.
+3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
 4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts only.
-5. Draft `report.md` from `facts.md`, `artifacts.json`, and `poc.md` using [references/report-structure.md](references/report-structure.md) and [references/report-writing-rules.md](references/report-writing-rules.md). Write to the actual field labels and limits from `form-schema.json`.
-6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale.
+5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, and `reverify.md` using [references/report-structure.md](references/report-structure.md) and [references/report-writing-rules.md](references/report-writing-rules.md). Write to the actual field labels and limits from `form-schema.json`.
+6. Run the evidence and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
 7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form, upload proof, preview or save draft, and submit only after the visible form matches `submission.json`.
 8. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
@@ -73,6 +75,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - Fill severity and CVSS only when the program asks or the field exists, and keep both evidence-backed.
 - Reference evidence naturally in the text or attachment notes; do not leave important claims unsupported.
 - Mention the PoC when it is needed to replay the issue or understand exploitability.
+- Use the independent re-verification verdict to sharpen the report claim, not to pad it with generic certainty language.
 - Prefer an `Output from POC` or equivalent evidence block before the full PoC when logs, balances, tx results, or assertions make the impact obvious faster than code alone.
 - Never inflate severity with generic breach language.
 - Never use `could potentially`, `may allow`, or similar hedging for the main claim.

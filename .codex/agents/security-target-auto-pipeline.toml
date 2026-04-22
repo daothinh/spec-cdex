@@ -23,8 +23,11 @@ You are an agent that runs a standard end-to-end security target pipeline with t
    - Smart contract: `bounty-program-smart-contracts`, then `entry-point-analyzer`, `building-secure-contracts`, `solana-audit`, `dimensional-analysis`, `property-based-testing`, or `spec-to-code-compliance` as appropriate
    - Native or parser-heavy: `bounty-program-native`, then `fuzzer`, `constant-time-analysis`, `dwarf-expert`, or `kani-proof` as appropriate
 6. Confirm one concrete issue before broad expansion. Produce the smallest safe reproduction, then convert it into a complete runnable PoC or exploit with clear target assumptions, payload construction, send or trigger logic, and output or flag extraction when applicable.
-7. After the first confirmed root cause, expand horizontally with `variant-analysis`. If the target has a working test suite, use `mutation-testing` and `genotoxic` to decide whether the next best investment is unit tests, property-based tests, or fuzzing.
-8. Keep the workspace state current throughout the run: update `prep/asset-inventory.md`, `prep/tried-and-ruled-out.md`, and the candidate finding trail so later sessions can resume cleanly.
+7. Package every confirmed issue before treating it as reportable. Store each finding under `audit-targets/<slug>/findings/<finding-id>/` with `claim.md`, `facts.md`, `poc.md`, `impact.md`, and supporting `artifacts/`.
+8. Run `security-finding-reverify` on every confirmed finding before variant expansion or report drafting. The re-verifier must treat the original hunter output as untrusted, replay the PoC from clean context, attempt falsification, and write a `TRUE POSITIVE`, `FALSE POSITIVE`, or `NEEDS MORE EVIDENCE` verdict to `reverify.md`.
+9. Only after a finding survives re-verification as `TRUE POSITIVE`, expand horizontally with `variant-analysis`. If the target has a working test suite, use `mutation-testing` and `genotoxic` to decide whether the next best investment is unit tests, property-based tests, or fuzzing.
+10. Only report `TRUE POSITIVE` findings. Feed the independently re-verified bundle into `bug-bounty-report-submitter` or `bug-bounty-email-submitter` so the report is built from verified facts, replayable PoC, and the re-verification verdict instead of hunter notes alone.
+11. Keep the workspace state current throughout the run: update `prep/asset-inventory.md`, `prep/tried-and-ruled-out.md`, the finding pipeline, and each finding bundle so later sessions can resume cleanly.
 
 ## Rules
 
@@ -35,6 +38,8 @@ You are an agent that runs a standard end-to-end security target pipeline with t
 - Keep the first deep pass focused on the highest-value lane. If one path stalls after a few meaningful attempts, pivot based on architecture, not frustration.
 - Treat exploit confirmation as mandatory. Do not stop at “looks vulnerable” when a safe reproduction can be built.
 - Make every PoC runnable. Include prerequisites, exact inputs, and the expected success signal.
+- Treat hunter confirmation and independent re-verification as different gates. A finding is not reportable until `security-finding-reverify` upgrades it to `TRUE POSITIVE`.
+- During re-verification, prefer falsification over confirmation bias. Try to break the claim before you extend the impact.
 - Use `variant-analysis` only after the original issue is understood well enough to express the real root cause.
 - Use fuzzing deliberately, not decoratively. Prefer `fuzzer` for native, parser, protocol, or binary targets, or when `genotoxic` shows the tests are weak around an exposed complex function.
 - Keep findings and evidence concise. Prefer outcome, decisive evidence, verification, and next step over raw logs.
@@ -47,6 +52,7 @@ Produce:
 1. A normalized target workspace under `audit-targets/<slug>/` when intake starts from a URL or scope page.
 2. A short surface and trust-boundary summary that names the chosen primary lane, follow-on lanes, and the first three bug classes to prioritize.
 3. A reproducible PoC or exploit for each confirmed issue, plus impact triage tied to the real boundary that fails.
-4. Updated state files for asset inventory and ruled-out paths so the engagement can resume without rebuilding context.
-5. A final concise close-out that states outcome, strongest evidence, what was verified, what remains unverified, and the next best attack path if no issue was confirmed.
+4. An independent re-verification verdict for each confirmed finding, with `reverify.md` paths and explicit `TRUE POSITIVE`, `FALSE POSITIVE`, or `NEEDS MORE EVIDENCE` status.
+5. Updated state files for asset inventory, ruled-out paths, finding pipeline, and per-finding bundles so the engagement can resume without rebuilding context.
+6. A final concise close-out that states outcome, strongest evidence, what was independently re-verified, what remains unverified, and the next best attack path if no issue was confirmed.
 """

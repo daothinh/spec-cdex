@@ -323,9 +323,10 @@ def bootstrap_target(
 
     scope_dir = target_root / "scope"
     prep_dir = target_root / "prep"
+    findings_dir = target_root / "findings"
     repos_dir = target_root / "source" / "repos"
     artifacts_dir = target_root / "source" / "artifacts"
-    for directory in (scope_dir, prep_dir, repos_dir, artifacts_dir):
+    for directory in (scope_dir, prep_dir, findings_dir, repos_dir, artifacts_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
     repo_results = clone_repositories(
@@ -359,6 +360,7 @@ def bootstrap_target(
     write_text(prep_dir / "asset-inventory.md", render_inventory(target_record, repo_results, artifact_results))
     write_text(prep_dir / "tried-and-ruled-out.md", render_tried_and_ruled_out())
     write_text(prep_dir / "finding-pipeline.md", render_finding_pipeline())
+    write_text(findings_dir / "README.md", render_findings_readme())
     write_text(
         prep_dir / "ready-for-bounty.md",
         render_ready_for_bounty(target_record, suggested_lane, lane_reason, surface_signals, follow_on_lanes),
@@ -873,7 +875,8 @@ def render_ready_for_bounty(
             "- `scope/smart-contracts.md` for deployed addresses and chain metadata",
             "- `prep/asset-inventory.md` for local paths and download or clone status",
             "- `prep/tried-and-ruled-out.md` to track attack paths that were tested and discarded",
-            "- `prep/finding-pipeline.md` to track candidate and validated findings",
+            "- `prep/finding-pipeline.md` to track candidate, re-verify, and reporting status",
+            "- `findings/README.md` for the per-finding evidence bundle contract",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
@@ -888,7 +891,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/summary.md` for the full scope digest, and `prep/ready-for-bounty.md` for the handoff.",
+        "See `scope/target.json` for the machine-readable contract, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/summary.md` for the full scope digest, `prep/ready-for-bounty.md` for the handoff, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -909,14 +912,42 @@ def render_tried_and_ruled_out() -> str:
 def render_finding_pipeline() -> str:
     return (
         "# Finding Pipeline\n\n"
-        "Use this file to track candidate findings from first hypothesis to validated report.\n\n"
+        "Use this file to track candidate findings from first hypothesis through independent re-verification and reporting.\n\n"
+        "## Status Vocabulary\n\n"
+        "- `untested` - hypothesis exists but no decisive path has been proved yet\n"
+        "- `confirmed` - hunter reproduced the issue and has a runnable PoC\n"
+        "- `reverify-pending` - packaged for independent re-verification but no verdict yet\n"
+        "- `true-positive` - independent re-verification passed\n"
+        "- `false-positive` - independent re-verification disproved the claim\n"
+        "- `needs-more-evidence` - plausible claim but independent proof is incomplete\n"
+        "- `report-ready` - true positive with a complete evidence bundle ready for disclosure\n"
+        "- `reported` - disclosure submitted or sent\n\n"
         "## Candidate Findings\n\n"
-        "| ID | Surface | Hypothesis | Status | Evidence |\n"
-        "| --- | --- | --- | --- | --- |\n"
-        "| CAND-001 |  |  | untested |  |\n\n"
+        "| ID | Surface | Hypothesis | Hunt Status | PoC Path | Evidence | Next Action |\n"
+        "| --- | --- | --- | --- | --- | --- | --- |\n"
+        "| CAND-001 |  |  | untested |  |  |  |\n\n"
         "## Validated Findings\n\n"
-        "| ID | Title | Severity | Evidence | Reported |\n"
-        "| --- | --- | --- | --- | --- |\n"
+        "| ID | Title | Severity | Bundle Path | Re-verify Verdict | Re-verify Evidence | Report Status |\n"
+        "| --- | --- | --- | --- | --- | --- | --- |\n"
+    )
+
+
+def render_findings_readme() -> str:
+    return (
+        "# Findings\n\n"
+        "Create one directory per finding under this folder once a hypothesis becomes a real candidate for reporting.\n\n"
+        "Recommended layout:\n\n"
+        "- `findings/<finding-id>/claim.md` - one falsifiable security claim\n"
+        "- `findings/<finding-id>/facts.md` - observed facts only\n"
+        "- `findings/<finding-id>/poc.md` - replayable exploit or reproduction path\n"
+        "- `findings/<finding-id>/impact.md` - observed impact and inferred blast radius kept separate\n"
+        "- `findings/<finding-id>/reverify.md` - independent re-verification verdict and failed disproof attempts\n"
+        "- `findings/<finding-id>/artifacts/` - scripts, payloads, traces, screenshots, logs, or tx data\n\n"
+        "Lifecycle:\n\n"
+        "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists.\n"
+        "2. Create the bundle and move the finding to `reverify-pending`.\n"
+        "3. Run `security-finding-reverify` and record `true-positive`, `false-positive`, or `needs-more-evidence`.\n"
+        "4. Only after `true-positive` should the finding become `report-ready` and feed the report submitter.\n"
     )
 
 

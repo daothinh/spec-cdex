@@ -92,6 +92,7 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "scope" / "program-notes.md").exists())
             self.assertTrue((target_root / "scope" / "target-surface.md").exists())
             self.assertTrue((target_root / "scope" / "smart-contracts.md").exists())
+            self.assertTrue((target_root / "findings" / "README.md").exists())
             self.assertTrue((target_root / "prep" / "tried-and-ruled-out.md").exists())
             self.assertTrue((target_root / "prep" / "finding-pipeline.md").exists())
             self.assertTrue((target_root / "source" / "repos" / "source-repo" / "package.json").exists())
@@ -113,6 +114,8 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("Production customer data", (target_root / "scope" / "out-of-scope.md").read_text(encoding="utf-8"))
             self.assertIn("No social engineering.", (target_root / "scope" / "program-notes.md").read_text(encoding="utf-8"))
             self.assertIn("https://docs.acme.local/security", (target_root / "scope" / "target-surface.md").read_text(encoding="utf-8"))
+            self.assertIn("reverify-pending", (target_root / "prep" / "finding-pipeline.md").read_text(encoding="utf-8"))
+            self.assertIn("reverify.md", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
 
     def test_smart_contract_bootstrap_collects_contract_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

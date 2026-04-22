@@ -148,6 +148,7 @@ Each `smart_contracts` entry may include:
 - `scope/program-notes.md`
 - `scope/target-surface.md`
 - `scope/smart-contracts.md`
+- `findings/README.md`
 - `source/repos/`
 - `source/artifacts/`
 - `prep/asset-inventory.md`
@@ -169,3 +170,23 @@ The generated `scope/target.json` also records:
 
 - `surface_signals` - observed mix such as `web`, `smart-contract`, `wallet`, or `exchange`
 - `follow_on_lanes` - any executable lanes that should stay in scope after the first deep pass
+
+The generated `findings/README.md` defines the closed-loop per-finding bundle contract used by the standard pipeline:
+
+- `claim.md`
+- `facts.md`
+- `poc.md`
+- `impact.md`
+- `reverify.md`
+- `artifacts/`
+
+The generated `prep/finding-pipeline.md` also uses explicit lifecycle states:
+
+- `untested`
+- `confirmed`
+- `reverify-pending`
+- `true-positive`
+- `false-positive`
+- `needs-more-evidence`
+- `report-ready`
+- `reported`
