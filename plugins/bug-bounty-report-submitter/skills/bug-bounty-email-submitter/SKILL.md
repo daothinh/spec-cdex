@@ -24,6 +24,7 @@ Load these on demand:
 
 - Reproduce the issue end to end.
 - Have an independent re-verification verdict for the finding. The closed-loop standard expects `TRUE POSITIVE` from `security-finding-reverify` before any email disclosure work begins.
+- Have `severity.md` in the finding bundle. Use it as the source of truth for severity labels, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes.
 - Know the affected asset, prerequisites, impact, and evidence set.
 - Have the recipient email address supplied by the user.
 - Have the sender mailbox URL and any login requirements.
@@ -33,8 +34,10 @@ If any precondition is missing, gather it before email work starts.
 
 ## Local Bundle
 
-Create `bug-bounty-reports/<slug>/email/` and keep:
+Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `facts.md` - raw verified facts only
+- `impact.md` - observed impact and reasoned extension kept separate
+- `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
 - `report-appendix.md` - optional markdown appendix used only when the email program explicitly requires an attachment or the provider makes the full detail body impossible inline
@@ -49,9 +52,9 @@ Create `bug-bounty-reports/<slug>/email/` and keep:
 
 1. Confirm the recipient address, sender mailbox URL, and whether the program wants plain text, markdown-like formatting, or a strict disclosure template.
 2. Open the mailbox with Playwright MCP before drafting anything long-form. Snapshot the inbox, login flow, compose button, editor type, attachment control, draft affordance, and success indicator. Store the observed UI contract in `mail-ui-schema.json`.
-3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
-4. Build `mail-envelope.json` from the verified recipient and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
-5. Draft `email-draft.md` from `facts.md`, `artifacts.json`, `poc.md`, and `reverify.md` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
+3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
+4. Build `mail-envelope.json` from the verified recipient, `severity.md`, and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
+5. Draft `email-draft.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
 6. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) plus the checklist in the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Every major claim must map to an artifact or be marked as an explicit assumption. The body must still show the vulnerable function or endpoint, exploit path, `Output from POC`, and exploit excerpt even in plain text. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
 7. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
 8. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
@@ -60,6 +63,7 @@ Create `bug-bounty-reports/<slug>/email/` and keep:
 
 - Lead with the bug and affected asset, not generic disclosure filler.
 - Prefer the shared formula from `report-writing-rules.md`: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
+- Use `severity.md` for any severity tag, CWE, or CVSS value. Recalculate only when the recipient explicitly requires a different format.
 - Use precise technical names in the subject: `IDOR`, `RCE`, `Reentrancy`, `SSRF`, not vague wording.
 - Name the concrete location in the subject when known: endpoint, function, route, file, panel, or component.
 - Put the highest observed consequence in the subject, not a speculative worst case.

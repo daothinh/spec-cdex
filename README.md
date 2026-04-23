@@ -118,7 +118,7 @@ pwsh -ExecutionPolicy Bypass -File .\scripts\install-user-level.ps1 -Mode status
 
 ## Codex Workspace Install
 
-If you want another workspace to reuse this repo's root-ported plugins, skills, and `AGENTS.md`, run the workspace installer from this repo:
+If you want another workspace to reuse this repo's root-ported plugins, skills, agents, and `AGENTS.md`, run the workspace installer from this repo:
 
 ```bat
 scripts\install-workspace.bat "D:\path\to\target-repo"

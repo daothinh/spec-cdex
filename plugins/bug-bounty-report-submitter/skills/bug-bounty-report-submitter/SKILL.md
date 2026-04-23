@@ -25,6 +25,7 @@ Load these on demand:
 
 - Reproduce the issue end to end.
 - Have an independent re-verification verdict for the finding. The closed-loop standard expects `TRUE POSITIVE` from `security-finding-reverify` before any submission work begins.
+- Have `severity.md` in the finding bundle. Use it as the source of truth for Severity, CWE, CVSS, affected asset, exploit preconditions, impact reasoning, and downgrade notes.
 - Know the affected asset, prerequisites, impact, and evidence set.
 - Have the submission URL and any login requirements.
 - Have a minimal PoC or replayable proof path for the bug.
@@ -34,8 +35,10 @@ If any precondition is missing, gather it before submission work starts.
 
 ## Local Bundle
 
-Create `bug-bounty-reports/<slug>/` and keep:
+Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `facts.md` - raw, verified facts only
+- `impact.md` - observed impact and reasoned extension kept separate
+- `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
 - `form-schema.json` - live form fields, options, limits, and notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
@@ -50,10 +53,10 @@ Create `bug-bounty-reports/<slug>/` and keep:
 
 1. Open the submission URL with Playwright MCP before drafting anything long-form.
 2. Snapshot the rendered form, complete login if needed, expand hidden sections, and record required fields, custom prompts, enums, validators, character limits, and attachment rules in `form-schema.json`.
-3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
+3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
-4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts only.
-5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, and `reverify.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Draft the full detail body locally even if the live platform later splits it across several smaller fields.
+4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
+5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Draft the full detail body locally even if the live platform later splits it across several smaller fields.
 6. Run the evidence, structure, and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the local draft does not clearly show the vulnerable function, exact broken code or path, exploit walkthrough, and PoC output in the expected order, fix it before any submission work. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
 7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Submit only after the visible form matches `submission.json`.
 8. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
@@ -78,7 +81,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - Use two identities when claiming an authorization boundary failure unless the boundary is visible without that setup.
 - Mention observed result before expected result.
 - Keep observed impact separate from reasoned extension.
-- Fill severity and CVSS only when the program asks or the field exists, and keep both evidence-backed.
+- Fill severity and CVSS only when the program asks or the field exists. Source them from `severity.md`; recalculate only when the platform requires a different format or verified evidence changed.
 - Reference evidence naturally in the text or attachment notes; do not leave important claims unsupported.
 - Mention the PoC when it is needed to replay the issue or understand exploitability.
 - `Output from POC` or its field-equivalent must appear before the full PoC whenever a PoC exists.
@@ -105,6 +108,7 @@ Create `bug-bounty-reports/<slug>/` and keep:
 - If the platform supports drafts, save one before final submit.
 - If a captcha or MFA gate blocks submission, stop after the draft and report the blocker.
 - If the platform has dedicated fields for chain, contract, transaction, asset, market, or environment, fill them from verified facts instead of repeating a generic summary.
+- If the platform has dedicated CWE, CVSS, or severity fields, fill them from `severity.md` and document any required format conversion in `submission.json`.
 
 ## Output
 

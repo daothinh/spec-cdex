@@ -43,15 +43,14 @@ Load these on demand:
 4. Normalize findings into a JSON file matching `references/workspace-contract.md`.
 5. Run:
    `python plugins/bounty-target-bootstrap/skills/bounty-target-bootstrap/scripts/bootstrap_target.py --input <json> --repo-root .`
-6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, and `prep/ready-for-bounty.md`.
-7. Continue with the next lane:
-   - `android` -> `bounty-program-mobile-android`
-   - `smart-contract` -> `bounty-program-smart-contracts`
-   - `whitebox` -> start with `bounty-program-triage` on the cloned source tree or follow the suggested lane if the surface is already clear
+6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, `prep/bootstrap-summary.md`, `prep/context-pack/`, and `prep/ready-for-bounty.md`.
+7. Stop after intake and handoff. Do not continue into the next lane from this skill; the hunting pipeline owns that step.
 8. Preserve the generated handoff files even when no finding exists yet:
    - `prep/asset-inventory.md`
    - `prep/tried-and-ruled-out.md`
    - `prep/finding-pipeline.md`
+   - `prep/bootstrap-summary.md`
+   - `prep/context-pack/`
    - `findings/README.md`
 
 ## Playwright Extraction Rules
@@ -73,6 +72,8 @@ Load these on demand:
 - Write dedicated files for `in-scope`, `out-of-scope`, `rules`, and program notes.
 - Write dedicated files for the host-provided target surface and smart-contract inventory.
 - Write a reusable handoff state bundle for asset inventory, tried paths, finding lifecycle state, and the per-finding evidence contract.
+- Write `prep/bootstrap-summary.md` so the hunting pipeline can resume without reconstructing trust boundaries, lane choice, or next best attack path.
+- Write `prep/context-pack/` with bootstrap-friendly summaries or pointers for the baseline context.
 - Clone source repos when a git URL exists.
 - Download APK or source archives when direct URLs exist and are explicitly in scope.
 - Download ABI, API spec, or audit-report artifacts when the host exposes direct file URLs.

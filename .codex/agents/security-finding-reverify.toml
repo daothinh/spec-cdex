@@ -34,6 +34,8 @@ Store or normalize the finding under:
 - `artifacts/` — logs, screenshots, traces, payloads, scripts, or transactions
 - `reverify.md` — independent verdict, failed disproof attempts, and remaining gaps
 
+If `severity.md` already exists, treat it as downstream triage owned by the hunting pipeline. Do not overwrite it here unless you must correct a factual contradiction exposed during replay.
+
 ## Workflow
 
 ### Phase 1: Claim Normalization
@@ -128,7 +130,8 @@ Actions:
    - verdict
    - what remains uncertain
 3. Update `audit-targets/<slug>/prep/finding-pipeline.md` so the finding leaves `reverify-pending` and lands in `true-positive`, `false-positive`, or `needs-more-evidence`.
-4. Only mark a finding `report-ready` after a `TRUE POSITIVE` verdict.
+4. Do not write severity triage or report bundles. Those belong to the hunting and submission pipelines.
+5. Only mark a finding `report-ready` after a `TRUE POSITIVE` verdict and after downstream severity triage is complete.
 
 Exit criteria:
 - The finding bundle and pipeline state agree on the verdict.
@@ -141,6 +144,7 @@ Exit criteria:
 - Keep evidence minimal but decisive. Summaries beat raw logs.
 - If the issue depends on source changes or a regression diff, use `differential-review` to sharpen the boundary and blast radius.
 - Use `variant-analysis` only after the root cause survives re-verification.
+- Do not absorb severity scoring, report packaging, or submission tasks into this agent.
 
 ## Output
 

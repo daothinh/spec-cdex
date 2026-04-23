@@ -6,7 +6,7 @@ Start from `form-schema.json`, then write only the content the live form actuall
 
 - Read the live labels, help text, validators, and limits from `form-schema.json`.
 - Build `submission.json` from those fields first.
-- Treat `artifacts.json` and `poc.md` as required inputs, not optional extras.
+- Treat `artifacts.json`, `poc.md`, `impact.md`, and `severity.md` as required inputs, not optional extras.
 - Treat attachments as optional by default, not part of the primary report payload.
 - For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
 - Draft the full local body with [immunefi-body-template.md](immunefi-body-template.md) before compressing or splitting it for platform-specific fields.
@@ -169,9 +169,9 @@ Keep remediation short and implementation-agnostic unless the program asks for d
 | --- | --- |
 | Title | final title line |
 | Scope / asset | hostname, app, endpoint, package, or contract |
-| Severity | program scale plus evidence-backed rationale only |
-| Severity rationale | brief justification tied to observed impact, prerequisites, and proof |
-| CVSS | vector and score when the form asks for it |
+| Severity | `severity.md` mapped to the program scale |
+| Severity rationale | brief justification from `severity.md`, adjusted only when the form forces a different format |
+| CVSS | vector and score from `severity.md` when the form asks for it |
 | Prerequisites | auth state, role, race window, or special setup |
 | Summary | first paragraph |
 | Steps to reproduce | numbered list |

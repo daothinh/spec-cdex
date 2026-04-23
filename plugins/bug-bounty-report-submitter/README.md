@@ -22,6 +22,6 @@ Inspect live bug bounty forms or webmail with Playwright MCP, then draft and del
 2. Choose the matching skill:
    - `bug-bounty-report-submitter` for live submission forms
    - `bug-bounty-email-submitter` for disclosure by email through webmail
-3. Let Codex inspect the live surface with Playwright MCP, build `bug-bounty-reports/<slug>/`, carry the `reverify.md` verdict into the bundle, then draft, submit, or send and capture the confirmation state.
+3. Let Codex inspect the live surface with Playwright MCP, build `bug-bounty-reports/<slug>/<finding-id>/`, carry the `reverify.md` verdict and `severity.md` triage into the bundle, then draft, submit, or send and capture the confirmation state.
 4. Draft the detail body from the shared Immunefi-style skeleton before adapting it to the live form or mailbox, so the final report always shows the exact bug location, root cause, exploit path, PoC output, and minimal exploit excerpt.
 5. Keep the final report self-contained. Only upload attachments when the platform genuinely requires them or when a supplemental artifact adds decisive evidence. If a file is mandatory, prefer a markdown appendix such as `report-appendix.md` over raw code files.

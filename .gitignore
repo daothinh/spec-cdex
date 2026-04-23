@@ -4,6 +4,7 @@
 node_modules/
 target/
 .claude/settings.local.json
+automate.txt
 plans/
 browser-extension-mcp-main/*
 codexkit-distill/*

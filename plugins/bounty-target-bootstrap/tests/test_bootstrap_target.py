@@ -82,6 +82,10 @@ class BootstrapTargetTests(unittest.TestCase):
 
             stdout = json.loads(result.stdout)
             self.assertEqual(stdout["suggested_lane"], "bounty-program-web")
+            self.assertEqual(
+                stdout["prioritized_bug_classes"][0],
+                "authorization and IDOR boundary failures",
+            )
 
             target_root = workspace / "audit-targets" / "acme-whitebox"
             self.assertTrue((target_root / "scope" / "target.json").exists())
@@ -95,6 +99,11 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "findings" / "README.md").exists())
             self.assertTrue((target_root / "prep" / "tried-and-ruled-out.md").exists())
             self.assertTrue((target_root / "prep" / "finding-pipeline.md").exists())
+            self.assertTrue((target_root / "prep" / "bootstrap-summary.md").exists())
+            self.assertTrue((target_root / "prep" / "context-pack" / "README.md").exists())
+            self.assertTrue((target_root / "prep" / "context-pack" / "trust-boundaries.md").exists())
+            self.assertTrue((target_root / "prep" / "context-pack" / "lane-decision.md").exists())
+            self.assertTrue((target_root / "prep" / "context-pack" / "asset-pointers.md").exists())
             self.assertTrue((target_root / "source" / "repos" / "source-repo" / "package.json").exists())
             self.assertTrue((target_root / "source" / "artifacts" / "fixture.apk").exists())
 
@@ -116,6 +125,9 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("https://docs.acme.local/security", (target_root / "scope" / "target-surface.md").read_text(encoding="utf-8"))
             self.assertIn("reverify-pending", (target_root / "prep" / "finding-pipeline.md").read_text(encoding="utf-8"))
             self.assertIn("reverify.md", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
+            self.assertIn("severity.md", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
+            self.assertIn("Primary Lane", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
+            self.assertIn("Next Best Attack Path", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
 
     def test_smart_contract_bootstrap_collects_contract_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -192,10 +204,12 @@ class BootstrapTargetTests(unittest.TestCase):
 
             stdout = json.loads(result.stdout)
             self.assertEqual(stdout["suggested_lane"], "bounty-program-smart-contracts")
+            self.assertIn("privileged entry point and access-control failures", stdout["prioritized_bug_classes"])
 
             target_root = workspace / "audit-targets" / "acme-protocol"
             self.assertTrue((target_root / "scope" / "smart-contracts.md").exists())
             self.assertTrue((target_root / "scope" / "target-surface.md").exists())
+            self.assertTrue((target_root / "prep" / "bootstrap-summary.md").exists())
             self.assertTrue((target_root / "source" / "repos" / "protocol-repo" / "foundry.toml").exists())
             self.assertTrue((target_root / "source" / "artifacts" / "vault-abi.json").exists())
             self.assertTrue((target_root / "source" / "artifacts" / "protocol-audit.pdf").exists())
@@ -208,6 +222,7 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("exchange", target_json["surface_signals"])
             self.assertIn("VaultProxy", (target_root / "scope" / "smart-contracts.md").read_text(encoding="utf-8"))
             self.assertIn("etherscan.local", (target_root / "scope" / "target-surface.md").read_text(encoding="utf-8"))
+            self.assertIn("privileged entry point", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
 
     def test_wallet_mixed_surface_prefers_triage(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

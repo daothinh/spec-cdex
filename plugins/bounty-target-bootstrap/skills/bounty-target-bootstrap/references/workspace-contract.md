@@ -8,7 +8,6 @@ The bootstrap script expects one JSON object.
 - `program_url`
 - `target_type`
 
-`target_type` must be `whitebox` or `android`.
 `target_type` must be `whitebox`, `android`, or `smart-contract`.
 
 ## Optional Keys
@@ -154,6 +153,8 @@ Each `smart_contracts` entry may include:
 - `prep/asset-inventory.md`
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
+- `prep/bootstrap-summary.md`
+- `prep/context-pack/`
 - `prep/ready-for-bounty.md`
 
 ## Lane Routing
@@ -178,7 +179,19 @@ The generated `findings/README.md` defines the closed-loop per-finding bundle co
 - `poc.md`
 - `impact.md`
 - `reverify.md`
+- `severity.md` for `TRUE POSITIVE` findings after severity triage
 - `artifacts/`
+
+The generated `prep/bootstrap-summary.md` is the hunting handoff contract and should summarize:
+
+- active constraints
+- trust-boundary summary
+- chosen primary lane
+- follow-on lanes
+- first three prioritized bug classes
+- auth or test-account state
+- top endpoints, repos, binaries, APKs, contracts, or other assets
+- next best attack path
 
 The generated `prep/finding-pipeline.md` also uses explicit lifecycle states:
 

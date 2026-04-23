@@ -66,6 +66,78 @@ LANE_SIGNAL_TO_LANE = {
     "smart-contract": "bounty-program-smart-contracts",
     "web": "bounty-program-web",
 }
+BUG_CLASS_PRIORITIES = {
+    "bounty-program-web": [
+        (
+            "authorization and IDOR boundary failures",
+            "web and API targets commonly break on server-side object ownership or role checks",
+        ),
+        (
+            "server-trust bugs in internal fetch, SSRF, or admin workflow paths",
+            "backend services and background jobs often trust user-controlled URLs, hosts, or async state too much",
+        ),
+        (
+            "state-machine and privilege transition flaws",
+            "multi-step web flows frequently expose escalation or replay edges between user, admin, and worker roles",
+        ),
+    ],
+    "bounty-program-mobile-android": [
+        (
+            "mobile-client trust abuse against backend APIs",
+            "developers cannot safely trust the APK or rooted device as an authority boundary",
+        ),
+        (
+            "secret, token, or local storage exposure",
+            "mobile bundles and local storage often leak material that enables deeper backend or account attacks",
+        ),
+        (
+            "crypto, transport, or SSL-pinning bypass paths",
+            "Android apps frequently fail around local trust stores, custom crypto wrappers, or transport assumptions",
+        ),
+    ],
+    "bounty-program-smart-contracts": [
+        (
+            "privileged entry point and access-control failures",
+            "smart contracts fail hard when privileged functions, upgrade hooks, or role checks are wrong",
+        ),
+        (
+            "accounting and invariant violations",
+            "value-bearing logic often breaks through conservation, rounding, or state-transition mistakes",
+        ),
+        (
+            "integration and callback trust failures",
+            "token hooks, oracle inputs, bridges, and cross-contract callbacks frequently violate assumed trust boundaries",
+        ),
+    ],
+    "bounty-program-native": [
+        (
+            "memory corruption and parser confusion",
+            "native targets often fail at length checks, ownership, and unsafe parsing edges",
+        ),
+        (
+            "filesystem, path, or command trust violations",
+            "CLI tools and daemons commonly trust paths, archives, or environment-derived execution context",
+        ),
+        (
+            "crypto and side-channel implementation flaws",
+            "native and protocol-heavy code can leak via timing, nonce misuse, or unsafe custom primitives",
+        ),
+    ],
+    "bounty-program-triage": [
+        (
+            "cross-surface authorization mismatches",
+            "hybrid targets often break where web, mobile, backend, and on-chain components disagree on authority",
+        ),
+        (
+            "workflow and synchronization flaws across surfaces",
+            "mixed deployments often leak exploitable state between clients, workers, and contracts",
+        ),
+        (
+            "CI, supply-chain, or release-path trust abuse",
+            "multi-surface programs frequently widen attack surface through build, dependency, or automation systems",
+        ),
+    ],
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -323,10 +395,11 @@ def bootstrap_target(
 
     scope_dir = target_root / "scope"
     prep_dir = target_root / "prep"
+    context_pack_dir = prep_dir / "context-pack"
     findings_dir = target_root / "findings"
     repos_dir = target_root / "source" / "repos"
     artifacts_dir = target_root / "source" / "artifacts"
-    for directory in (scope_dir, prep_dir, findings_dir, repos_dir, artifacts_dir):
+    for directory in (scope_dir, prep_dir, context_pack_dir, findings_dir, repos_dir, artifacts_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
     repo_results = clone_repositories(
@@ -346,6 +419,17 @@ def bootstrap_target(
     target_record["suggested_lane_reason"] = lane_reason
     target_record["surface_signals"] = surface_signals
     target_record["follow_on_lanes"] = follow_on_lanes
+    trust_boundaries = describe_trust_boundaries(target_record, suggested_lane, surface_signals)
+    prioritized_bug_classes = prioritize_bug_classes(suggested_lane)
+    top_assets = collect_top_assets(target_record, repo_results, artifact_results)
+    next_attack_path = recommend_next_attack_path(
+        suggested_lane=suggested_lane,
+        follow_on_lanes=follow_on_lanes,
+        top_assets=top_assets,
+    )
+    target_record["trust_boundaries"] = trust_boundaries
+    target_record["prioritized_bug_classes"] = prioritized_bug_classes
+    target_record["next_attack_path"] = next_attack_path
 
     write_json(scope_dir / "input.json", raw_input)
     write_json(scope_dir / "target.json", target_record)
@@ -360,6 +444,30 @@ def bootstrap_target(
     write_text(prep_dir / "asset-inventory.md", render_inventory(target_record, repo_results, artifact_results))
     write_text(prep_dir / "tried-and-ruled-out.md", render_tried_and_ruled_out())
     write_text(prep_dir / "finding-pipeline.md", render_finding_pipeline())
+    write_text(
+        prep_dir / "bootstrap-summary.md",
+        render_bootstrap_summary(
+            target_record,
+            suggested_lane=suggested_lane,
+            lane_reason=lane_reason,
+            follow_on_lanes=follow_on_lanes,
+            trust_boundaries=trust_boundaries,
+            prioritized_bug_classes=prioritized_bug_classes,
+            top_assets=top_assets,
+            next_attack_path=next_attack_path,
+        ),
+    )
+    write_context_pack(
+        context_pack_dir,
+        target_record,
+        suggested_lane=suggested_lane,
+        lane_reason=lane_reason,
+        follow_on_lanes=follow_on_lanes,
+        trust_boundaries=trust_boundaries,
+        prioritized_bug_classes=prioritized_bug_classes,
+        top_assets=top_assets,
+        next_attack_path=next_attack_path,
+    )
     write_text(findings_dir / "README.md", render_findings_readme())
     write_text(
         prep_dir / "ready-for-bounty.md",
@@ -382,9 +490,12 @@ def bootstrap_target(
         "target_root": relative_path(target_root, repo_root),
         "scope_file": relative_path(scope_dir / "target.json", repo_root),
         "ready_file": relative_path(prep_dir / "ready-for-bounty.md", repo_root),
+        "bootstrap_summary_file": relative_path(prep_dir / "bootstrap-summary.md", repo_root),
+        "context_pack_dir": relative_path(context_pack_dir, repo_root),
         "suggested_lane": suggested_lane,
         "surface_signals": surface_signals,
         "follow_on_lanes": follow_on_lanes,
+        "prioritized_bug_classes": [item["name"] for item in prioritized_bug_classes],
         "repo_results": repo_results,
         "artifact_results": artifact_results,
     }
@@ -559,6 +670,78 @@ def collect_markers(repo_paths: list[Path], *, repo_root: Path) -> set[str]:
     return markers
 
 
+def describe_trust_boundaries(target: dict[str, Any], suggested_lane: str, surface_signals: list[str]) -> list[str]:
+    boundaries = [
+        "Host-provided scope and rules are trusted only as input constraints; runtime behavior must be verified before hunting conclusions.",
+    ]
+    if target["web_urls"] or target["api_urls"] or suggested_lane == "bounty-program-web":
+        boundaries.append(
+            "Browser or API clients are untrusted; authorization, object ownership, and server-side state changes must be enforced by the backend."
+        )
+    if target["package_names"] or suggested_lane == "bounty-program-mobile-android" or "android" in surface_signals:
+        boundaries.append(
+            "The mobile client, device storage, and APK logic are attacker-controlled; backend APIs must not trust app-side checks or embedded state."
+        )
+    if target["smart_contracts"] or suggested_lane == "bounty-program-smart-contracts" or "smart-contract" in surface_signals:
+        boundaries.append(
+            "On-chain contracts hold value or privilege; off-chain services, keepers, or users must cross explicit role and invariant checks."
+        )
+    if "native" in surface_signals or suggested_lane == "bounty-program-native":
+        boundaries.append(
+            "Native parsers, binaries, and protocol handlers trust external bytes only after length, ownership, and state validation."
+        )
+    if target["repo_urls"] or target["registry_urls"]:
+        boundaries.append(
+            "Dependency and release automation can cross the source-to-runtime boundary; CI, package, and agent workflows should stay in scope when present."
+        )
+    return boundaries
+
+
+def prioritize_bug_classes(suggested_lane: str) -> list[dict[str, str]]:
+    candidates = BUG_CLASS_PRIORITIES.get(suggested_lane, BUG_CLASS_PRIORITIES["bounty-program-triage"])
+    return [{"name": name, "reason": reason} for name, reason in candidates[:3]]
+
+
+def collect_top_assets(
+    target: dict[str, Any], repo_results: list[dict[str, str]], artifact_results: list[dict[str, str]]
+) -> list[str]:
+    assets: list[str] = []
+    for item in repo_results:
+        if item.get("status") == "cloned":
+            assets.append(item["local_path"])
+    for item in artifact_results:
+        if item.get("status") == "downloaded":
+            assets.append(item["local_path"])
+    assets.extend(target["api_urls"][:3])
+    assets.extend(target["web_urls"][:3])
+    assets.extend(target["package_names"][:3])
+    assets.extend(
+        contract["address"] or contract["name"] or contract["explorer_url"]
+        for contract in target["smart_contracts"][:3]
+        if contract["address"] or contract["name"] or contract["explorer_url"]
+    )
+    return unique_preserve_order([asset for asset in assets if asset])
+
+
+def recommend_next_attack_path(
+    *, suggested_lane: str, follow_on_lanes: list[str], top_assets: list[str]
+) -> str:
+    lane = suggested_lane
+    if lane == "bounty-program-triage" and follow_on_lanes:
+        lane = follow_on_lanes[0]
+
+    asset_hint = top_assets[0] if top_assets else "the normalized target workspace"
+    if lane == "bounty-program-web":
+        return f"Start `bounty-program-web` from {asset_hint}; map auth middleware, routes, and object-authorization checks first."
+    if lane == "bounty-program-mobile-android":
+        return f"Start `bounty-program-mobile-android` from {asset_hint}; inspect manifest, network config, local storage, and backend API trust."
+    if lane == "bounty-program-smart-contracts":
+        return f"Start `bounty-program-smart-contracts` from {asset_hint}; enumerate privileged entry points and value-moving invariants first."
+    if lane == "bounty-program-native":
+        return f"Start `bounty-program-native` from {asset_hint}; identify parsers, external byte boundaries, and fuzzable harness targets first."
+    return f"Start `bounty-program-triage` from {asset_hint}; resolve the first executable lane before exploit work."
+
+
 def iter_relative_names(root: Path, *, max_depth: int = 4, limit: int = 4000) -> list[str]:
     names: list[str] = []
     stack: list[tuple[Path, int]] = [(root, 0)]
@@ -695,6 +878,79 @@ def render_inventory(
     return "\n".join(lines).rstrip() + "\n"
 
 
+def render_bootstrap_summary(
+    target: dict[str, Any],
+    *,
+    suggested_lane: str,
+    lane_reason: str,
+    follow_on_lanes: list[str],
+    trust_boundaries: list[str],
+    prioritized_bug_classes: list[dict[str, str]],
+    top_assets: list[str],
+    next_attack_path: str,
+) -> str:
+    lines = [
+        "# Bootstrap Summary",
+        "",
+        f"- Program: {target['program_name']}",
+        f"- Program URL: {target['program_url']}",
+        f"- Primary Lane: `{suggested_lane}`",
+        f"- Lane Reason: {lane_reason}",
+        f"- Follow-On Lanes: {', '.join(follow_on_lanes) if follow_on_lanes else 'None recorded'}",
+        "",
+        "## Active Constraints",
+    ]
+    lines.extend(render_constraints_list(target))
+    lines.extend(["", "## Trust Boundaries"])
+    lines.extend(render_list(trust_boundaries))
+    lines.extend(["", "## First 3 Prioritized Bug Classes"])
+    lines.extend(render_bug_class_list(prioritized_bug_classes))
+    lines.extend(["", "## Auth And Test State"])
+    auth_state = target["auth_notes"] + target["environment_notes"]
+    lines.extend(render_list(auth_state))
+    lines.extend(["", "## Top Assets"])
+    lines.extend(render_list(top_assets))
+    lines.extend(["", "## Next Best Attack Path", f"- {next_attack_path}"])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_context_pack(
+    context_pack_dir: Path,
+    target: dict[str, Any],
+    *,
+    suggested_lane: str,
+    lane_reason: str,
+    follow_on_lanes: list[str],
+    trust_boundaries: list[str],
+    prioritized_bug_classes: list[dict[str, str]],
+    top_assets: list[str],
+    next_attack_path: str,
+) -> None:
+    write_text(context_pack_dir / "README.md", render_context_pack_readme())
+    write_text(context_pack_dir / "trust-boundaries.md", render_context_trust_boundaries(trust_boundaries))
+    write_text(
+        context_pack_dir / "lane-decision.md",
+        render_context_lane_decision(
+            suggested_lane=suggested_lane,
+            lane_reason=lane_reason,
+            follow_on_lanes=follow_on_lanes,
+            prioritized_bug_classes=prioritized_bug_classes,
+            next_attack_path=next_attack_path,
+        ),
+    )
+    write_text(context_pack_dir / "asset-pointers.md", render_context_asset_pointers(target, top_assets))
+
+
+def render_context_pack_readme() -> str:
+    return (
+        "# Context Pack\n\n"
+        "This directory holds bootstrap-only summaries so the hunting pipeline can resume without rebuilding triage context.\n\n"
+        "- `trust-boundaries.md` - bootstrap trust-boundary summary\n"
+        "- `lane-decision.md` - primary lane, follow-on lanes, bug-class priorities, and next attack path\n"
+        "- `asset-pointers.md` - top asset references collected during bootstrap\n"
+    )
+
+
 def render_scope_bucket(title: str, items: list[str]) -> str:
     lines = [f"# {title}", ""]
     lines.extend(render_list(items))
@@ -716,6 +972,42 @@ def render_program_notes(target: dict[str, Any]) -> str:
     lines.extend(render_list(target["environment_notes"]))
     lines.extend(["", "## Extra Program Notes"])
     lines.extend(render_list(target["program_notes"]))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_context_trust_boundaries(trust_boundaries: list[str]) -> str:
+    lines = ["# Trust Boundaries", ""]
+    lines.extend(render_list(trust_boundaries))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_context_lane_decision(
+    *,
+    suggested_lane: str,
+    lane_reason: str,
+    follow_on_lanes: list[str],
+    prioritized_bug_classes: list[dict[str, str]],
+    next_attack_path: str,
+) -> str:
+    lines = [
+        "# Lane Decision",
+        "",
+        f"- Primary Lane: `{suggested_lane}`",
+        f"- Reason: {lane_reason}",
+        f"- Follow-On Lanes: {', '.join(follow_on_lanes) if follow_on_lanes else 'None recorded'}",
+        "",
+        "## Prioritized Bug Classes",
+    ]
+    lines.extend(render_bug_class_list(prioritized_bug_classes))
+    lines.extend(["", "## Next Best Attack Path", f"- {next_attack_path}"])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_context_asset_pointers(target: dict[str, Any], top_assets: list[str]) -> str:
+    lines = ["# Asset Pointers", "", "## Top Assets"]
+    lines.extend(render_list(top_assets))
+    lines.extend(["", "## Source Pointers"])
+    lines.extend(render_target_surface_items(target))
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -876,6 +1168,8 @@ def render_ready_for_bounty(
             "- `prep/asset-inventory.md` for local paths and download or clone status",
             "- `prep/tried-and-ruled-out.md` to track attack paths that were tested and discarded",
             "- `prep/finding-pipeline.md` to track candidate, re-verify, and reporting status",
+            "- `prep/bootstrap-summary.md` for trust boundaries, lane choice, bug-class priorities, and the next attack path",
+            "- `prep/context-pack/` for the resumable hunting context pack",
             "- `findings/README.md` for the per-finding evidence bundle contract",
         ]
     )
@@ -891,7 +1185,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/summary.md` for the full scope digest, `prep/ready-for-bounty.md` for the handoff, and `findings/README.md` for the closed-loop finding bundle layout.",
+        "See `scope/target.json` for the machine-readable contract, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md` and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -920,7 +1214,7 @@ def render_finding_pipeline() -> str:
         "- `true-positive` - independent re-verification passed\n"
         "- `false-positive` - independent re-verification disproved the claim\n"
         "- `needs-more-evidence` - plausible claim but independent proof is incomplete\n"
-        "- `report-ready` - true positive with a complete evidence bundle ready for disclosure\n"
+        "- `report-ready` - true positive with `severity.md` and a complete evidence bundle ready for disclosure\n"
         "- `reported` - disclosure submitted or sent\n\n"
         "## Candidate Findings\n\n"
         "| ID | Surface | Hypothesis | Hunt Status | PoC Path | Evidence | Next Action |\n"
@@ -942,12 +1236,13 @@ def render_findings_readme() -> str:
         "- `findings/<finding-id>/poc.md` - replayable exploit or reproduction path\n"
         "- `findings/<finding-id>/impact.md` - observed impact and inferred blast radius kept separate\n"
         "- `findings/<finding-id>/reverify.md` - independent re-verification verdict and failed disproof attempts\n"
+        "- `findings/<finding-id>/severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes\n"
         "- `findings/<finding-id>/artifacts/` - scripts, payloads, traces, screenshots, logs, or tx data\n\n"
         "Lifecycle:\n\n"
         "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists.\n"
         "2. Create the bundle and move the finding to `reverify-pending`.\n"
         "3. Run `security-finding-reverify` and record `true-positive`, `false-positive`, or `needs-more-evidence`.\n"
-        "4. Only after `true-positive` should the finding become `report-ready` and feed the report submitter.\n"
+        "4. For each `true-positive`, write `severity.md` before the finding becomes `report-ready` and feeds the report submitter.\n"
     )
 
 
@@ -955,6 +1250,23 @@ def render_list(items: list[str]) -> list[str]:
     if not items:
         return ["- None recorded"]
     return [f"- {item}" for item in items]
+
+
+def render_constraints_list(target: dict[str, Any]) -> list[str]:
+    constraints = (
+        target["rules"]
+        + target["safe_harbor"]
+        + target["submission_guidelines"]
+        + target["auth_notes"]
+        + target["environment_notes"]
+    )
+    return render_list(unique_preserve_order(constraints))
+
+
+def render_bug_class_list(items: list[dict[str, str]]) -> list[str]:
+    if not items:
+        return ["- None recorded"]
+    return [f"- {item['name']}: {item['reason']}" for item in items]
 
 
 def render_status_list(items: list[dict[str, str]], *, include_kind: bool = False) -> list[str]:
