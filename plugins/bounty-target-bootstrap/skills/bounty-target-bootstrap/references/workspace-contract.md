@@ -38,7 +38,12 @@ The bootstrap script expects one JSON object.
 - `api_urls`
 - `rpc_urls`
 - `ws_urls`
+- `keeper_urls`
+- `relayer_urls`
+- `signer_urls`
+- `oracle_urls`
 - `docs_urls`
+- `whitepaper_urls`
 - `api_spec_urls`
 - `audit_report_urls`
 - `registry_urls`
@@ -46,6 +51,8 @@ The bootstrap script expects one JSON object.
 - `smart_contracts`
 - `contracts`
 - `deployed_contracts`
+- `protocol_archetype`
+- `protocol_archetype_hint`
 - `raw_scope_notes`
 - `ignored_assets`
 
@@ -147,6 +154,10 @@ Each `smart_contracts` entry may include:
 - `scope/program-notes.md`
 - `scope/target-surface.md`
 - `scope/smart-contracts.md`
+- `scope/chain-inventory.json`
+- `scope/protocol-archetype.md`
+- `scope/proxy-topology.md`
+- `scope/dependency-boundaries.md`
 - `findings/README.md`
 - `source/repos/`
 - `source/artifacts/`
@@ -154,6 +165,9 @@ Each `smart_contracts` entry may include:
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
 - `prep/bootstrap-summary.md`
+- `prep/attack-surface-map.md`
+- `prep/protocol-invariants.md`
+- `prep/web3-readiness.md`
 - `prep/context-pack/`
 - `prep/ready-for-bounty.md`
 
@@ -171,13 +185,22 @@ The generated `scope/target.json` also records:
 
 - `surface_signals` - observed mix such as `web`, `smart-contract`, `wallet`, or `exchange`
 - `follow_on_lanes` - any executable lanes that should stay in scope after the first deep pass
+- `chain_inventory` - normalized network, contract, and dependency inventory for web3-heavy targets
+- `protocol_archetype` - current archetype guess plus the reason it was chosen
+- `dependency_boundaries` - off-chain and cross-surface trust edges that still matter
+- `protocol_invariants` - initial invariants to preserve before exploit work
+- `attack_surface_map` - public, privileged, callback, and dependency-centric attack surfaces
+- `web3_readiness` - toolchain and replay readiness for smart-contract and hybrid web3 work
 
 The generated `findings/README.md` defines the closed-loop per-finding bundle contract used by the standard pipeline:
 
 - `claim.md`
 - `facts.md`
+- `facts-chain.md` for chain, market, tx, block, and contract identifiers on web3-heavy findings
 - `poc.md`
 - `impact.md`
+- `impact-financials.md` for asset delta, capital assumptions, and solvency or settlement reasoning on web3-heavy findings
+- `environment.md` for fork, staging, testnet, or static-only replay assumptions
 - `reverify.md`
 - `severity.md` for `TRUE POSITIVE` findings after severity triage
 - `artifacts/`
@@ -188,9 +211,11 @@ The generated `prep/bootstrap-summary.md` is the hunting handoff contract and sh
 - trust-boundary summary
 - chosen primary lane
 - follow-on lanes
+- protocol archetype
 - first three prioritized bug classes
 - auth or test-account state
 - top endpoints, repos, binaries, APKs, contracts, or other assets
+- toolchain and replay readiness for web3-heavy targets
 - next best attack path
 
 The generated `prep/finding-pipeline.md` also uses explicit lifecycle states:

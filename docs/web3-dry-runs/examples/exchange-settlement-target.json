@@ -1,0 +1,28 @@
+{
+  "program_name": "Dry Run Exchange Settlement",
+  "program_url": "https://program.local/exchange-settlement",
+  "target_type": "whitebox",
+  "focus_areas": ["Exchange", "Blockchain", "Wallet"],
+  "scope_summary": "Exchange-like platform with signer, relayer, and settlement contracts.",
+  "repo_urls": ["https://git.local/exchange-settlement.git"],
+  "web_urls": ["https://exchange.local"],
+  "api_urls": ["https://api.exchange.local"],
+  "rpc_urls": ["https://rpc.local/arbitrum-mainnet"],
+  "signer_urls": ["https://signer.exchange.local"],
+  "relayer_urls": ["https://relayer.exchange.local"],
+  "keeper_urls": ["https://keeper.exchange.local"],
+  "oracle_urls": ["https://oracle.exchange.local"],
+  "smart_contracts": [
+    {
+      "name": "SettlementEngine",
+      "chain": "Arbitrum",
+      "chain_id": "42161",
+      "network": "mainnet",
+      "vm": "EVM",
+      "address": "0x4444444444444444444444444444444444444444",
+      "explorer_url": "https://arbiscan.local/address/0x4444444444444444444444444444444444444444",
+      "language": "Solidity",
+      "notes": "Off-chain orders settle through this contract."
+    }
+  ]
+}

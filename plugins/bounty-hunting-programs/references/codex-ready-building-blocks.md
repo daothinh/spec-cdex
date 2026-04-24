@@ -12,6 +12,7 @@ These playbooks are composed from plugins that are already exposed in the Codex 
 | `dimensional-analysis` | Arithmetic, unit, and state-transition consistency issues |
 | `dwarf-expert` | Binary and DWARF-assisted native analysis |
 | `entry-point-analyzer` | State-changing smart contract entry points and privileged flows |
+| `evm-protocol-audit` | Structured EVM, Solidity, and Vyper protocol audits |
 | `firebase-apk-scanner` | Firebase exposure and APK secret/config discovery |
 | `fuzzer` | Coverage-guided fuzzing for C/C++, Rust, and Go |
 | `insecure-defaults` | Risky framework and deployment defaults |

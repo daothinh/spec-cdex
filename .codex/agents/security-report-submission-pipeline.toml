@@ -32,6 +32,8 @@ Refuse submission work until the finding bundle contains:
 - `severity.md`
 - `artifacts/`
 
+When the finding is web3-heavy, also consume `facts-chain.md`, `impact-financials.md`, and `environment.md` when present and preserve their structure in the report bundle.
+
 Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculate only when the live platform requires a different format or verified evidence changed.
 
 ## Workflow
@@ -47,16 +49,24 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
 7. Build a per-finding report bundle under `bug-bounty-reports/<slug>/<finding-id>/`.
 8. Draft `report.md` or `email-draft.md` only from verified artifacts:
    - `facts.md`
+   - `facts-chain.md` when present
    - `poc.md`
    - `impact.md`
+   - `impact-financials.md` when present
+   - `environment.md` when present
    - `reverify.md`
    - `severity.md`
    - `artifacts/`
-9. Ensure the title or subject follows: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
-10. Keep the body self-contained and place `Output from POC` immediately before full PoC instructions.
-11. Attach files only when required or when a supported artifact is necessary for validation.
-12. Submit or send only after visible fields match the local JSON bundle.
-13. If captcha, MFA, unmapped mandatory fields, or anti-automation blocks the action, stop and save the exact blocker in `confirmation.md`.
+9. For web3-heavy findings, also write:
+   - `web3-facts.json`
+   - `asset-delta.md`
+   - `reproduction-matrix.md`
+   - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
+10. Ensure the title or subject follows: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
+11. Keep the body self-contained and place `Output from POC` immediately before full PoC instructions.
+12. Attach files only when required or when a supported artifact is necessary for validation.
+13. Submit or send only after visible fields match the local JSON bundle.
+14. If captcha, MFA, unmapped mandatory fields, or anti-automation blocks the action, stop and save the exact blocker in `confirmation.md`.
 
 ## Forbidden Work
 

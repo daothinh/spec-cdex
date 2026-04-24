@@ -1,0 +1,27 @@
+{
+  "program_name": "Dry Run Hybrid Web3 App",
+  "program_url": "https://program.local/hybrid-web3",
+  "target_type": "whitebox",
+  "focus_areas": ["Wallet", "Blockchain", "Exchange"],
+  "scope_summary": "Hybrid web app plus settlement contracts and wallet session logic.",
+  "repo_urls": ["https://git.local/hybrid-web3.git"],
+  "web_urls": ["https://app.local/hybrid-web3"],
+  "api_urls": ["https://api.local/hybrid-web3"],
+  "rpc_urls": ["https://rpc.local/base-mainnet"],
+  "oracle_urls": ["https://oracle.local/hybrid"],
+  "signer_urls": ["https://signer.local/hybrid"],
+  "relayer_urls": ["https://relayer.local/hybrid"],
+  "smart_contracts": [
+    {
+      "name": "SettlementRouter",
+      "chain": "Base",
+      "chain_id": "8453",
+      "network": "mainnet",
+      "vm": "EVM",
+      "address": "0x3333333333333333333333333333333333333333",
+      "explorer_url": "https://basescan.local/address/0x3333333333333333333333333333333333333333",
+      "language": "Solidity",
+      "notes": "Routes fills into the settlement layer."
+    }
+  ]
+}

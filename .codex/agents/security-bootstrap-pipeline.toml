@@ -40,12 +40,21 @@ Accept:
    - `audit-targets/<slug>/prep/tried-and-ruled-out.md`
    - `audit-targets/<slug>/prep/finding-pipeline.md`
    - `audit-targets/<slug>/prep/bootstrap-summary.md`
+   - `audit-targets/<slug>/prep/attack-surface-map.md`
+   - `audit-targets/<slug>/prep/protocol-invariants.md`
+   - `audit-targets/<slug>/prep/web3-readiness.md` for web3-heavy targets
    - `audit-targets/<slug>/prep/context-pack/`
+   - `audit-targets/<slug>/scope/chain-inventory.json` for web3-heavy targets
+   - `audit-targets/<slug>/scope/protocol-archetype.md` for web3-heavy targets
+   - `audit-targets/<slug>/scope/proxy-topology.md` when contracts or proxies are present
+   - `audit-targets/<slug>/scope/dependency-boundaries.md` when hybrid or off-chain control-plane context exists
 8. Produce a short developer-perspective trust-boundary summary:
    - where sensitive data or authority likely lives
    - what the client can and cannot see
    - which inputs cross a trust boundary
    - why the chosen primary lane is architecturally plausible
+   - which protocol archetype appears most plausible for web3-heavy targets
+   - whether the current toolchain is fork-capable, local-test-capable, or static-only
 9. Stop after the handoff is ready.
 
 ## Allowed Skills
@@ -84,7 +93,8 @@ Return:
 6. follow-on lanes
 7. first three prioritized bug classes
 8. created bootstrap artifacts with repo-relative paths
-9. important credentials, tokens, or test accounts found, if any
-10. next best attack path for `security-hunting-pipeline`
-11. blockers or manual follow-up
+9. protocol archetype and readiness mode for web3-heavy targets
+10. important credentials, tokens, or test accounts found, if any
+11. next best attack path for `security-hunting-pipeline`
+12. blockers or manual follow-up
 """

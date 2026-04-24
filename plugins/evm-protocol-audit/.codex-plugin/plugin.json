@@ -1,0 +1,42 @@
+{
+  "name": "evm-protocol-audit",
+  "version": "0.1.0",
+  "description": "Structured EVM protocol and DeFi security audits",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "evm",
+    "defi",
+    "smart-contract",
+    "solidity",
+    "vyper",
+    "audit"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "EVM Protocol Audit",
+    "shortDescription": "Structured EVM and DeFi security reviews",
+    "longDescription": "Run protocol-aware EVM audits with archetype routing, scanner families for auth, accounting, integrations, and oracle logic, and report-ready findings for Solidity and Vyper targets.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Audit this Solidity protocol for upgrade and accounting bugs",
+      "Review this Vyper codebase like a DeFi auditor",
+      "Map the highest-value exploit paths in this EVM protocol"
+    ],
+    "brandColor": "#1D4ED8",
+    "screenshots": []
+  }
+}

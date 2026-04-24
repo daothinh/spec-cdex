@@ -29,8 +29,11 @@ Store or normalize the finding under:
 
 - `claim.md` — one-sentence vulnerability claim naming the broken boundary
 - `facts.md` — observed facts only
+- `facts-chain.md` — chain, contract, tx, block, market, or custody identifiers for web3-heavy findings
 - `poc.md` — replayable PoC or reproduction path
 - `impact.md` — observed impact and larger inferred blast radius kept separate
+- `impact-financials.md` — asset delta, capital requirements, solvency or settlement reasoning for web3-heavy findings
+- `environment.md` — fork, staging, testnet, or static-analysis replay assumptions
 - `artifacts/` — logs, screenshots, traces, payloads, scripts, or transactions
 - `reverify.md` — independent verdict, failed disproof attempts, and remaining gaps
 
@@ -93,6 +96,8 @@ Actions:
    - nonce, sequence, timing, or race assumptions that do not hold
    - environment protections that entirely remove exploitability
    - accounting or math constraints that make the claimed state impossible
+   - liquidity, attack-capital, oracle, or market-state assumptions that make the claimed exploit unrealistic
+   - off-chain signer, relayer, keeper, or settlement dependencies that fully block or materially weaken the claim
 3. Produce at least one negative check that would have falsified the claim if the control were actually sound.
 4. If the issue is really a spec mismatch question, use `spec-to-code-compliance`. If the uncertainty is invariant-heavy, use `property-based-testing`, `mutation-testing`, `genotoxic`, or `kani-proof` when they are cheaper than repeated manual guessing.
 
@@ -129,9 +134,10 @@ Actions:
    - falsification attempts
    - verdict
    - what remains uncertain
-3. Update `audit-targets/<slug>/prep/finding-pipeline.md` so the finding leaves `reverify-pending` and lands in `true-positive`, `false-positive`, or `needs-more-evidence`.
-4. Do not write severity triage or report bundles. Those belong to the hunting and submission pipelines.
-5. Only mark a finding `report-ready` after a `TRUE POSITIVE` verdict and after downstream severity triage is complete.
+3. For web3-heavy findings, keep `facts-chain.md`, `impact-financials.md`, and `environment.md` aligned with what survived replay and falsification.
+4. Update `audit-targets/<slug>/prep/finding-pipeline.md` so the finding leaves `reverify-pending` and lands in `true-positive`, `false-positive`, or `needs-more-evidence`.
+5. Do not write severity triage or report bundles. Those belong to the hunting and submission pipelines.
+6. Only mark a finding `report-ready` after a `TRUE POSITIVE` verdict and after downstream severity triage is complete.
 
 Exit criteria:
 - The finding bundle and pipeline state agree on the verdict.

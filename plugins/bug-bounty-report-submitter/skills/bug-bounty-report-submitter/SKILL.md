@@ -21,6 +21,10 @@ Load these on demand:
 - [references/playwright-submit.md](references/playwright-submit.md) for the browser automation sequence
 - `plugins/bounty-hunting-programs/skills/bounty-program-triage/SKILL.md` if target scope or program constraints are still unclear
 
+Optional helper:
+
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
+
 ## Preconditions
 
 - Reproduce the issue end to end.
@@ -37,8 +41,11 @@ If any precondition is missing, gather it before submission work starts.
 
 Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `facts.md` - raw, verified facts only
+- `facts-chain.md` - optional chain, market, tx, block, and contract identifiers for web3 or exchange findings
 - `impact.md` - observed impact and reasoned extension kept separate
+- `impact-financials.md` - optional asset delta, attack capital, and solvency or settlement impact for web3 or exchange findings
 - `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
+- `environment.md` - optional fork, staging, testnet, or static-only replay assumptions
 - `form-schema.json` - live form fields, options, limits, and notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
@@ -46,6 +53,9 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `reverify.md` - independent re-verification verdict and blockers already checked
 - `report.md` - final prose draft
 - `submission.json` - field-to-value map for the form
+- `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
+- `asset-delta.md` - optional observed fund movement or market-state change summary
+- `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
 - `evidence/` - screenshots, HAR, video, logs, payloads, PoC files
 - `confirmation.md` - final URL, report ID, screenshots, follow-up notes
 
@@ -55,6 +65,8 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 2. Snapshot the rendered form, complete login if needed, expand hidden sections, and record required fields, custom prompts, enums, validators, character limits, and attachment rules in `form-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
+   - When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
+   - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
 4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
 5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Draft the full detail body locally even if the live platform later splits it across several smaller fields.
 6. Run the evidence, structure, and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the local draft does not clearly show the vulnerable function, exact broken code or path, exploit walkthrough, and PoC output in the expected order, fix it before any submission work. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.

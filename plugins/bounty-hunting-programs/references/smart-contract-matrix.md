@@ -4,8 +4,8 @@ Choose the platform lane before starting detailed review.
 
 | Platform | Signals | Priority Surfaces | Preferred Building Blocks |
 | --- | --- | --- | --- |
-| Solidity / EVM | `.sol`, Foundry/Hardhat configs, proxy patterns | privileged entry points, upgrade/auth flows, token integrations, callbacks, price/oracle logic | `entry-point-analyzer`, `building-secure-contracts`, `property-based-testing`, `mutation-testing` |
-| Vyper | `.vy`, Vyper configs | access control, pricing math, initialization, callbacks | `entry-point-analyzer`, `building-secure-contracts` |
+| Solidity / EVM | `.sol`, Foundry/Hardhat configs, proxy patterns | privileged entry points, upgrade/auth flows, token integrations, callbacks, price/oracle logic | `evm-protocol-audit`, `entry-point-analyzer`, `building-secure-contracts`, `property-based-testing`, `mutation-testing` |
+| Vyper | `.vy`, Vyper configs | access control, pricing math, initialization, callbacks | `evm-protocol-audit`, `entry-point-analyzer`, `building-secure-contracts` |
 | Solana / Anchor | `.rs`, `Anchor.toml`, `#[program]`, account structs | signer checks, PDA validation, CPI, account ownership, reinitialization, arithmetic | `solana-audit`, `entry-point-analyzer`, `kani-proof`, `property-based-testing` |
 | Cosmos / CosmWasm | `cosmwasm-std`, `execute`, `reply`, `sudo` | privileged executes, IBC hooks, reply handling, state invariants | `entry-point-analyzer`, `building-secure-contracts` |
 | Cairo / Starknet | `.cairo`, Starknet deps | access control, storage initialization, arithmetic, reentrancy-like patterns | `building-secure-contracts` |

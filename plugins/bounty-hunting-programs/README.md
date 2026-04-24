@@ -29,6 +29,7 @@ The playbooks are intentionally composed from Codex-ready plugins already presen
 - `dimensional-analysis`
 - `dwarf-expert`
 - `entry-point-analyzer`
+- `evm-protocol-audit`
 - `firebase-apk-scanner`
 - `fuzzer`
 - `insecure-defaults`

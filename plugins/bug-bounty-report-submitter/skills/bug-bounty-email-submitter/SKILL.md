@@ -20,6 +20,10 @@ Load these on demand:
 - [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) for the natural-prose cleanup pass
 - `plugins/bounty-hunting-programs/skills/bounty-program-triage/SKILL.md` if target scope or disclosure constraints are still unclear
 
+Optional helper:
+
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
+
 ## Preconditions
 
 - Reproduce the issue end to end.
@@ -36,8 +40,11 @@ If any precondition is missing, gather it before email work starts.
 
 Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `facts.md` - raw verified facts only
+- `facts-chain.md` - optional chain, market, tx, block, and contract identifiers for web3 or exchange findings
 - `impact.md` - observed impact and reasoned extension kept separate
+- `impact-financials.md` - optional asset delta, attack capital, and solvency or settlement impact for web3 or exchange findings
 - `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
+- `environment.md` - optional fork, staging, testnet, or static-only replay assumptions
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
 - `report-appendix.md` - optional markdown appendix used only when the email program explicitly requires an attachment or the provider makes the full detail body impossible inline
@@ -45,6 +52,9 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `mail-ui-schema.json` - live compose controls, attachment flow, and send confirmation signals
 - `mail-envelope.json` - `to`, optional `cc` and `bcc`, subject, and attachment plan
 - `email-draft.md` - final subject and body draft
+- `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
+- `asset-delta.md` - optional observed fund movement or market-state change summary
+- `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
 - `confirmation.md` - sent time, recipient, provider confirmation, screenshot path, follow-up notes
 - `evidence/` - screenshots, HAR, video, logs, payloads, PoC files
 
@@ -53,11 +63,13 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 1. Confirm the recipient address, sender mailbox URL, and whether the program wants plain text, markdown-like formatting, or a strict disclosure template.
 2. Open the mailbox with Playwright MCP before drafting anything long-form. Snapshot the inbox, login flow, compose button, editor type, attachment control, draft affordance, and success indicator. Store the observed UI contract in `mail-ui-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
-4. Build `mail-envelope.json` from the verified recipient, `severity.md`, and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
-5. Draft `email-draft.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
-6. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) plus the checklist in the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Every major claim must map to an artifact or be marked as an explicit assumption. The body must still show the vulnerable function or endpoint, exploit path, `Output from POC`, and exploit excerpt even in plain text. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-7. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
-8. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
+4. When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
+   - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before drafting the email body.
+5. Build `mail-envelope.json` from the verified recipient, `severity.md`, and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
+6. Draft `email-draft.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
+7. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) plus the checklist in the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Every major claim must map to an artifact or be marked as an explicit assumption. The body must still show the vulnerable function or endpoint, exploit path, `Output from POC`, and exploit excerpt even in plain text. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
+8. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
+9. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
 
 ## Email Rules
 

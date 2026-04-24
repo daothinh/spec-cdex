@@ -32,6 +32,7 @@ Load these on demand:
 - safe-harbor notes, submission notes, auth notes, and environment limits
 - source repo URLs, source-code URLs, APK or archive URLs, package names, app or store URLs
 - web URLs, API URLs, RPC URLs, WebSocket URLs, docs URLs, explorer URLs, API spec URLs, audit report URLs, registry URLs
+- keeper URLs, relayer URLs, signer service URLs, oracle URLs, and whitepaper or spec URLs when the target is web3-heavy
 - smart-contract metadata: chain, chain ID, network, VM, address, proxy, implementation, explorer, ABI URL, source URL, repo URL, notes
 - raw scope notes copied from the rendered page
 
@@ -44,12 +45,16 @@ Load these on demand:
 5. Run:
    `python plugins/bounty-target-bootstrap/skills/bounty-target-bootstrap/scripts/bootstrap_target.py --input <json> --repo-root .`
 6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, `prep/bootstrap-summary.md`, `prep/context-pack/`, and `prep/ready-for-bounty.md`.
-7. Stop after intake and handoff. Do not continue into the next lane from this skill; the hunting pipeline owns that step.
-8. Preserve the generated handoff files even when no finding exists yet:
+7. For web3-heavy targets, ensure the generated handoff also includes `scope/chain-inventory.json`, `scope/protocol-archetype.md`, `scope/proxy-topology.md`, `scope/dependency-boundaries.md`, `prep/attack-surface-map.md`, `prep/protocol-invariants.md`, and `prep/web3-readiness.md`.
+8. Stop after intake and handoff. Do not continue into the next lane from this skill; the hunting pipeline owns that step.
+9. Preserve the generated handoff files even when no finding exists yet:
    - `prep/asset-inventory.md`
    - `prep/tried-and-ruled-out.md`
    - `prep/finding-pipeline.md`
    - `prep/bootstrap-summary.md`
+   - `prep/attack-surface-map.md`
+   - `prep/protocol-invariants.md`
+   - `prep/web3-readiness.md`
    - `prep/context-pack/`
    - `findings/README.md`
 
@@ -59,6 +64,7 @@ Load these on demand:
 - Save decisive scope text into `raw_scope_notes`; do not rely on memory.
 - Persist `in_scope`, `out_of_scope`, and `rules` as separate lists, not one merged blob.
 - Capture absolute URLs for repos, source mirrors, APKs, archives, docs, explorers, ABI files, and login portals.
+- Capture absolute URLs for keepers, relayers, signer services, oracle endpoints, and whitepapers when the host exposes them.
 - Record qualifiers exactly: production or staging, test accounts, rate limits, and forbidden actions.
 - Keep every repo URL. Let the bootstrap script fingerprint them before choosing the lane.
 - Preserve every host-provided pointer even when it is not directly downloadable: explorers, docs, audit PDFs, RPC endpoints, WebSocket endpoints, app stores, package registries.
@@ -71,6 +77,7 @@ Load these on demand:
 - Preserve both raw notes and normalized JSON.
 - Write dedicated files for `in-scope`, `out-of-scope`, `rules`, and program notes.
 - Write dedicated files for the host-provided target surface and smart-contract inventory.
+- For web3-heavy targets, write dedicated files for chain inventory, proxy topology, dependency boundaries, attack-surface mapping, protocol invariants, and readiness.
 - Write a reusable handoff state bundle for asset inventory, tried paths, finding lifecycle state, and the per-finding evidence contract.
 - Write `prep/bootstrap-summary.md` so the hunting pipeline can resume without reconstructing trust boundaries, lane choice, or next best attack path.
 - Write `prep/context-pack/` with bootstrap-friendly summaries or pointers for the baseline context.
@@ -83,5 +90,6 @@ Load these on demand:
 
 - Do not invent or enrich target data beyond what the host exposes on the program page.
 - Do not collapse wallet, blockchain, exchange, and smart-contract context into one generic note. Persist them in structured fields when available.
+- Do not flatten hybrid web3 targets into one lane if the scope clearly spans contracts, web, wallets, exchanges, or off-chain operators.
 - Do not invent scope. If a field is absent, leave it empty and note the gap in `raw_scope_notes`.
 - Do not start exploit attempts from the scope page. Finish intake first.

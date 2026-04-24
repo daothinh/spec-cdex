@@ -60,6 +60,7 @@ FOCUS_AREA_ALIASES = {
     "dex": "Exchange",
     "cex": "Exchange",
 }
+WEB3_RELEVANT_FOCUS_AREAS = {"Wallet", "Smart Contract", "Blockchain", "Web3", "Exchange"}
 LANE_SIGNAL_TO_LANE = {
     "android": "bounty-program-mobile-android",
     "native": "bounty-program-native",
@@ -136,6 +137,116 @@ BUG_CLASS_PRIORITIES = {
             "CI, supply-chain, or release-path trust abuse",
             "multi-surface programs frequently widen attack surface through build, dependency, or automation systems",
         ),
+    ],
+}
+WEB3_TOOL_GUIDANCE = {
+    "slither": {
+        "label": "Slither",
+        "install": "pipx install slither-analyzer",
+        "blocks": [
+            "static Solidity entry-point extraction",
+            "ERC conformance checks",
+            "upgradeability review automation",
+        ],
+    },
+    "forge": {
+        "label": "Foundry",
+        "install": "curl -L https://foundry.paradigm.xyz | bash && foundryup",
+        "blocks": [
+            "mainnet fork replay",
+            "Foundry-based PoC validation",
+            "storage and state-diff simulation",
+        ],
+    },
+    "echidna": {
+        "label": "Echidna",
+        "install": "Download a release from https://github.com/crytic/echidna/releases",
+        "blocks": [
+            "property-based fuzzing for EVM invariants",
+        ],
+    },
+    "medusa": {
+        "label": "Medusa",
+        "install": "go install github.com/crytic/medusa@latest",
+        "blocks": [
+            "parallel smart-contract fuzzing",
+        ],
+    },
+    "trailmark": {
+        "label": "Trailmark",
+        "install": "uv pip install trailmark",
+        "blocks": [
+            "code-graph preanalysis and blast-radius mapping",
+        ],
+    },
+}
+PROTOCOL_ARCHETYPE_PATTERNS = [
+    ("Bridge / Messaging", ("bridge", "messaging", "message", "wormhole", "relay", "relayer")),
+    ("Lending / Borrowing", ("lending", "borrow", "repay", "liquidat", "collateral", "debt")),
+    ("AMM / DEX Pool", ("amm", "dex", "swap", "router", "liquidity", "pool", "lp")),
+    ("Vault / Yield Strategy", ("vault", "yield", "strategy", "harvest", "erc4626", "share price")),
+    ("Staking / Rewards", ("staking", "stake", "unstake", "reward", "farm", "delegat")),
+    ("Governance / Timelock", ("govern", "vote", "proposal", "timelock", "executor", "dao")),
+    ("Perps / Orderbook / Exchange", ("perp", "orderbook", "margin", "funding", "settlement", "matching engine")),
+    ("NFT / Marketplace", ("nft", "marketplace", "auction", "listing", "royalty")),
+    ("Oracle Consumer", ("oracle", "price feed", "pricefeed", "twap", "pyth", "chainlink")),
+    ("Token / Vesting / Escrow", ("token", "vesting", "escrow", "mint", "burn", "permit")),
+]
+PROTOCOL_INVARIANT_LIBRARY = {
+    "Token / Vesting / Escrow": [
+        "Supply-changing actions must be role-gated and respect declared caps or vesting schedules.",
+        "Transfer or release paths must not let attackers bypass vesting, escrow, or signature checks.",
+        "Permit, approval, and replay domains must remain unique across chains and contracts.",
+    ],
+    "AMM / DEX Pool": [
+        "Pool reserves, fee buckets, and LP share accounting should remain internally consistent after every swap or liquidity event.",
+        "Callback or hook flows must not let attackers extract value before invariant checks settle.",
+        "Oracle accumulators and price windows must not be attacker-controlled within one execution path.",
+    ],
+    "Vault / Yield Strategy": [
+        "Deposits, withdrawals, harvests, and debt updates must conserve assets relative to shares and strategy debt.",
+        "Keeper or strategy callbacks must not bypass share-price, debt, or withdrawal authorization checks.",
+        "Emergency or rescue paths must not become privileged withdrawal shortcuts.",
+    ],
+    "Lending / Borrowing": [
+        "Collateral, debt, and liquidation math must remain conservative across decimals, rounding, and stale prices.",
+        "Borrow and liquidation paths must not let attackers create bad debt or bypass solvency checks.",
+        "Oracle freshness and unit conversion must be enforced before debt-affecting state changes.",
+    ],
+    "Staking / Rewards": [
+        "Stake balances, reward emissions, and checkpoint histories must stay synchronized across deposit and withdrawal flows.",
+        "Reward or delegation logic must not mint or route rewards outside declared policy.",
+        "Slash, pause, and emergency controls must not let privileged actors steal or strand funds.",
+    ],
+    "Bridge / Messaging": [
+        "Every message should be unique, domain-separated, and impossible to replay across chains or environments.",
+        "Unlock or mint paths must depend on verified proofs and trusted verifier sets, not caller-controlled metadata.",
+        "Relayer and signer assumptions must be explicit and enforceable on-chain or in settlement logic.",
+    ],
+    "Governance / Timelock": [
+        "Voting power snapshots, queues, and execution delays must prevent same-transaction manipulation.",
+        "Privileged execution must remain bound to governance rules, timelocks, and explicit role checks.",
+        "Emergency powers must be distinguishable from normal governance and scoped to narrow actions.",
+    ],
+    "Perps / Orderbook / Exchange": [
+        "Margin, funding, fee routing, and settlement balances must reconcile across trades, liquidations, and withdrawals.",
+        "Sequencer, settlement, or off-chain matching assumptions must not replace hard authorization boundaries.",
+        "Oracle or market-state inputs must be bounded before affecting margin or liquidation outcomes.",
+    ],
+    "NFT / Marketplace": [
+        "Listings, signatures, bids, and royalty routes must remain bound to the intended asset, seller, and fill amount.",
+        "Settlement callbacks must not let attackers re-enter or redirect payout state.",
+        "Permit, signature, and order nonce handling must prevent replay across fills and markets.",
+    ],
+    "Oracle Consumer": [
+        "Price reads must validate freshness, source, bounds, and decimal normalization before state changes.",
+        "Fallback paths must fail closed instead of silently switching to attacker-influenced data.",
+        "Any keeper or updater trust must be explicit and narrower than the full protocol authority surface.",
+    ],
+    "Unknown / Needs Triage": [
+        "Value-moving state transitions must conserve balances, shares, debt, or authority.",
+        "Privileged entry points must be explicit and verifiable from on-chain or backend-controlled roles.",
+        "External dependencies such as keepers, relayers, or oracles must not become hidden authorization boundaries.",
     ],
 }
 
@@ -252,9 +363,14 @@ def normalize_target(raw: Any) -> dict[str, Any]:
         "api_urls": unique_text_list(raw.get("api_urls") or raw.get("api_base_urls") or raw.get("base_urls")),
         "rpc_urls": unique_text_list(raw.get("rpc_urls")),
         "ws_urls": unique_text_list(raw.get("ws_urls") or raw.get("websocket_urls")),
+        "keeper_urls": unique_text_list(raw.get("keeper_urls") or raw.get("harvester_urls")),
+        "relayer_urls": unique_text_list(raw.get("relayer_urls")),
+        "signer_urls": unique_text_list(raw.get("signer_urls") or raw.get("signer_service_urls")),
+        "oracle_urls": unique_text_list(raw.get("oracle_urls") or raw.get("price_feed_urls")),
         "docs_urls": unique_text_list(
             raw.get("docs_urls") or raw.get("documentation_urls") or raw.get("reference_urls")
         ),
+        "whitepaper_urls": unique_text_list(raw.get("whitepaper_urls") or raw.get("spec_urls")),
         "api_spec_urls": unique_text_list(
             raw.get("api_spec_urls")
             or raw.get("openapi_urls")
@@ -267,6 +383,7 @@ def normalize_target(raw: Any) -> dict[str, Any]:
         ),
         "explorer_urls": explorer_urls,
         "smart_contracts": smart_contracts,
+        "protocol_archetype_hint": clean_text(raw.get("protocol_archetype") or raw.get("protocol_archetype_hint")),
         "raw_scope_notes": clean_text(raw.get("raw_scope_notes")),
         "artifacts": artifacts,
     }
@@ -419,20 +536,34 @@ def bootstrap_target(
     target_record["suggested_lane_reason"] = lane_reason
     target_record["surface_signals"] = surface_signals
     target_record["follow_on_lanes"] = follow_on_lanes
+    chain_inventory = build_chain_inventory(target_record)
+    protocol_archetype = infer_protocol_archetype(target_record, surface_signals)
+    dependency_boundaries = build_dependency_boundaries(target_record, surface_signals, protocol_archetype)
     trust_boundaries = describe_trust_boundaries(target_record, suggested_lane, surface_signals)
     prioritized_bug_classes = prioritize_bug_classes(suggested_lane)
+    protocol_invariants = build_protocol_invariants(protocol_archetype)
+    attack_surface_map = build_attack_surface_map(target_record, surface_signals, protocol_archetype)
+    web3_readiness = assess_web3_readiness(target_record)
     top_assets = collect_top_assets(target_record, repo_results, artifact_results)
     next_attack_path = recommend_next_attack_path(
+        target=target_record,
         suggested_lane=suggested_lane,
         follow_on_lanes=follow_on_lanes,
         top_assets=top_assets,
     )
+    target_record["chain_inventory"] = chain_inventory
+    target_record["protocol_archetype"] = protocol_archetype
+    target_record["dependency_boundaries"] = dependency_boundaries
     target_record["trust_boundaries"] = trust_boundaries
     target_record["prioritized_bug_classes"] = prioritized_bug_classes
+    target_record["protocol_invariants"] = protocol_invariants
+    target_record["attack_surface_map"] = attack_surface_map
+    target_record["web3_readiness"] = web3_readiness
     target_record["next_attack_path"] = next_attack_path
 
     write_json(scope_dir / "input.json", raw_input)
     write_json(scope_dir / "target.json", target_record)
+    write_json(scope_dir / "chain-inventory.json", chain_inventory)
     write_text(scope_dir / "raw-scope-notes.md", render_raw_notes(target_record))
     write_text(scope_dir / "summary.md", render_scope_summary(target_record, repo_results, artifact_results))
     write_text(scope_dir / "in-scope.md", render_scope_bucket("In Scope", target["in_scope"]))
@@ -441,9 +572,15 @@ def bootstrap_target(
     write_text(scope_dir / "program-notes.md", render_program_notes(target_record))
     write_text(scope_dir / "target-surface.md", render_target_surface(target_record, repo_results, artifact_results))
     write_text(scope_dir / "smart-contracts.md", render_smart_contracts(target["smart_contracts"]))
+    write_text(scope_dir / "protocol-archetype.md", render_protocol_archetype(protocol_archetype))
+    write_text(scope_dir / "proxy-topology.md", render_proxy_topology(target_record["smart_contracts"]))
+    write_text(scope_dir / "dependency-boundaries.md", render_dependency_boundaries(dependency_boundaries))
     write_text(prep_dir / "asset-inventory.md", render_inventory(target_record, repo_results, artifact_results))
     write_text(prep_dir / "tried-and-ruled-out.md", render_tried_and_ruled_out())
     write_text(prep_dir / "finding-pipeline.md", render_finding_pipeline())
+    write_text(prep_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
+    write_text(prep_dir / "protocol-invariants.md", render_protocol_invariants(protocol_archetype, protocol_invariants))
+    write_text(prep_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
     write_text(
         prep_dir / "bootstrap-summary.md",
         render_bootstrap_summary(
@@ -451,10 +588,12 @@ def bootstrap_target(
             suggested_lane=suggested_lane,
             lane_reason=lane_reason,
             follow_on_lanes=follow_on_lanes,
+            protocol_archetype=protocol_archetype,
             trust_boundaries=trust_boundaries,
             prioritized_bug_classes=prioritized_bug_classes,
             top_assets=top_assets,
             next_attack_path=next_attack_path,
+            web3_readiness=web3_readiness,
         ),
     )
     write_context_pack(
@@ -463,10 +602,14 @@ def bootstrap_target(
         suggested_lane=suggested_lane,
         lane_reason=lane_reason,
         follow_on_lanes=follow_on_lanes,
+        protocol_archetype=protocol_archetype,
         trust_boundaries=trust_boundaries,
         prioritized_bug_classes=prioritized_bug_classes,
         top_assets=top_assets,
         next_attack_path=next_attack_path,
+        dependency_boundaries=dependency_boundaries,
+        attack_surface_map=attack_surface_map,
+        web3_readiness=web3_readiness,
     )
     write_text(findings_dir / "README.md", render_findings_readme())
     write_text(
@@ -489,8 +632,14 @@ def bootstrap_target(
     return {
         "target_root": relative_path(target_root, repo_root),
         "scope_file": relative_path(scope_dir / "target.json", repo_root),
+        "chain_inventory_file": relative_path(scope_dir / "chain-inventory.json", repo_root),
+        "protocol_archetype_file": relative_path(scope_dir / "protocol-archetype.md", repo_root),
+        "proxy_topology_file": relative_path(scope_dir / "proxy-topology.md", repo_root),
         "ready_file": relative_path(prep_dir / "ready-for-bounty.md", repo_root),
         "bootstrap_summary_file": relative_path(prep_dir / "bootstrap-summary.md", repo_root),
+        "attack_surface_file": relative_path(prep_dir / "attack-surface-map.md", repo_root),
+        "protocol_invariants_file": relative_path(prep_dir / "protocol-invariants.md", repo_root),
+        "web3_readiness_file": relative_path(prep_dir / "web3-readiness.md", repo_root),
         "context_pack_dir": relative_path(context_pack_dir, repo_root),
         "suggested_lane": suggested_lane,
         "surface_signals": surface_signals,
@@ -569,15 +718,17 @@ def suggest_lane(
     target: dict[str, Any], repo_results: list[dict[str, str]], *, repo_root: Path
 ) -> tuple[str, str, list[str], list[str]]:
     target_type = target["target_type"]
+    explicit_surface_signals = collect_surface_signals(target, set())
     if target_type == "android":
-        return "bounty-program-mobile-android", "explicit android target type from scope page", ["android"], [
-            "bounty-program-mobile-android"
-        ]
+        follow_on_lanes = unique_preserve_order(
+            ["bounty-program-mobile-android", *[LANE_SIGNAL_TO_LANE[signal] for signal in explicit_surface_signals if signal in LANE_SIGNAL_TO_LANE and signal != "android"]]
+        )
+        return "bounty-program-mobile-android", "explicit android target type from scope page", explicit_surface_signals, follow_on_lanes
     if target_type == "smart-contract":
-        return "bounty-program-smart-contracts", "explicit smart-contract target type from scope page", [
-            "smart-contract",
-            *sorted(collect_context_signals(target)),
-        ], ["bounty-program-smart-contracts"]
+        follow_on_lanes = unique_preserve_order(
+            ["bounty-program-smart-contracts", *[LANE_SIGNAL_TO_LANE[signal] for signal in explicit_surface_signals if signal in LANE_SIGNAL_TO_LANE and signal != "smart-contract"]]
+        )
+        return "bounty-program-smart-contracts", "explicit smart-contract target type from scope page", explicit_surface_signals, follow_on_lanes
 
     available_paths = [
         Path(item["local_path"])
@@ -637,6 +788,10 @@ def collect_surface_signals(target: dict[str, Any], repo_markers: set[str]) -> l
         signals.add("smart-contract")
     if target["web_urls"] or target["api_urls"] or target["ws_urls"]:
         signals.add("web")
+    if target["keeper_urls"] or target["relayer_urls"] or target["signer_urls"]:
+        signals.add("offchain-control")
+    if target["oracle_urls"]:
+        signals.add("oracle")
     if target["rpc_urls"] or target["explorer_urls"] or "Blockchain" in target["focus_areas"] or "Web3" in target["focus_areas"]:
         signals.add("blockchain")
     signals.update(collect_context_signals(target))
@@ -649,6 +804,8 @@ def collect_context_signals(target: dict[str, Any]) -> set[str]:
         signals.add("wallet")
     if "Exchange" in target["focus_areas"]:
         signals.add("exchange")
+    if "Blockchain" in target["focus_areas"] or "Web3" in target["focus_areas"]:
+        signals.add("blockchain")
     return signals
 
 
@@ -686,6 +843,14 @@ def describe_trust_boundaries(target: dict[str, Any], suggested_lane: str, surfa
         boundaries.append(
             "On-chain contracts hold value or privilege; off-chain services, keepers, or users must cross explicit role and invariant checks."
         )
+    if target["keeper_urls"] or target["relayer_urls"] or target["signer_urls"] or "offchain-control" in surface_signals:
+        boundaries.append(
+            "Keepers, relayers, signer services, and settlement workers are separate authority surfaces; they must not silently replace on-chain or backend authorization."
+        )
+    if target["oracle_urls"] or "oracle" in surface_signals:
+        boundaries.append(
+            "Oracle and market data paths are untrusted until freshness, source, and unit assumptions are enforced at the consuming boundary."
+        )
     if "native" in surface_signals or suggested_lane == "bounty-program-native":
         boundaries.append(
             "Native parsers, binaries, and protocol handlers trust external bytes only after length, ownership, and state validation."
@@ -714,6 +879,10 @@ def collect_top_assets(
             assets.append(item["local_path"])
     assets.extend(target["api_urls"][:3])
     assets.extend(target["web_urls"][:3])
+    assets.extend(target["rpc_urls"][:2])
+    assets.extend(target["oracle_urls"][:2])
+    assets.extend(target["keeper_urls"][:2])
+    assets.extend(target["relayer_urls"][:2])
     assets.extend(target["package_names"][:3])
     assets.extend(
         contract["address"] or contract["name"] or contract["explorer_url"]
@@ -723,8 +892,241 @@ def collect_top_assets(
     return unique_preserve_order([asset for asset in assets if asset])
 
 
+def is_web3_target(target: dict[str, Any], surface_signals: list[str] | None = None) -> bool:
+    signals = set(surface_signals or target.get("surface_signals") or [])
+    return bool(
+        target["smart_contracts"]
+        or target["rpc_urls"]
+        or target["explorer_urls"]
+        or target["oracle_urls"]
+        or target["keeper_urls"]
+        or target["relayer_urls"]
+        or target["signer_urls"]
+        or any(area in WEB3_RELEVANT_FOCUS_AREAS for area in target["focus_areas"])
+        or {"smart-contract", "blockchain", "wallet", "exchange", "oracle", "offchain-control"} & signals
+    )
+
+
+def build_chain_inventory(target: dict[str, Any]) -> dict[str, Any]:
+    networks: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    for contract in target["smart_contracts"]:
+        key = (
+            contract["chain"] or "Unknown",
+            contract["chain_id"] or "",
+            contract["network"] or "",
+            contract["vm"] or "",
+        )
+        bucket = networks.setdefault(
+            key,
+            {
+                "chain": key[0],
+                "chain_id": key[1],
+                "network": key[2],
+                "vm": key[3],
+                "contracts": [],
+                "rpc_urls": [],
+                "explorer_urls": [],
+            },
+        )
+        bucket["contracts"].append(
+            {
+                "name": contract["name"],
+                "kind": contract["kind"],
+                "address": contract["address"],
+                "proxy_address": contract["proxy_address"],
+                "implementation_address": contract["implementation_address"],
+                "language": contract["language"],
+            }
+        )
+        if contract["explorer_url"]:
+            bucket["explorer_urls"].append(contract["explorer_url"])
+
+    if not networks and (target["rpc_urls"] or target["explorer_urls"]):
+        networks[("Unknown", "", "", "")] = {
+            "chain": "Unknown",
+            "chain_id": "",
+            "network": "",
+            "vm": "",
+            "contracts": [],
+            "rpc_urls": [],
+            "explorer_urls": [],
+        }
+
+    shared_rpc_urls = target["rpc_urls"]
+    shared_explorers = target["explorer_urls"]
+    for bucket in networks.values():
+        bucket["rpc_urls"] = unique_text_list(bucket["rpc_urls"] + shared_rpc_urls)
+        bucket["explorer_urls"] = unique_text_list(bucket["explorer_urls"] + shared_explorers)
+
+    return {
+        "target_type": target["target_type"],
+        "is_web3_target": is_web3_target(target),
+        "focus_areas": target["focus_areas"],
+        "networks": list(networks.values()),
+        "oracle_urls": target["oracle_urls"],
+        "keeper_urls": target["keeper_urls"],
+        "relayer_urls": target["relayer_urls"],
+        "signer_urls": target["signer_urls"],
+        "whitepaper_urls": target["whitepaper_urls"],
+    }
+
+
+def infer_protocol_archetype(target: dict[str, Any], surface_signals: list[str]) -> dict[str, str]:
+    hint = target.get("protocol_archetype_hint", "")
+    if hint:
+        return {"name": hint, "reason": "explicit protocol archetype hint supplied during bootstrap"}
+
+    haystack_parts = [
+        target["program_name"],
+        target["scope_summary"],
+        *target["focus_areas"],
+        *target["docs_urls"],
+        *target["whitepaper_urls"],
+        *target["program_notes"],
+        *target["source_code_urls"],
+        *[contract["name"] for contract in target["smart_contracts"]],
+        *[contract["notes"] for contract in target["smart_contracts"]],
+    ]
+    haystack = " ".join(part.lower() for part in haystack_parts if part)
+    for archetype, patterns in PROTOCOL_ARCHETYPE_PATTERNS:
+        if any(pattern in haystack for pattern in patterns):
+            return {"name": archetype, "reason": f"matched protocol-specific terms: {', '.join(patterns[:3])}"}
+
+    if "exchange" in surface_signals:
+        return {
+            "name": "Perps / Orderbook / Exchange",
+            "reason": "exchange context was captured even though protocol-specific markers stayed weak",
+        }
+    if "smart-contract" in surface_signals:
+        return {
+            "name": "Unknown / Needs Triage",
+            "reason": "smart-contract signals exist but protocol-specific evidence is still too generic",
+        }
+    return {"name": "Unknown / Needs Triage", "reason": "target metadata does not yet justify a narrower protocol classification"}
+
+
+def build_dependency_boundaries(
+    target: dict[str, Any], surface_signals: list[str], protocol_archetype: dict[str, str]
+) -> list[str]:
+    boundaries: list[str] = []
+    if target["oracle_urls"] or "oracle" in surface_signals:
+        boundaries.append(
+            "Oracle dependency: price or market-state inputs appear in scope and can influence solvency, swap, liquidation, or settlement decisions."
+        )
+    if target["keeper_urls"]:
+        boundaries.append(
+            "Keeper dependency: maintenance or harvest work may be performed by off-chain keepers that can widen the exploit surface."
+        )
+    if target["relayer_urls"]:
+        boundaries.append(
+            "Relayer dependency: message delivery or settlement depends on relayers, so replay, ordering, or signer assumptions must be tested explicitly."
+        )
+    if target["signer_urls"]:
+        boundaries.append(
+            "Signer dependency: off-chain signer or approval infrastructure exists and may represent a privileged control plane."
+        )
+    if target["web_urls"] or target["api_urls"]:
+        boundaries.append(
+            "Hybrid boundary: web or API surfaces coexist with chain components, so off-chain auth may hide but not remove privileged on-chain transitions."
+        )
+    if target["smart_contracts"]:
+        boundaries.append(
+            "Contract dependency: deployed contracts in scope may use proxies, delegates, callbacks, or role hierarchies that shift authority away from obvious user entry points."
+        )
+    if not boundaries and is_web3_target(target, surface_signals):
+        boundaries.append(
+            f"Protocol boundary: `{protocol_archetype['name']}` appears web3-relevant, but explicit off-chain dependencies were not captured yet."
+        )
+    if not boundaries:
+        boundaries.append("No explicit web3 dependency boundaries were captured during bootstrap.")
+    return boundaries
+
+
+def build_protocol_invariants(protocol_archetype: dict[str, str]) -> list[str]:
+    return list(PROTOCOL_INVARIANT_LIBRARY.get(protocol_archetype["name"], PROTOCOL_INVARIANT_LIBRARY["Unknown / Needs Triage"]))
+
+
+def build_attack_surface_map(
+    target: dict[str, Any], surface_signals: list[str], protocol_archetype: dict[str, str]
+) -> dict[str, list[str]]:
+    public_entry_points = [
+        "State-changing contract entry points and externally callable functions",
+        "User-triggerable web or API flows that can influence privileged state",
+        "Any RPC or WebSocket path that can reach on-chain or settlement actions",
+    ]
+    privileged_entry_points = [
+        "Owner, admin, governance, guardian, keeper, or operator controlled contract paths",
+        "Upgrade, pause, rescue, or settlement controls exposed through multisig or backend systems",
+    ]
+    callback_paths = [
+        "Token hooks, swap callbacks, flash-loan callbacks, bridge handlers, or cross-contract execution edges",
+    ]
+    dependency_edges = list(build_dependency_boundaries(target, surface_signals, protocol_archetype))
+
+    if target["smart_contracts"]:
+        public_entry_points.append("Proxy front doors and implementation-only state transitions behind them")
+    if target["keeper_urls"] or target["relayer_urls"] or target["signer_urls"]:
+        privileged_entry_points.append("Off-chain services that can trigger or approve chain-side privileged actions")
+    if target["oracle_urls"]:
+        dependency_edges.append("Oracle freshness, decimals, bounds, and update ordering")
+    if target["package_names"] or "wallet" in surface_signals:
+        dependency_edges.append("Wallet or mobile-client trust assumptions around signing, session state, and chain selection")
+
+    return {
+        "public_entry_points": unique_preserve_order(public_entry_points),
+        "privileged_entry_points": unique_preserve_order(privileged_entry_points),
+        "callback_paths": unique_preserve_order(callback_paths),
+        "dependency_edges": unique_preserve_order(dependency_edges),
+    }
+
+
+def assess_web3_readiness(target: dict[str, Any]) -> dict[str, Any]:
+    tool_status = {
+        tool: {
+            "label": spec["label"],
+            "installed": bool(shutil.which(tool)),
+            "install": spec["install"],
+            "blocks": spec["blocks"],
+        }
+        for tool, spec in WEB3_TOOL_GUIDANCE.items()
+    }
+    has_rpc = bool(target["rpc_urls"])
+    has_contract_context = bool(target["smart_contracts"] or target["explorer_urls"] or target["rpc_urls"])
+    execution_mode = "not-applicable"
+    if has_contract_context:
+        if has_rpc and tool_status["forge"]["installed"]:
+            execution_mode = "fork-capable"
+        elif tool_status["forge"]["installed"]:
+            execution_mode = "local-test-capable"
+        else:
+            execution_mode = "static-only"
+
+    blockers = []
+    if has_contract_context and not tool_status["slither"]["installed"]:
+        blockers.append("Missing Slither blocks fast Solidity static extraction and ERC-oriented checks.")
+    if has_contract_context and has_rpc and not tool_status["forge"]["installed"]:
+        blockers.append("Missing Foundry blocks fork-based replay and state-diff validation.")
+    if has_contract_context and not tool_status["trailmark"]["installed"]:
+        blockers.append("Missing Trailmark blocks graph-based attack-surface and blast-radius analysis.")
+    if has_contract_context and not tool_status["echidna"]["installed"]:
+        blockers.append("Missing Echidna removes one invariant-fuzzing option for EVM targets.")
+    if has_contract_context and not tool_status["medusa"]["installed"]:
+        blockers.append("Missing Medusa removes one parallel fuzzing option for EVM targets.")
+
+    return {
+        "is_web3_target": is_web3_target(target),
+        "execution_mode": execution_mode,
+        "tool_status": tool_status,
+        "blockers": blockers,
+        "helper_scripts": [
+            "scripts/bootstrap-web3-tools.ps1",
+            "scripts/bootstrap-web3-tools.sh",
+        ],
+    }
+
+
 def recommend_next_attack_path(
-    *, suggested_lane: str, follow_on_lanes: list[str], top_assets: list[str]
+    *, target: dict[str, Any], suggested_lane: str, follow_on_lanes: list[str], top_assets: list[str]
 ) -> str:
     lane = suggested_lane
     if lane == "bounty-program-triage" and follow_on_lanes:
@@ -736,6 +1138,13 @@ def recommend_next_attack_path(
     if lane == "bounty-program-mobile-android":
         return f"Start `bounty-program-mobile-android` from {asset_hint}; inspect manifest, network config, local storage, and backend API trust."
     if lane == "bounty-program-smart-contracts":
+        contract_languages = {contract["language"].lower() for contract in target["smart_contracts"] if contract["language"]}
+        contract_vms = {contract["vm"].lower() for contract in target["smart_contracts"] if contract["vm"]}
+        if contract_languages & {"solidity", "vyper"} or "evm" in contract_vms:
+            return (
+                f"Start `bounty-program-smart-contracts` from {asset_hint}; map privileged entry points first, "
+                "then hand the first deep pass to `evm-protocol-audit` for protocol-specific EVM review."
+            )
         return f"Start `bounty-program-smart-contracts` from {asset_hint}; enumerate privileged entry points and value-moving invariants first."
     if lane == "bounty-program-native":
         return f"Start `bounty-program-native` from {asset_hint}; identify parsers, external byte boundaries, and fuzzable harness targets first."
@@ -808,6 +1217,8 @@ def render_scope_summary(
     lines.extend(render_target_surface_items(target))
     lines.extend(["", "## Smart Contracts"])
     lines.extend(render_contract_list(target["smart_contracts"]))
+    lines.extend(["", "## Protocol Archetype"])
+    lines.extend(render_protocol_archetype_list(target.get("protocol_archetype")))
     lines.extend(["", "## Source Repositories"])
     lines.extend(render_status_list(repo_results))
     lines.extend(["", "## Artifacts"])
@@ -857,8 +1268,18 @@ def render_inventory(
     lines.extend(render_list(target["rpc_urls"]))
     lines.extend(["", "## WebSocket URLs"])
     lines.extend(render_list(target["ws_urls"]))
+    lines.extend(["", "## Keeper URLs"])
+    lines.extend(render_list(target["keeper_urls"]))
+    lines.extend(["", "## Relayer URLs"])
+    lines.extend(render_list(target["relayer_urls"]))
+    lines.extend(["", "## Signer URLs"])
+    lines.extend(render_list(target["signer_urls"]))
+    lines.extend(["", "## Oracle URLs"])
+    lines.extend(render_list(target["oracle_urls"]))
     lines.extend(["", "## Documentation URLs"])
     lines.extend(render_list(target["docs_urls"]))
+    lines.extend(["", "## Whitepaper URLs"])
+    lines.extend(render_list(target["whitepaper_urls"]))
     lines.extend(["", "## API Specification URLs"])
     lines.extend(render_list(target["api_spec_urls"]))
     lines.extend(["", "## Explorer URLs"])
@@ -869,6 +1290,10 @@ def render_inventory(
     lines.extend(render_list(target["registry_urls"]))
     lines.extend(["", "## Smart Contracts"])
     lines.extend(render_contract_list(target["smart_contracts"]))
+    lines.extend(["", "## Protocol Archetype"])
+    lines.extend(render_protocol_archetype_list(target.get("protocol_archetype")))
+    lines.extend(["", "## Dependency Boundaries"])
+    lines.extend(render_list(target.get("dependency_boundaries", [])))
     lines.extend(["", "## Program Notes"])
     lines.extend(render_list(target["program_notes"]))
     lines.extend(["", "## Safe Harbor"])
@@ -884,10 +1309,12 @@ def render_bootstrap_summary(
     suggested_lane: str,
     lane_reason: str,
     follow_on_lanes: list[str],
+    protocol_archetype: dict[str, str],
     trust_boundaries: list[str],
     prioritized_bug_classes: list[dict[str, str]],
     top_assets: list[str],
     next_attack_path: str,
+    web3_readiness: dict[str, Any],
 ) -> str:
     lines = [
         "# Bootstrap Summary",
@@ -901,10 +1328,17 @@ def render_bootstrap_summary(
         "## Active Constraints",
     ]
     lines.extend(render_constraints_list(target))
+    lines.extend(["", "## Protocol Archetype"])
+    lines.extend(render_protocol_archetype_list(protocol_archetype))
     lines.extend(["", "## Trust Boundaries"])
     lines.extend(render_list(trust_boundaries))
+    lines.extend(["", "## Dependency Boundaries"])
+    lines.extend(render_list(target.get("dependency_boundaries", [])))
     lines.extend(["", "## First 3 Prioritized Bug Classes"])
     lines.extend(render_bug_class_list(prioritized_bug_classes))
+    if web3_readiness.get("is_web3_target"):
+        lines.extend(["", "## Web3 Readiness"])
+        lines.extend(render_web3_readiness_list(web3_readiness))
     lines.extend(["", "## Auth And Test State"])
     auth_state = target["auth_notes"] + target["environment_notes"]
     lines.extend(render_list(auth_state))
@@ -921,10 +1355,14 @@ def write_context_pack(
     suggested_lane: str,
     lane_reason: str,
     follow_on_lanes: list[str],
+    protocol_archetype: dict[str, str],
     trust_boundaries: list[str],
     prioritized_bug_classes: list[dict[str, str]],
     top_assets: list[str],
     next_attack_path: str,
+    dependency_boundaries: list[str],
+    attack_surface_map: dict[str, list[str]],
+    web3_readiness: dict[str, Any],
 ) -> None:
     write_text(context_pack_dir / "README.md", render_context_pack_readme())
     write_text(context_pack_dir / "trust-boundaries.md", render_context_trust_boundaries(trust_boundaries))
@@ -934,11 +1372,17 @@ def write_context_pack(
             suggested_lane=suggested_lane,
             lane_reason=lane_reason,
             follow_on_lanes=follow_on_lanes,
+            protocol_archetype=protocol_archetype,
             prioritized_bug_classes=prioritized_bug_classes,
             next_attack_path=next_attack_path,
         ),
     )
     write_text(context_pack_dir / "asset-pointers.md", render_context_asset_pointers(target, top_assets))
+    write_text(context_pack_dir / "dependency-boundaries.md", render_dependency_boundaries(dependency_boundaries))
+    write_text(context_pack_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
+    if web3_readiness.get("is_web3_target"):
+        write_text(context_pack_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
+    write_text(context_pack_dir / "protocol-archetype.md", render_protocol_archetype(protocol_archetype))
 
 
 def render_context_pack_readme() -> str:
@@ -948,6 +1392,10 @@ def render_context_pack_readme() -> str:
         "- `trust-boundaries.md` - bootstrap trust-boundary summary\n"
         "- `lane-decision.md` - primary lane, follow-on lanes, bug-class priorities, and next attack path\n"
         "- `asset-pointers.md` - top asset references collected during bootstrap\n"
+        "- `protocol-archetype.md` - current protocol classification and why it was chosen\n"
+        "- `dependency-boundaries.md` - off-chain and cross-surface trust edges that still matter\n"
+        "- `attack-surface-map.md` - public, privileged, callback, and dependency-centric attack surface\n"
+        "- `web3-readiness.md` - toolchain and replay readiness for web3-heavy targets when applicable\n"
     )
 
 
@@ -986,6 +1434,7 @@ def render_context_lane_decision(
     suggested_lane: str,
     lane_reason: str,
     follow_on_lanes: list[str],
+    protocol_archetype: dict[str, str],
     prioritized_bug_classes: list[dict[str, str]],
     next_attack_path: str,
 ) -> str:
@@ -995,10 +1444,13 @@ def render_context_lane_decision(
         f"- Primary Lane: `{suggested_lane}`",
         f"- Reason: {lane_reason}",
         f"- Follow-On Lanes: {', '.join(follow_on_lanes) if follow_on_lanes else 'None recorded'}",
+        f"- Protocol Archetype: {protocol_archetype['name']}",
         "",
         "## Prioritized Bug Classes",
     ]
     lines.extend(render_bug_class_list(prioritized_bug_classes))
+    lines.extend(["", "## Archetype Reason"])
+    lines.extend(render_list([protocol_archetype["reason"]]))
     lines.extend(["", "## Next Best Attack Path", f"- {next_attack_path}"])
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1028,6 +1480,11 @@ def render_target_surface(
     lines.extend(render_list(target.get("follow_on_lanes", [])))
     lines.extend([
         "",
+        "## Protocol Archetype",
+    ])
+    lines.extend(render_protocol_archetype_list(target.get("protocol_archetype")))
+    lines.extend([
+        "",
         "## Host-Provided Assets",
     ])
     lines.extend(render_target_surface_items(target))
@@ -1050,7 +1507,12 @@ def render_target_surface_items(target: dict[str, Any]) -> list[str]:
         ("API URLs", target["api_urls"]),
         ("RPC URLs", target["rpc_urls"]),
         ("WebSocket URLs", target["ws_urls"]),
+        ("Keeper URLs", target["keeper_urls"]),
+        ("Relayer URLs", target["relayer_urls"]),
+        ("Signer URLs", target["signer_urls"]),
+        ("Oracle URLs", target["oracle_urls"]),
         ("Documentation URLs", target["docs_urls"]),
+        ("Whitepaper URLs", target["whitepaper_urls"]),
         ("API Specification URLs", target["api_spec_urls"]),
         ("Explorer URLs", target["explorer_urls"]),
         ("Audit Report URLs", target["audit_report_urls"]),
@@ -1125,6 +1587,7 @@ def render_ready_for_bounty(
         f"- Reason: {lane_reason}",
         f"- Surface Signals: {', '.join(surface_signals) if surface_signals else 'None recorded'}",
         f"- Follow-On Lanes: {', '.join(follow_on_lanes) if follow_on_lanes else 'None recorded'}",
+        f"- Protocol Archetype: {target.get('protocol_archetype', {}).get('name', 'None recorded')}",
         "",
         "## Next Step",
     ]
@@ -1140,6 +1603,7 @@ def render_ready_for_bounty(
             [
                 "- Activate `bounty-program-smart-contracts`.",
                 "- Start from `scope/smart-contracts.md`, `scope/target-surface.md`, and any cloned repos or downloaded ABI files.",
+                "- If the contracts are Solidity or Vyper, prefer `evm-protocol-audit` for the first deep pass after entry-point mapping.",
             ]
         )
     elif suggested_lane == "bounty-program-triage":
@@ -1165,10 +1629,17 @@ def render_ready_for_bounty(
             "- `scope/raw-scope-notes.md` for exact copied scope text",
             "- `scope/target-surface.md` for host-provided target assets and references",
             "- `scope/smart-contracts.md` for deployed addresses and chain metadata",
+            "- `scope/chain-inventory.json` for normalized network and contract inventory",
+            "- `scope/protocol-archetype.md` for the current protocol classification",
+            "- `scope/proxy-topology.md` for proxy and upgrade hints",
+            "- `scope/dependency-boundaries.md` for off-chain and hybrid trust edges",
             "- `prep/asset-inventory.md` for local paths and download or clone status",
             "- `prep/tried-and-ruled-out.md` to track attack paths that were tested and discarded",
             "- `prep/finding-pipeline.md` to track candidate, re-verify, and reporting status",
             "- `prep/bootstrap-summary.md` for trust boundaries, lane choice, bug-class priorities, and the next attack path",
+            "- `prep/attack-surface-map.md` for public, privileged, callback, and dependency-centric attack surface",
+            "- `prep/protocol-invariants.md` for archetype-specific invariants",
+            "- `prep/web3-readiness.md` for toolchain and replay readiness on web3-heavy targets",
             "- `prep/context-pack/` for the resumable hunting context pack",
             "- `findings/README.md` for the per-finding evidence bundle contract",
         ]
@@ -1185,7 +1656,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md` and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
+        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md` and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1233,8 +1704,11 @@ def render_findings_readme() -> str:
         "Recommended layout:\n\n"
         "- `findings/<finding-id>/claim.md` - one falsifiable security claim\n"
         "- `findings/<finding-id>/facts.md` - observed facts only\n"
+        "- `findings/<finding-id>/facts-chain.md` - chain, market, tx, block, and contract identifiers for web3 or exchange findings\n"
         "- `findings/<finding-id>/poc.md` - replayable exploit or reproduction path\n"
         "- `findings/<finding-id>/impact.md` - observed impact and inferred blast radius kept separate\n"
+        "- `findings/<finding-id>/impact-financials.md` - asset delta, required capital, solvency impact, and downgrade notes for web3-heavy findings\n"
+        "- `findings/<finding-id>/environment.md` - fork, staging, testnet, or static-analysis assumptions needed to replay the finding\n"
         "- `findings/<finding-id>/reverify.md` - independent re-verification verdict and failed disproof attempts\n"
         "- `findings/<finding-id>/severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes\n"
         "- `findings/<finding-id>/artifacts/` - scripts, payloads, traces, screenshots, logs, or tx data\n\n"
@@ -1244,6 +1718,114 @@ def render_findings_readme() -> str:
         "3. Run `security-finding-reverify` and record `true-positive`, `false-positive`, or `needs-more-evidence`.\n"
         "4. For each `true-positive`, write `severity.md` before the finding becomes `report-ready` and feeds the report submitter.\n"
     )
+
+
+def render_protocol_archetype(protocol_archetype: dict[str, str]) -> str:
+    lines = ["# Protocol Archetype", ""]
+    lines.extend(render_protocol_archetype_list(protocol_archetype))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_protocol_archetype_list(protocol_archetype: dict[str, str] | None) -> list[str]:
+    if not protocol_archetype:
+        return ["- None recorded"]
+    return [
+        f"- Name: {protocol_archetype.get('name', 'Unknown / Needs Triage')}",
+        f"- Reason: {protocol_archetype.get('reason', 'None recorded')}",
+    ]
+
+
+def render_proxy_topology(contracts: list[dict[str, str]]) -> str:
+    lines = ["# Proxy Topology", ""]
+    proxy_like = [
+        contract
+        for contract in contracts
+        if contract["proxy_address"] or contract["implementation_address"] or contract["kind"].lower() == "proxy"
+    ]
+    if not proxy_like:
+        lines.append("- No explicit proxy or implementation topology was captured during bootstrap.")
+        return "\n".join(lines).rstrip() + "\n"
+
+    for contract in proxy_like:
+        label = contract["name"] or contract["address"] or "Unnamed contract"
+        lines.extend(
+            [
+                f"## {label}",
+                "",
+                f"- Proxy Kind: {contract['kind'] or 'Not captured'}",
+                f"- Proxy Address: {contract['proxy_address'] or contract['address'] or 'Not captured'}",
+                f"- Implementation Address: {contract['implementation_address'] or 'Not captured'}",
+                "- Upgrade Authority: Not captured during bootstrap; resolve from docs, explorer, or source control before hunting conclusions.",
+                "- Risk Surfaces: delegatecall trust, storage layout drift, upgrade auth, initializer exposure.",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_dependency_boundaries(boundaries: list[str]) -> str:
+    lines = ["# Dependency Boundaries", ""]
+    lines.extend(render_list(boundaries))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_attack_surface_map(attack_surface_map: dict[str, list[str]]) -> str:
+    lines = ["# Attack Surface Map", ""]
+    for title, key in (
+        ("Public Entry Points", "public_entry_points"),
+        ("Privileged Entry Points", "privileged_entry_points"),
+        ("Callback Paths", "callback_paths"),
+        ("Dependency Edges", "dependency_edges"),
+    ):
+        lines.extend([f"## {title}", ""])
+        lines.extend(render_list(attack_surface_map.get(key, [])))
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_protocol_invariants(protocol_archetype: dict[str, str], invariants: list[str]) -> str:
+    lines = [
+        "# Protocol Invariants",
+        "",
+        f"- Archetype: {protocol_archetype['name']}",
+        f"- Reason: {protocol_archetype['reason']}",
+        "",
+        "## Invariants To Preserve",
+    ]
+    lines.extend(render_list(invariants))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_web3_readiness(web3_readiness: dict[str, Any]) -> str:
+    lines = [
+        "# Web3 Readiness",
+        "",
+        f"- Is Web3 Target: {'yes' if web3_readiness.get('is_web3_target') else 'no'}",
+        f"- Execution Mode: {web3_readiness.get('execution_mode', 'not-applicable')}",
+        "",
+        "## Tool Status",
+    ]
+    for tool_name, status in web3_readiness.get("tool_status", {}).items():
+        state = "installed" if status["installed"] else "missing"
+        lines.append(f"- {status['label']} (`{tool_name}`): {state}")
+        if not status["installed"]:
+            lines.append(f"  - Install: {status['install']}")
+            lines.append(f"  - Blocks: {', '.join(status['blocks'])}")
+    lines.extend(["", "## Blockers"])
+    lines.extend(render_list(web3_readiness.get("blockers", [])))
+    lines.extend(["", "## Helper Scripts"])
+    lines.extend(render_list(web3_readiness.get("helper_scripts", [])))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_web3_readiness_list(web3_readiness: dict[str, Any]) -> list[str]:
+    lines = [
+        f"- Execution Mode: {web3_readiness.get('execution_mode', 'not-applicable')}",
+    ]
+    for tool_name, status in web3_readiness.get("tool_status", {}).items():
+        lines.append(f"- {status['label']} (`{tool_name}`): {'installed' if status['installed'] else 'missing'}")
+    lines.extend(render_list(web3_readiness.get("blockers", [])))
+    return lines
 
 
 def render_list(items: list[str]) -> list[str]:

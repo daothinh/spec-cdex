@@ -55,6 +55,10 @@ Load these references on demand:
    - `agentic-actions-auditor` if CI, GitHub Actions, or AI-agent workflows are in scope
 8. If the first confirmed issue exposes a repeatable pattern, expand with `variant-analysis`.
 
+## Web3-Specific Routing Rule
+
+For Solidity or Vyper targets, `bounty-program-smart-contracts` is still the lane router, but the first deep audit pass should usually be `evm-protocol-audit`, not a generic checklist walkthrough.
+
 ## Output
 
 Before switching to a deeper lane, produce:

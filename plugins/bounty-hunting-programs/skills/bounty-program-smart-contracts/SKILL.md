@@ -48,7 +48,7 @@ Load these references on demand:
    - If those dependencies are critical, keep `bounty-program-triage` active in parallel instead of pretending the issue is purely on-chain
 6. Choose the platform lane:
    - Solana or Anchor: prefer `solana-audit`, then strengthen invariants with `kani-proof` where needed
-   - Solidity or Vyper: prefer `building-secure-contracts` skills such as `secure-workflow-guide`, `guidelines-advisor`, and `token-integration-analyzer`
+   - Solidity or Vyper: prefer `evm-protocol-audit` for the first deep pass, then use `building-secure-contracts` skills such as `secure-workflow-guide`, `guidelines-advisor`, and `token-integration-analyzer` as specialist follow-ons
    - Cosmos, Cairo, Substrate, TON, or Algorand: use the corresponding `building-secure-contracts` scanner first
 7. Prioritize universal bug classes in this order:
    - access control and signer or owner validation
@@ -66,6 +66,20 @@ Load these references on demand:
    - `spec-to-code-compliance` when docs, whitepapers, or audits define intended behavior
    - `trailmark` when you need static call paths, blast radius, or taint-guided audit prioritization
 10. Use `variant-analysis` after the first confirmed root cause, not before.
+
+## Web3 Bootstrap Expectations
+
+When `audit-targets/<slug>/` came from the upgraded bootstrap flow, consume these before the first deep pass:
+
+- `scope/chain-inventory.json`
+- `scope/protocol-archetype.md`
+- `scope/proxy-topology.md`
+- `scope/dependency-boundaries.md`
+- `prep/attack-surface-map.md`
+- `prep/protocol-invariants.md`
+- `prep/web3-readiness.md`
+
+For EVM targets, do not skip the tool-readiness check. If replay is only `static-only`, say so and adjust claim confidence instead of pretending fork validation happened.
 
 ## Output
 

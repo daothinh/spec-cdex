@@ -22,11 +22,18 @@ Generated target folders include:
 - `scope/program-notes.md`
 - `scope/target-surface.md`
 - `scope/smart-contracts.md`
+- `scope/chain-inventory.json`
+- `scope/protocol-archetype.md`
+- `scope/proxy-topology.md`
+- `scope/dependency-boundaries.md`
 - `findings/README.md`
 - `prep/asset-inventory.md`
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
 - `prep/bootstrap-summary.md`
+- `prep/attack-surface-map.md`
+- `prep/protocol-invariants.md`
+- `prep/web3-readiness.md`
 - `prep/context-pack/`
 - `prep/ready-for-bounty.md`
 
@@ -51,9 +58,10 @@ The generated `scope/target.json` also records:
 
 - `surface_signals` for the mixed target surface
 - `follow_on_lanes` for any executable lanes that should stay in scope after the first deep pass
+- `chain_inventory`, `protocol_archetype`, `dependency_boundaries`, `protocol_invariants`, `attack_surface_map`, and `web3_readiness` for web3-heavy targets
 
 The generated finding state also supports the closed-loop pipeline:
 
 - `prep/finding-pipeline.md` tracks `untested -> confirmed -> reverify-pending -> true-positive|false-positive|needs-more-evidence -> report-ready -> reported`
 - `prep/bootstrap-summary.md` and `prep/context-pack/` let the hunting pipeline resume without rebuilding trust boundaries or lane choice
-- `findings/README.md` defines the per-finding bundle contract used by independent re-verification and downstream severity triage
+- `findings/README.md` defines the per-finding bundle contract used by independent re-verification and downstream severity triage, including `facts-chain.md`, `impact-financials.md`, and `environment.md` for web3-heavy findings

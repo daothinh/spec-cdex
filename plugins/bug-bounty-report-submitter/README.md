@@ -12,6 +12,7 @@ Inspect live bug bounty forms or webmail with Playwright MCP, then draft and del
 | `skills/bug-bounty-report-submitter/references/report-structure.md` | Report section and field mapping for form workflows |
 | `skills/bug-bounty-report-submitter/references/writing-style.md` | Shared natural writing and anti-template pass |
 | `skills/bug-bounty-report-submitter/references/playwright-submit.md` | Playwright MCP submission sequence for forms |
+| `skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` | Materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` from a verified finding bundle |
 | `skills/bug-bounty-email-submitter/SKILL.md` | Email-based disclosure workflow |
 | `skills/bug-bounty-email-submitter/references/email-report-structure.md` | Subject and body structure for bug report emails |
 | `skills/bug-bounty-email-submitter/references/playwright-email-submit.md` | Playwright MCP compose-and-send sequence for webmail |

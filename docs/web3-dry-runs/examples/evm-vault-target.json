@@ -1,0 +1,29 @@
+{
+  "program_name": "Dry Run EVM Vault",
+  "program_url": "https://program.local/evm-vault",
+  "target_type": "smart-contract",
+  "focus_areas": ["Smart Contract", "Blockchain"],
+  "scope_summary": "Upgradeable EVM vault with keeper-based harvests.",
+  "repo_urls": ["https://git.local/evm-vault.git"],
+  "rpc_urls": ["https://rpc.local/eth-mainnet"],
+  "docs_urls": ["https://docs.local/evm-vault"],
+  "whitepaper_urls": ["https://docs.local/evm-vault/whitepaper.pdf"],
+  "keeper_urls": ["https://keepers.local/evm-vault"],
+  "oracle_urls": ["https://oracle.local/prices"],
+  "smart_contracts": [
+    {
+      "name": "YieldVaultProxy",
+      "kind": "proxy",
+      "chain": "Ethereum",
+      "chain_id": "1",
+      "network": "mainnet",
+      "vm": "EVM",
+      "address": "0x1111111111111111111111111111111111111111",
+      "proxy_address": "0x1111111111111111111111111111111111111111",
+      "implementation_address": "0x2222222222222222222222222222222222222222",
+      "explorer_url": "https://etherscan.local/address/0x1111111111111111111111111111111111111111",
+      "language": "Solidity",
+      "notes": "Primary yield vault proxy."
+    }
+  ]
+}

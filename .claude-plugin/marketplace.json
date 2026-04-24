@@ -21,6 +21,11 @@
       "description": "Structured Solana smart contract security audits"
     },
     {
+      "name": "evm-protocol-audit",
+      "source": "./plugins/evm-protocol-audit",
+      "description": "Structured EVM protocol and DeFi security audits"
+    },
+    {
       "name": "axiom",
       "source": "./plugins/axiom",
       "description": "Verify, check, transform, and repair Lean 4 proofs using the Axiom (Axle) API and CLI"

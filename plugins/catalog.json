@@ -43,6 +43,12 @@
       "codexStatus": "available"
     },
     {
+      "name": "evm-protocol-audit",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
       "name": "axiom",
       "sourceKind": "root",
       "category": "Coding",

@@ -1,0 +1,22 @@
+{
+  "program_name": "Dry Run Solana Program",
+  "program_url": "https://program.local/solana-staking",
+  "target_type": "smart-contract",
+  "focus_areas": ["Smart Contract", "Blockchain"],
+  "scope_summary": "Anchor staking program with reward distribution.",
+  "repo_urls": ["https://git.local/solana-staking.git"],
+  "rpc_urls": ["https://rpc.local/solana-mainnet"],
+  "docs_urls": ["https://docs.local/solana-staking"],
+  "smart_contracts": [
+    {
+      "name": "staking_program",
+      "chain": "Solana",
+      "network": "mainnet-beta",
+      "vm": "SVM",
+      "address": "So11111111111111111111111111111111111111112",
+      "explorer_url": "https://explorer.local/address/So11111111111111111111111111111111111111112",
+      "language": "Rust",
+      "notes": "Anchor staking program."
+    }
+  ]
+}

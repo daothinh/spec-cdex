@@ -26,8 +26,10 @@ Before testing anything:
 2. Load `prep/tried-and-ruled-out.md`.
 3. Load `prep/finding-pipeline.md`.
 4. Load `prep/bootstrap-summary.md` and the baseline context pack from `prep/context-pack/` when present.
-5. Restate the trust-boundary summary, primary lane, follow-on lanes, and first three prioritized bug classes from bootstrap.
-6. State explicitly that `security-bootstrap-pipeline` and deprecated `security-target-auto-pipeline` are not being used for this step.
+5. For web3-heavy targets, also load `prep/attack-surface-map.md`, `prep/protocol-invariants.md`, `prep/web3-readiness.md`, `scope/chain-inventory.json`, `scope/protocol-archetype.md`, and `scope/dependency-boundaries.md` when present.
+6. Restate the trust-boundary summary, primary lane, follow-on lanes, and first three prioritized bug classes from bootstrap.
+7. For web3-heavy targets, restate the protocol archetype, current replay mode (`fork-capable`, `local-test-capable`, or `static-only`), and any off-chain control-plane dependencies.
+8. State explicitly that `security-bootstrap-pipeline` and deprecated `security-target-auto-pipeline` are not being used for this step.
 
 If bootstrap data is incomplete, reconstruct only the missing context required to continue. Do not rerun full bootstrap unless the target workspace is unusable.
 
@@ -38,7 +40,7 @@ If bootstrap data is incomplete, reconstruct only the missing context required t
 3. Use lane-specific skills and tools:
    - Web or API: `bounty-program-web`
    - Android: `bounty-program-mobile-android`, `firebase-apk-scanner`, `workers-app-tester`
-   - Smart contract: `bounty-program-smart-contracts`, `entry-point-analyzer`, `building-secure-contracts`, `solana-audit`, `dimensional-analysis`, `property-based-testing`, `spec-to-code-compliance`
+   - Smart contract: `bounty-program-smart-contracts`, `evm-protocol-audit`, `entry-point-analyzer`, `building-secure-contracts`, `solana-audit`, `dimensional-analysis`, `property-based-testing`, `spec-to-code-compliance`
    - Native or parser-heavy: `bounty-program-native`, `fuzzer`, `constant-time-analysis`, `dwarf-expert`, `kani-proof`
 4. Keep `prep/asset-inventory.md` and `prep/tried-and-ruled-out.md` current.
 5. Apply anti-rabbit-hole control: no more than three meaningful attempts or 15 minutes on one attack path without progress. Log the path and pivot.
@@ -55,6 +57,8 @@ If bootstrap data is incomplete, reconstruct only the missing context required t
     - exploit preconditions
     - impact reasoning
     - downgrade reasons or uncertainty
+    - attack capital assumptions for web3-heavy findings
+    - chain-specific asset scope or market scope for web3-heavy findings
 12. Only after the first `TRUE POSITIVE` has `severity.md`, expand with `variant-analysis`.
 13. Stop when the finding bundle is clean enough for `security-report-submission-pipeline`.
 
@@ -64,8 +68,11 @@ Each confirmed finding must contain:
 
 - `claim.md`
 - `facts.md`
+- `facts-chain.md` for web3 or exchange-heavy findings
 - `poc.md`
 - `impact.md`
+- `impact-financials.md` for web3 or exchange-heavy findings
+- `environment.md` for replay assumptions, fork details, or static-analysis limitations on web3-heavy findings
 - `reverify.md`
 - `severity.md` for `TRUE POSITIVE` findings
 - `artifacts/`

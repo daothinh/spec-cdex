@@ -22,6 +22,7 @@
 - [Plugins](#plugins)
   - [fuzzer](#fuzzer) — Coverage-guided fuzzing for C/C++, Rust, and Go
   - [kani-proof](#kani-proof) — Model checking for Rust and Solana
+  - [evm-protocol-audit](#evm-protocol-audit) — Protocol-aware EVM and DeFi audits
   - [solana-audit](#solana-audit) — Smart contract security audits
   - [axiom](#axiom) — Lean 4 proof verification and repair
   - [skill-benchmark](#skill-benchmark) — Measure whether a skill actually helps
@@ -46,6 +47,7 @@ Individual plugins can be selected during installation. Once installed, invoke a
 ```
 /fuzzer            Coverage-guided fuzzing with audit-driven harness design
 /kani-proof        Write bounded model checker proofs for Rust and Solana
+/evm-protocol-audit  Run a structured EVM and DeFi protocol audit
 /solana-audit      Run a structured smart contract security audit
 /axiom             Verify and repair Lean 4 proofs
 /skill-benchmark   Benchmark a skill with controlled eval sessions
@@ -58,8 +60,8 @@ Claude and Codex support are included through repo-local metadata:
 - Claude marketplace catalog: `.claude-plugin/marketplace.json`
 - Codex marketplace catalog: `.agents/plugins/marketplace.json`
 - Per-plugin Codex manifests: `plugins/<name>/.codex-plugin/plugin.json`
-- The Claude marketplace currently exposes 45 plugins from the repo root
-- The Codex marketplace currently exposes 36 plugins: the original 7 Codex-ready plugins plus 29 low/medium-risk Claude-source ports staged under root `plugins/`
+- The Claude marketplace currently exposes 48 plugins from the repo root
+- The Codex marketplace currently exposes 39 installable plugins from the repo root
 
 To use this repo as a repo-scoped Codex marketplace:
 
@@ -76,7 +78,7 @@ Claude-source plugin ports are now managed from the root repo through:
 
 Current port policy:
 
-- Codex marketplace publishes all low/medium-risk ports plus the original 7 Codex-ready plugins
+- Codex marketplace publishes all low/medium-risk ports plus the repo's Codex-ready root plugins
 - 9 high-risk Claude workflows remain staged in root `plugins/` but blocked from the Codex marketplace until their hook/MCP/task-specific behavior is ported
 - Currently blocked from Codex marketplace: `fp-check`, `gh-cli`, `git-cleanup`, `modern-python`, `second-opinion`, `skill-improver`, `static-analysis`, `workflow-skill-design`, `zeroize-audit`
 
@@ -188,6 +190,31 @@ Status: Codex-ready. The standard workflow now uses Codex-friendly subagent prom
 - Coverage workflow for measuring proof completeness
 - Anchor-specific verification patterns for Solana programs
 - Kani feature reference (stubs, contracts, harness configuration)
+
+</details>
+
+---
+
+### evm-protocol-audit
+
+Structured EVM and DeFi security audits for Solidity and Vyper protocols. The workflow is protocol-aware instead of checklist-only: it starts with exploration and archetype classification, then scans auth and upgrade paths, accounting invariants, integrations and callbacks, and oracle or market logic.
+
+**Use case** — Audit EVM protocols with vaults, AMMs, lending markets, staking, bridges, governance, exchanges, or oracle-heavy logic.
+
+Status: Codex-ready. Designed to plug directly into the split security pipeline as the preferred deep lane for EVM smart-contract targets.
+
+```
+/evm-protocol-audit
+```
+
+<details>
+<summary>What's included</summary>
+<br>
+
+- Protocol archetype guide for EVM targets
+- Cheatsheet and scoring references for auth, accounting, integration, and oracle bug families
+- Explorer and scanner prompt contracts for structured audit passes
+- Local report template for confidence-scored EVM findings
 
 </details>
 
