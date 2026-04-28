@@ -102,10 +102,17 @@ pwsh -ExecutionPolicy Bypass -File .\scripts\install-user-level.ps1 -Mode instal
 
 `-Force` backs up conflicting user-level paths to `*.backup-YYYYMMDD-HHMMSS` before replacing them with junctions.
 
+To sync the repo's reusable security agents under `.codex/agents` together with the plugin links after future updates, run:
+
+```powershell
+pwsh -ExecutionPolicy Bypass -File .\scripts\sync-codex-security.ps1 -Mode install
+```
+
 What it creates:
 
 - `%USERPROFILE%\.codex\.agents\plugins` -> junction to this repo's `.agents\plugins`
 - `%USERPROFILE%\.codex\plugins\<plugin-name>` -> junctions to this repo's `plugins\<plugin-name>`
+- `%USERPROFILE%\.codex\agents\<agent>.toml` -> synced copies of this repo's `.codex\agents\*.toml` when `sync-codex-security.ps1` is used
 
 Why this layout:
 

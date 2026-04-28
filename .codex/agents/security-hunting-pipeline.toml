@@ -26,10 +26,12 @@ Before testing anything:
 2. Load `prep/tried-and-ruled-out.md`.
 3. Load `prep/finding-pipeline.md`.
 4. Load `prep/bootstrap-summary.md` and the baseline context pack from `prep/context-pack/` when present.
-5. For web3-heavy targets, also load `prep/attack-surface-map.md`, `prep/protocol-invariants.md`, `prep/web3-readiness.md`, `scope/chain-inventory.json`, `scope/protocol-archetype.md`, and `scope/dependency-boundaries.md` when present.
-6. Restate the trust-boundary summary, primary lane, follow-on lanes, and first three prioritized bug classes from bootstrap.
-7. For web3-heavy targets, restate the protocol archetype, current replay mode (`fork-capable`, `local-test-capable`, or `static-only`), and any off-chain control-plane dependencies.
-8. State explicitly that `security-bootstrap-pipeline` and deprecated `security-target-auto-pipeline` are not being used for this step.
+5. Load `prep/kage-plan.md` when present for web/API live testing.
+6. For web3-heavy targets, also load `prep/attack-surface-map.md`, `prep/protocol-invariants.md`, `prep/web3-readiness.md`, `scope/chain-inventory.json`, `scope/protocol-archetype.md`, and `scope/dependency-boundaries.md` when present.
+7. Restate the trust-boundary summary, primary lane, follow-on lanes, and first three prioritized bug classes from bootstrap.
+8. For web/API targets with `prep/kage-plan.md`, restate the chosen `kage` mode, canonical base URL or domain, auth prerequisites, and pacing constraints before live testing.
+9. For web3-heavy targets, restate the protocol archetype, current replay mode (`fork-capable`, `local-test-capable`, or `static-only`), and any off-chain control-plane dependencies.
+10. State explicitly that `security-bootstrap-pipeline` and deprecated `security-target-auto-pipeline` are not being used for this step.
 
 If bootstrap data is incomplete, reconstruct only the missing context required to continue. Do not rerun full bootstrap unless the target workspace is unusable.
 
@@ -38,18 +40,24 @@ If bootstrap data is incomplete, reconstruct only the missing context required t
 1. Focus on the bootstrap-selected primary lane first.
 2. Use follow-on lanes only when evidence justifies a pivot.
 3. Use lane-specific skills and tools:
-   - Web or API: `bounty-program-web`
+   - Web or API: `bounty-program-web`, `kage`
    - Android: `bounty-program-mobile-android`, `firebase-apk-scanner`, `workers-app-tester`
    - Smart contract: `bounty-program-smart-contracts`, `evm-protocol-audit`, `entry-point-analyzer`, `building-secure-contracts`, `solana-audit`, `dimensional-analysis`, `property-based-testing`, `spec-to-code-compliance`
    - Native or parser-heavy: `bounty-program-native`, `fuzzer`, `constant-time-analysis`, `dwarf-expert`, `kani-proof`
-4. Keep `prep/asset-inventory.md` and `prep/tried-and-ruled-out.md` current.
-5. Apply anti-rabbit-hole control: no more than three meaningful attempts or 15 minutes on one attack path without progress. Log the path and pivot.
-6. Back off on repeated 429, 403, WAF block, or timeout signals. Reduce threads, slow down, or switch to static analysis.
-7. For every plausible finding, create a finding bundle under `audit-targets/<slug>/findings/<finding-id>/`.
-8. Every PoC must include prerequisites, target assumptions, payload construction, exact commands or inputs, expected success signal, and output extraction.
-9. Run `security-finding-reverify` before `variant-analysis` or report packaging.
-10. Only consider a finding reportable when the reverify verdict is `TRUE POSITIVE`.
-11. Immediately after each `TRUE POSITIVE`, create `severity.md` with:
+4. When the active lane is web/API and a live host is in scope, prefer `kage` as the dynamic execution harness:
+   - use `kage recon-only <target>` when you only need live discovery and scanner output
+   - use `kage <target>` for black-box testing against the canonical base URL or wildcard domain
+   - use `kage greybox <target> <source-path>` when bootstrap preserved relevant source and `prep/kage-plan.md` points at it
+   - reuse decisive Kage artifacts from `results/<target>/recon`, `vulns`, `testing`, `exploits`, `verification`, and `judging` inside each finding bundle instead of duplicating loose notes
+   - if Docker or `kage` is unavailable, record the blocker and fallback path in `prep/tried-and-ruled-out.md` before switching to direct host-side tooling
+5. Keep `prep/asset-inventory.md` and `prep/tried-and-ruled-out.md` current.
+6. Apply anti-rabbit-hole control: no more than three meaningful attempts or 15 minutes on one attack path without progress. Log the path and pivot.
+7. Back off on repeated 429, 403, WAF block, or timeout signals. Reduce threads, slow down, or switch to static analysis.
+8. For every plausible finding, create a finding bundle under `audit-targets/<slug>/findings/<finding-id>/`.
+9. Every PoC must include prerequisites, target assumptions, payload construction, exact commands or inputs, expected success signal, and output extraction.
+10. Run `security-finding-reverify` before `variant-analysis` or report packaging.
+11. Only consider a finding reportable when the reverify verdict is `TRUE POSITIVE`.
+12. Immediately after each `TRUE POSITIVE`, create `severity.md` with:
     - severity level
     - CWE
     - CVSS vector and base score when applicable
@@ -59,8 +67,8 @@ If bootstrap data is incomplete, reconstruct only the missing context required t
     - downgrade reasons or uncertainty
     - attack capital assumptions for web3-heavy findings
     - chain-specific asset scope or market scope for web3-heavy findings
-12. Only after the first `TRUE POSITIVE` has `severity.md`, expand with `variant-analysis`.
-13. Stop when the finding bundle is clean enough for `security-report-submission-pipeline`.
+13. Only after the first `TRUE POSITIVE` has `severity.md`, expand with `variant-analysis`.
+14. Stop when the finding bundle is clean enough for `security-report-submission-pipeline`.
 
 ## Finding Bundle Contract
 
@@ -99,9 +107,10 @@ Return:
 4. severity triage for each `TRUE POSITIVE`
 5. unverified hypotheses
 6. saved finding bundle paths under `audit-targets/<slug>/findings/`
-7. whether `security-report-submission-pipeline` is ready to run
-8. blockers before submission packaging
-9. manual follow-up
-10. next best attack path when no issue was confirmed
-11. artifacts or test accounts created for cleanup
+7. saved Kage artifact paths used for evidence, if any
+8. whether `security-report-submission-pipeline` is ready to run
+9. blockers before submission packaging
+10. manual follow-up
+11. next best attack path when no issue was confirmed
+12. artifacts or test accounts created for cleanup
 """

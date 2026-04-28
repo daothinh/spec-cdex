@@ -1,0 +1,95 @@
+This file is a launcher cheat sheet.
+
+Do not duplicate the full workflow contract here.
+The source of truth is:
+- `.codex/agents/security-bootstrap-pipeline.toml`
+- `.codex/agents/security-hunting-pipeline.toml`
+- `.codex/agents/security-finding-reverify.toml`
+- `.codex/agents/security-report-submission-pipeline.toml`
+
+Use these prompts only to start each stage cleanly.
+
+
+Prompt 1: Bootstrap
+=========================================
+Use the custom agent `security-bootstrap-pipeline` for this run if it is available in `.codex/agents/security-bootstrap-pipeline.toml`.
+
+Target:
+- Program URL or local path: `<url-or-path>`
+- Target type if known: `<web|android|smart-contract|native|unknown>`
+- Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
+- Extra artifacts: `<burp file / apk / contract addresses / docs / audit pdf>`
+
+Goal:
+- Bootstrap the target into `audit-targets/<slug>/`
+- Triage trust boundaries and choose the primary lane
+- Prepare a clean handoff for hunting
+
+Return:
+- active `AGENTS.md` path and governing heading
+- whether `security-bootstrap-pipeline` is available and in use
+- normalized target slug and working directory
+- trust-boundary summary
+- chosen primary lane and follow-on lanes
+- first 3 prioritized bug classes
+- created bootstrap artifact paths
+- important creds, tokens, or test accounts found
+- next best attack path for hunting
+- blockers or manual follow-up
+
+
+Prompt 2: Hunt + Reverify
+==================================================
+Use the custom agent `security-hunting-pipeline` for this step if it is available in `.codex/agents/security-hunting-pipeline.toml`.
+
+Target:
+- Bootstrap target: `audit-targets/<slug>/`
+- Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
+- Extra artifacts: `<burp file / apk / contract addresses / docs / audit pdf>`
+
+Goal:
+- Resume from bootstrap
+- Hunt the highest-value lane first
+- If the active lane is web/API with live hosts in scope, route dynamic testing through `kage` and reuse Kage artifacts inside the finding bundle
+- Build runnable PoCs
+- Reverify strong findings
+- Leave clean finding bundles for submission
+
+Return:
+- outcome summary
+- strongest evidence
+- reverified findings with verdict
+- severity triage for each `TRUE POSITIVE`
+- unverified hypotheses
+- saved finding bundle paths
+- saved Kage artifact paths used for evidence, if any
+- whether submission is ready
+- blockers before submission packaging
+- manual follow-up
+- next best attack path if no issue was confirmed
+- artifacts or test accounts created for cleanup
+
+
+Prompt 3: Submission
+================================================
+Use the custom agent `security-report-submission-pipeline` for this step if it is available in `.codex/agents/security-report-submission-pipeline.toml`.
+
+Inputs:
+- Submission URL: `<exact form URL>` or recipient email + sender mailbox URL
+- Finding bundle: `audit-targets/<slug>/findings/<finding-id>/`
+- Report bundle target: `bug-bounty-reports/<slug>/<finding-id>/`
+- Constraints: `<field limits / attachment rules / no upload unless required>`
+
+Goal:
+- Inspect the live form or mailbox first
+- Build the report bundle only from verified artifacts
+- Submit if possible, or stop with a clean blocker record
+
+Return:
+- report title or email subject
+- calculated severity, CVSS, and CWE
+- submission URL or recipient email
+- confirmation ID or explicit blocker reason
+- saved report bundle path
+- saved schema and submission-envelope paths
+- manual follow-up still needed

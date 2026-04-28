@@ -40,6 +40,7 @@ Accept:
    - `audit-targets/<slug>/prep/tried-and-ruled-out.md`
    - `audit-targets/<slug>/prep/finding-pipeline.md`
    - `audit-targets/<slug>/prep/bootstrap-summary.md`
+   - `audit-targets/<slug>/prep/kage-plan.md` when web/API live testing is in scope
    - `audit-targets/<slug>/prep/attack-surface-map.md`
    - `audit-targets/<slug>/prep/protocol-invariants.md`
    - `audit-targets/<slug>/prep/web3-readiness.md` for web3-heavy targets
@@ -53,9 +54,17 @@ Accept:
    - what the client can and cannot see
    - which inputs cross a trust boundary
    - why the chosen primary lane is architecturally plausible
+   - which live base URL, auth state, and rate constraints should feed `kage` during web/API hunting
    - which protocol archetype appears most plausible for web3-heavy targets
    - whether the current toolchain is fork-capable, local-test-capable, or static-only
-9. Stop after the handoff is ready.
+9. When the primary lane or a follow-on lane is `bounty-program-web`, prepare `prep/kage-plan.md` as the hunting handoff for `kage`:
+   - canonical target URL or wildcard domain
+   - preferred mode: `recon-only`, `blackbox`, or `greybox`
+   - repo-relative source path for `kage greybox` when source is available
+   - auth prerequisites, test accounts, seed data, and forbidden actions
+   - safe rate limits, pacing constraints, and any WAF or login friction already observed
+   - the first web/API surfaces that should be exercised through `kage`
+10. Stop after the handoff is ready.
 
 ## Allowed Skills
 
@@ -73,6 +82,7 @@ Accept:
 ## Forbidden Work
 
 - Do not enter an exploit loop.
+- Do not start `kage`-driven active testing during bootstrap; only prepare the handoff for hunting.
 - Do not treat accidental issue signals as confirmed findings.
 - Do not run `security-finding-reverify`.
 - Do not run `variant-analysis`.
