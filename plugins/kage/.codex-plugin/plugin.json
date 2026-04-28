@@ -1,0 +1,43 @@
+{
+  "name": "kage",
+  "version": "0.1.0",
+  "description": "Local pentest sandbox for black-box, greybox, and white-box security audits inside a per-engagement Kali Docker container",
+  "author": {
+    "name": "workers.io"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "pentest",
+    "kali",
+    "docker",
+    "black-box",
+    "greybox",
+    "whitebox",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Kage",
+    "shortDescription": "Local pentest sandbox in a Kali Docker container",
+    "longDescription": "Local pentest sandbox for black-box, greybox, and white-box security audits inside a per-engagement Kali Docker container. The Codex port keeps the upstream sidecar and probe scripts, adds a PowerShell shim for Windows, and runs as a single-agent workflow by default.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Run the Kage pentest sandbox on this target",
+      "Run a recon-only Kage engagement against this domain",
+      "Prepare a Kage greybox audit for this target and source path",
+      "Use Kage to run recon, verification, and reporting on this domain"
+    ],
+    "brandColor": "#111827",
+    "screenshots": []
+  }
+}

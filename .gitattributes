@@ -1,5 +1,6 @@
 *.sh text eol=lf
 *.bash text eol=lf
+plugins/kage/skills/kage/scripts/k text eol=lf
 *.ps1 text eol=crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf

@@ -73,6 +73,12 @@
       "codexStatus": "available"
     },
     {
+      "name": "kage",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
       "name": "agentic-actions-auditor",
       "sourceKind": "skills",
       "category": "Security",

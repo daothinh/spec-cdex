@@ -21,6 +21,7 @@
 - [Codex Workspace Install](#codex-workspace-install)
 - [Plugins](#plugins)
   - [fuzzer](#fuzzer) — Coverage-guided fuzzing for C/C++, Rust, and Go
+  - [kage](#kage) — Local pentest sandbox in a per-engagement Kali container
   - [kani-proof](#kani-proof) — Model checking for Rust and Solana
   - [evm-protocol-audit](#evm-protocol-audit) — Protocol-aware EVM and DeFi audits
   - [solana-audit](#solana-audit) — Smart contract security audits
@@ -46,6 +47,7 @@ Individual plugins can be selected during installation. Once installed, invoke a
 
 ```
 /fuzzer            Coverage-guided fuzzing with audit-driven harness design
+/kage              Local pentest sandbox — recon, exploit, verify, judge, report
 /kani-proof        Write bounded model checker proofs for Rust and Solana
 /evm-protocol-audit  Run a structured EVM and DeFi protocol audit
 /solana-audit      Run a structured smart contract security audit
@@ -60,8 +62,8 @@ Claude and Codex support are included through repo-local metadata:
 - Claude marketplace catalog: `.claude-plugin/marketplace.json`
 - Codex marketplace catalog: `.agents/plugins/marketplace.json`
 - Per-plugin Codex manifests: `plugins/<name>/.codex-plugin/plugin.json`
-- The Claude marketplace currently exposes 48 plugins from the repo root
-- The Codex marketplace currently exposes 39 installable plugins from the repo root
+- The Claude marketplace currently exposes 49 plugins from the repo root
+- The Codex marketplace currently exposes 40 installable plugins from the repo root
 
 To use this repo as a repo-scoped Codex marketplace:
 
@@ -164,6 +166,32 @@ Coverage-guided fuzzing workflow for C/C++, Rust, and Go targets. Runs a deep au
 - `fuzzer` skill — end-to-end harness authoring, build, run, and triage workflow
 - `audit-context-building` skill — line-by-line analysis using First Principles, 5 Whys, and 5 Hows to locate fuzz targets
 - Function-analyzer agent and reference docs for completeness, output requirements, and worked micro-analysis examples
+
+</details>
+
+---
+
+### kage
+
+Local pentest sandbox that runs a full black-box engagement end-to-end. Every tool runs inside a per-engagement Kali Docker container, so each working directory gets its own isolated sandbox with no cross-contamination. Recon, deep testing, exploit verification, chain-building, judging, and report writing all happen through one Codex-friendly workflow backed by the same upstream probe set.
+
+**Use case** — Run a complete black-box, greybox, or white-box security audit on a target domain or source path and get a deduplicated, verified findings report at `./results/<target>/audit-report.md`.
+
+Status: Codex-ready. The port keeps the upstream Kali sidecar and probe scripts, adds a PowerShell shim for Windows, and defaults to a single-agent workflow instead of Claude-only subagent dispatch.
+
+```
+/kage
+```
+
+<details>
+<summary>What's included</summary>
+<br>
+
+- Per-engagement Kali container with a `k` shim for concurrent, isolated runs
+- Parallel tester sub-agents (auth, IDOR, access control, SSRF, injection, client-side, API, logic, content discovery, headers, JS secrets, port scanner, vuln scanner)
+- Verifier, chain-builder, judge, and report-writer agents for reproducible PoCs and a filtered, scored final report
+- Reference docs for methodology, 4-gate judging, 7 escalation-chain patterns, platform report formatting, and the bundled audit-context-building greybox workflow
+- Dockerfile, compose file, dork list, credentials template, and wordlist strategy
 
 </details>
 
@@ -337,6 +365,14 @@ plugins/
     skills/audit-context-building/SKILL.md
     skills/audit-context-building/agents/
     skills/audit-context-building/resources/
+  kage/                                Local pentest sandbox in a Kali container
+    .claude-plugin/plugin.json
+    .codex-plugin/plugin.json
+    skills/kage/SKILL.md
+    skills/kage/agents/
+    skills/kage/references/
+    skills/kage/scripts/
+    skills/kage/assets/
   kani-proof/                          Bounded model checking for Rust
     .claude-plugin/plugin.json
     .codex-plugin/plugin.json
