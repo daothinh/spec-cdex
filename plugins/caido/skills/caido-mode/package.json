@@ -1,0 +1,15 @@
+{
+  "name": "caido-mode",
+  "version": "3.0.0-codex.1",
+  "description": "Full Caido SDK CLI for Codex - search, replay, edit requests, manage findings, scopes, filters, and evidence exports",
+  "type": "module",
+  "scripts": {
+    "caido": "tsx caido-client.ts",
+    "test": "node --import tsx --test tests/output.test.ts tests/replay.test.ts tests/bundle.test.ts"
+  },
+  "dependencies": {
+    "@caido/sdk-client": "^0.2.0",
+    "graphql-tag": "^2.12.6",
+    "tsx": "^4.19.0"
+  }
+}

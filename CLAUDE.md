@@ -77,6 +77,16 @@ Local pentest sandbox for black-box, greybox, and white-box engagements. Every t
 - **References**: `skills/kage/references/` (methodology, judging, chains, report formatting, bundled audit-context-building + agentmail)
 - **Assets**: `skills/kage/assets/` (Dockerfile, compose.yml, creds template, dorks, wordlist strategy)
 
+### caido (`plugins/caido/`)
+
+Codex-native port of the upstream Caido SDK skill for authenticated web/API traffic work. Mines HTTP history with HTTPQL, mutates captured requests while preserving auth, manages Caido findings and scope objects, exports curl PoCs, and saves local evidence for the bug bounty pipeline.
+
+- **Skill**: `skills/caido-mode/SKILL.md` (`/caido-mode`)
+- **Manifest**: `plugins/caido/.claude-plugin/plugin.json`
+- **Scripts**: `skills/caido-mode/scripts/` (`caido`, `caido.ps1`)
+- **Code**: `skills/caido-mode/caido-client.ts`, `skills/caido-mode/lib/commands/`
+- **Tests**: `skills/caido-mode/tests/`
+
 ## Architecture
 
 ```

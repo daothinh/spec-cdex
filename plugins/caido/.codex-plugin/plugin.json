@@ -1,0 +1,45 @@
+{
+  "name": "caido",
+  "version": "0.1.0",
+  "description": "Use the official Caido SDK from Codex to search HTTP history, replay and edit authenticated requests, manage scope and findings, and export local bug-bounty evidence.",
+  "author": {
+    "name": "workers.io",
+    "email": "chai+spec@workers.io",
+    "url": "https://github.com/workersio"
+  },
+  "homepage": "https://github.com/workersio/spec",
+  "repository": "https://github.com/workersio/spec",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "bug-bounty",
+    "caido",
+    "web",
+    "api",
+    "traffic",
+    "replay",
+    "plugin"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Caido",
+    "shortDescription": "Search and replay authenticated traffic through Caido",
+    "longDescription": "Codex-native port of the upstream Caido skill. Use the official Caido SDK to mine HTTP history, mutate authenticated requests with preserved cookies and headers, manage scopes and findings, export curl PoCs, and sync local bug-bounty evidence back into Caido.",
+    "developerName": "workers.io",
+    "category": "Security",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/workersio/spec",
+    "defaultPrompt": [
+      "Use Caido to search authenticated traffic and replay a request",
+      "Use Caido to mutate this captured request while preserving auth",
+      "Use Caido to export a replayable curl PoC from request history",
+      "Use Caido findings and request history to support web or API bug hunting"
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

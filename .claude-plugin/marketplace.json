@@ -51,6 +51,11 @@
       "description": "Local pentest sandbox for black-box, greybox, and white-box security audits inside a per-engagement Kali Docker container"
     },
     {
+      "name": "caido",
+      "source": "./plugins/caido",
+      "description": "Use the official Caido SDK to search HTTP history, replay and edit authenticated requests, manage findings and scope, and export local bug-bounty evidence"
+    },
+    {
       "name": "agentic-actions-auditor",
       "source": "./plugins/agentic-actions-auditor",
       "description": "Audits GitHub Actions workflows for security vulnerabilities in AI agent integrations. Detects misconfigurations and attack vectors specific to Codex Action, Gemini CLI, OpenAI Codex, and GitHub AI Inference when used in CI/CD pipelines."

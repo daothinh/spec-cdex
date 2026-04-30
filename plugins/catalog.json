@@ -79,6 +79,12 @@
       "codexStatus": "available"
     },
     {
+      "name": "caido",
+      "sourceKind": "root",
+      "category": "Security",
+      "codexStatus": "available"
+    },
+    {
       "name": "agentic-actions-auditor",
       "sourceKind": "skills",
       "category": "Security",
