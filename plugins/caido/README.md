@@ -57,6 +57,17 @@ On Windows PowerShell:
 & "$PWD/plugins/caido/skills/caido-mode/scripts/caido.ps1" health
 ```
 
+For Kali + Codex + Chrome bootstrap, use:
+
+```bash
+bash scripts/install-caido-kali-latest.sh --choose-profile
+```
+
+This flow exports manual setup artifacts under `~/.codex/caido/` by default.
+It can also reuse an existing Chrome profile for Playwright-backed browser
+automation while proxying traffic through Caido.
+See `docs/caido-codex-kali-setup.md` for the PAT/certificate/proxy/profile flow.
+
 ## Codex-Specific Additions
 
 The upstream skill was Claude-oriented. This port adds:
