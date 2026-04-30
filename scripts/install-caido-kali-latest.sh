@@ -384,10 +384,7 @@ collect_caido_package_dirs() {
   local dirs=()
   local candidate
 
-  for candidate in \
-    "${REPO_ROOT}/plugins/caido/skills/caido-mode" \
-    "${REPO_ROOT}/caido-skills/skills/skills/caido-mode"
-  do
+  for candidate in "${REPO_ROOT}/plugins/caido/skills/caido-mode"; do
     if [[ -f "${candidate}/package.json" ]]; then
       dirs+=("${candidate}")
     fi

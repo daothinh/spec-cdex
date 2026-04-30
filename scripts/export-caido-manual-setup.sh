@@ -7,9 +7,14 @@ PAT="${CAIDO_PAT:-}"
 CA_CERT_PATH=""
 CHROME_USER_DATA_DIR="${CAIDO_CHROME_USER_DATA_DIR:-}"
 CHROME_PROFILE_DIRECTORY="${CAIDO_CHROME_PROFILE_DIRECTORY:-}"
-REAL_USER="${SUDO_USER:-${USER}}"
-REAL_HOME="$(getent passwd "${REAL_USER}" | cut -d: -f6 || true)"
-[[ -n "${REAL_HOME}" ]] || REAL_HOME="${HOME}"
+# Use the effective user/home for this process. This script is often invoked via
+# `sudo -u <real-user> ...`, where SUDO_USER may still point at root.
+REAL_USER="$(id -un)"
+REAL_HOME="${HOME:-}"
+if [[ -z "${REAL_HOME}" || ! -d "${REAL_HOME}" ]]; then
+  REAL_HOME="$(getent passwd "${REAL_USER}" | cut -d: -f6 || true)"
+fi
+[[ -n "${REAL_HOME}" ]] || die "Could not resolve home directory for ${REAL_USER}"
 EXPORT_DIR="${REAL_HOME}/.codex/caido"
 ENV_OUT="${EXPORT_DIR}/manual-setup.env"
 GUIDE_OUT="${EXPORT_DIR}/manual-setup.txt"
@@ -188,9 +193,11 @@ Use the repo launcher:
 
 If CAIDO_CHROME_USER_DATA_DIR / CAIDO_CHROME_PROFILE_DIRECTORY are set in
 manual-setup.env, the launcher will reuse that existing Chrome profile.
+If they are blank, the launcher falls back to a dedicated Caido-only profile at
+${REAL_HOME}/.config/caido-codex-chrome.
 
 Or launch manually (adjust the browser binary name if your Kali package uses
-`google-chrome-stable` instead of `google-chrome`):
+google-chrome-stable instead of google-chrome):
   google-chrome-stable --proxy-server=127.0.0.1:8080 --proxy-bypass-list="<-loopback>"
 
 No proxy extension is required if you use the launcher or start Chrome with

@@ -51,6 +51,11 @@ The bootstrap writes:
 - `~/.codex/caido/manual-setup.env`
 - `~/.codex/caido/manual-setup.txt`
 
+If you ran `install-caido-kali-latest.sh` without `--choose-profile`, the setup
+does not bind to any existing Chrome profile. `launch-caido-chrome.sh` will use
+the dedicated profile directory `~/.config/caido-codex-chrome` until you rerun
+setup with `--choose-profile` or pass `--chrome-user-data-dir`.
+
 ### Manual Chrome step
 
 Chrome does not need a special Caido extension for HTTPS interception.
@@ -77,7 +82,7 @@ google-chrome-stable --proxy-server=127.0.0.1:8080 --proxy-bypass-list="<-loopba
 
 If you selected an existing Chrome profile during setup, the launcher will reuse
 that profile automatically. If not, it falls back to a dedicated Caido-only
-Chrome profile.
+Chrome profile under `~/.config/caido-codex-chrome`.
 
 ### 2. List or choose Chrome profiles
 

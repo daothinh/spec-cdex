@@ -433,6 +433,8 @@ print_next_steps() {
   fi
   if [[ -n "${CHROME_PROFILE_DIRECTORY}" ]]; then
     log "Selected Chrome profile directory: ${CHROME_PROFILE_DIRECTORY}"
+  elif [[ -z "${CHROME_USER_DATA_DIR}" ]]; then
+    log "No existing Chrome profile was selected. The launcher will use a dedicated profile under ${REAL_HOME}/.config/caido-codex-chrome"
   fi
 
   if [[ "${SKIP_CHROME_TEST}" == "0" ]]; then

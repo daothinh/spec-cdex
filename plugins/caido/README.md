@@ -66,6 +66,8 @@ bash scripts/install-caido-kali-latest.sh --choose-profile
 This flow exports manual setup artifacts under `~/.codex/caido/` by default.
 It can also reuse an existing Chrome profile for Playwright-backed browser
 automation while proxying traffic through Caido.
+If you run the installer without `--choose-profile`, the launcher falls back to
+the dedicated profile `~/.config/caido-codex-chrome`.
 See `docs/caido-codex-kali-setup.md` for the PAT/certificate/proxy/profile flow.
 
 ## Codex-Specific Additions
