@@ -8,3 +8,11 @@ automate.txt
 plans/
 browser-extension-mcp-main/*
 codexkit-distill/*
+.vscode/
+.ignore
+skills/
+caido-skills/
+.agents/**
+.claude/
+!.agents/plugins/marketplace.json
+.playwright-mcp/

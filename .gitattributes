@@ -1,6 +1,10 @@
 *.sh text eol=lf
 *.bash text eol=lf
 plugins/kage/skills/kage/scripts/k text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+plugins/**/.claude-plugin/plugin.json text eol=lf
+plugins/**/.codex-plugin/plugin.json text eol=lf
 *.ps1 text eol=crlf
 *.bat text eol=crlf
 *.cmd text eol=crlf
