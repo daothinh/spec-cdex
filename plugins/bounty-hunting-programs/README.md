@@ -25,6 +25,7 @@ The playbooks are intentionally composed from Codex-ready plugins already presen
 - `agentic-actions-auditor`
 - `building-secure-contracts`
 - `burpsuite-project-parser`
+- `caido`
 - `constant-time-analysis`
 - `dimensional-analysis`
 - `dwarf-expert`

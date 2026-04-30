@@ -35,6 +35,7 @@ Store or normalize the finding under:
 - `impact-financials.md` — asset delta, capital requirements, solvency or settlement reasoning for web3-heavy findings
 - `environment.md` — fork, staging, testnet, or static-analysis replay assumptions
 - `artifacts/` — logs, screenshots, traces, payloads, scripts, or transactions
+- `artifacts/caido/` — exported request metadata, curl PoCs, replay responses, and request snapshots when the hunter used Caido
 - `reverify.md` — independent verdict, failed disproof attempts, and remaining gaps
 
 If `severity.md` already exists, treat it as downstream triage owned by the hunting pipeline. Do not overwrite it here unless you must correct a factual contradiction exposed during replay.
@@ -78,6 +79,7 @@ Actions:
 2. Record exact prerequisites, input values, environment assumptions, and the success signal.
 3. Change one variable at a time while replaying so the decisive condition stays attributable.
 4. Save decisive artifacts under `artifacts/` and summarize the replay in `facts.md`.
+5. If the original path depended on Caido request history or replay sessions, keep the request IDs and session IDs aligned with local `artifacts/caido/` exports instead of relying on the Caido UI alone.
 
 Exit criteria:
 - The PoC either reproduces end to end with decisive evidence, or it fails in a way that can be explained.
@@ -135,9 +137,10 @@ Actions:
    - verdict
    - what remains uncertain
 3. For web3-heavy findings, keep `facts-chain.md`, `impact-financials.md`, and `environment.md` aligned with what survived replay and falsification.
-4. Update `audit-targets/<slug>/prep/finding-pipeline.md` so the finding leaves `reverify-pending` and lands in `true-positive`, `false-positive`, or `needs-more-evidence`.
-5. Do not write severity triage or report bundles. Those belong to the hunting and submission pipelines.
-6. Only mark a finding `report-ready` after a `TRUE POSITIVE` verdict and after downstream severity triage is complete.
+4. For Caido-backed web/API findings, keep request IDs, replay session IDs, and exported curl or evidence paths aligned with what survived replay and falsification.
+5. Update `audit-targets/<slug>/prep/finding-pipeline.md` so the finding leaves `reverify-pending` and lands in `true-positive`, `false-positive`, or `needs-more-evidence`.
+6. Do not write severity triage or report bundles. Those belong to the hunting and submission pipelines.
+7. Only mark a finding `report-ready` after a `TRUE POSITIVE` verdict and after downstream severity triage is complete.
 
 Exit criteria:
 - The finding bundle and pipeline state agree on the verdict.

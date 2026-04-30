@@ -57,16 +57,20 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `reverify.md`
    - `severity.md`
    - `artifacts/`
-9. For web3-heavy findings, also write:
+9. Before long-form drafting, normalize artifact delivery into the report bundle:
+   - always materialize `artifacts.json` and `evidence/`
+   - use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>` so local evidence survives independently of source tool state
+   - when the finding bundle contains `artifacts/caido/`, preserve exported request metadata, curl PoCs, and response snapshots as first-class evidence in `artifacts.json`
+10. For web3-heavy findings, also write:
    - `web3-facts.json`
    - `asset-delta.md`
    - `reproduction-matrix.md`
    - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
-10. Ensure the title or subject follows: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
-11. Keep the body self-contained and place `Output from POC` immediately before full PoC instructions.
-12. Attach files only when required or when a supported artifact is necessary for validation.
-13. Submit or send only after visible fields match the local JSON bundle.
-14. If captcha, MFA, unmapped mandatory fields, or anti-automation blocks the action, stop and save the exact blocker in `confirmation.md`.
+11. Ensure the title or subject follows: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
+12. Keep the body self-contained and place `Output from POC` immediately before full PoC instructions.
+13. Attach files only when required or when a supported artifact is necessary for validation.
+14. Submit or send only after visible fields match the local JSON bundle.
+15. If captcha, MFA, unmapped mandatory fields, or anti-automation blocks the action, stop and save the exact blocker in `confirmation.md`.
 
 ## Forbidden Work
 
@@ -88,6 +92,7 @@ Return:
 3. submission URL or recipient address
 4. confirmation ID or explicit blocker reason
 5. saved bundle path under `bug-bounty-reports/<slug>/<finding-id>/`
-6. saved `form-schema.json` and `submission.json` paths for forms, or `mail-ui-schema.json` and `mail-envelope.json` paths for email
-7. manual follow-up still needed
+6. saved `artifacts.json` and `evidence/` paths
+7. saved `form-schema.json` and `submission.json` paths for forms, or `mail-ui-schema.json` and `mail-envelope.json` paths for email
+8. manual follow-up still needed
 """

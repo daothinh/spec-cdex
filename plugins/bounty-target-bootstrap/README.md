@@ -31,6 +31,8 @@ Generated target folders include:
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
 - `prep/bootstrap-summary.md`
+- `prep/kage-plan.md` when web/API breadth testing is in scope
+- `prep/caido-plan.md` when authenticated replay or request-corpus testing is in scope
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
 - `prep/web3-readiness.md`
@@ -64,4 +66,5 @@ The generated finding state also supports the closed-loop pipeline:
 
 - `prep/finding-pipeline.md` tracks `untested -> confirmed -> reverify-pending -> true-positive|false-positive|needs-more-evidence -> report-ready -> reported`
 - `prep/bootstrap-summary.md` and `prep/context-pack/` let the hunting pipeline resume without rebuilding trust boundaries or lane choice
+- `prep/kage-plan.md` and `prep/caido-plan.md` split the web/API handoff between breadth-first dynamic testing and authenticated replay-heavy testing
 - `findings/README.md` defines the per-finding bundle contract used by independent re-verification and downstream severity triage, including `facts-chain.md`, `impact-financials.md`, and `environment.md` for web3-heavy findings

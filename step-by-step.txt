@@ -18,11 +18,12 @@ Target:
 - Program URL or local path: `<url-or-path>`
 - Target type if known: `<web|android|smart-contract|native|unknown>`
 - Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
-- Extra artifacts: `<burp file / apk / contract addresses / docs / audit pdf>`
+- Extra artifacts: `<burp file / caido project hints / apk / contract addresses / docs / audit pdf>`
 
 Goal:
 - Bootstrap the target into `audit-targets/<slug>/`
 - Triage trust boundaries and choose the primary lane
+- If a web/API lane exists, prepare both breadth-first and authenticated-replay handoff when justified
 - Prepare a clean handoff for hunting
 
 Return:
@@ -33,6 +34,8 @@ Return:
 - chosen primary lane and follow-on lanes
 - first 3 prioritized bug classes
 - created bootstrap artifact paths
+- saved `prep/kage-plan.md` path, if created
+- saved `prep/caido-plan.md` path, if created
 - important creds, tokens, or test accounts found
 - next best attack path for hunting
 - blockers or manual follow-up
@@ -50,7 +53,8 @@ Target:
 Goal:
 - Resume from bootstrap
 - Hunt the highest-value lane first
-- If the active lane is web/API with live hosts in scope, route dynamic testing through `kage` and reuse Kage artifacts inside the finding bundle
+- If the active lane is web/API with live hosts in scope, route broad dynamic testing through `kage`
+- If the active lane also has authenticated traffic or a useful request corpus, route replay-heavy testing through `caido`
 - Build runnable PoCs
 - Reverify strong findings
 - Leave clean finding bundles for submission
@@ -63,6 +67,7 @@ Return:
 - unverified hypotheses
 - saved finding bundle paths
 - saved Kage artifact paths used for evidence, if any
+- saved Caido artifact paths, request IDs, session IDs, and curl exports used for evidence, if any
 - whether submission is ready
 - blockers before submission packaging
 - manual follow-up
@@ -83,6 +88,7 @@ Inputs:
 Goal:
 - Inspect the live form or mailbox first
 - Build the report bundle only from verified artifacts
+- Normalize local evidence into `artifacts.json` and `evidence/` before drafting
 - Submit if possible, or stop with a clean blocker record
 
 Return:
@@ -91,5 +97,6 @@ Return:
 - submission URL or recipient email
 - confirmation ID or explicit blocker reason
 - saved report bundle path
+- saved `artifacts.json` and `evidence/` paths
 - saved schema and submission-envelope paths
 - manual follow-up still needed

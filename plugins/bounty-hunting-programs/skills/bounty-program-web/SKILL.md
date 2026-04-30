@@ -21,6 +21,7 @@ Load these references on demand:
 
 - Test accounts or seed data if available
 - Any `.burp` project, API collection, or captured request corpus
+- Any Caido project context, request IDs, HTTPQL filters, or authenticated replay notes
 - Scope restrictions for rate limits, data mutation, or production assets
 
 ## Workflow
@@ -39,6 +40,7 @@ Load these references on demand:
    - `insecure-defaults` for debug, auth, CORS, storage, or deployment defaults
    - `supply-chain-risk-auditor` for dependency exposure
    - `burpsuite-project-parser` if a Burp project is already available
+   - `caido` when authenticated request replay or traffic-corpus mining will be faster than rebuilding requests manually
    - `agentic-actions-auditor` when CI, GitHub Actions, or agent-driven release flows touch the target
 4. Prioritize bug classes in this order:
    - broken object-level authorization and tenant isolation
@@ -52,6 +54,9 @@ Load these references on demand:
 
 ## Lane-Specific Notes
 
+- If you already have a logged-in request in Caido, prefer `edit` over hand-rebuilding cookies, CSRF tokens, and auth headers.
+- Use `kage` for recon and breadth. Use `caido` for authenticated mutation, replay-heavy flows, and quick curl PoCs.
+- Save decisive Caido request IDs, replay session IDs, `export-curl` output paths, and `export-evidence` directories in the local finding bundle.
 - For Next.js or other hybrid stacks, treat server actions, middleware, and internal fetch helpers as first-class attack surface.
 - For Python and Ruby stacks, scrutinize background jobs and serializer/model trust, not just controllers.
 - For Go and .NET, pay attention to middleware order and path normalization before assuming auth is correct.

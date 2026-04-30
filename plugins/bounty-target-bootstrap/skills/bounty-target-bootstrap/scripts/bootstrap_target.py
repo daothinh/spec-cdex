@@ -581,6 +581,23 @@ def bootstrap_target(
     write_text(prep_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
     write_text(prep_dir / "protocol-invariants.md", render_protocol_invariants(protocol_archetype, protocol_invariants))
     write_text(prep_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
+    if should_prepare_web_handoff(suggested_lane, follow_on_lanes):
+        write_text(
+            prep_dir / "kage-plan.md",
+            render_kage_plan(
+                target_record,
+                top_assets=top_assets,
+                trust_boundaries=trust_boundaries,
+            ),
+        )
+        write_text(
+            prep_dir / "caido-plan.md",
+            render_caido_plan(
+                target_record,
+                top_assets=top_assets,
+                trust_boundaries=trust_boundaries,
+            ),
+        )
     write_text(
         prep_dir / "bootstrap-summary.md",
         render_bootstrap_summary(
@@ -641,6 +658,8 @@ def bootstrap_target(
         "protocol_invariants_file": relative_path(prep_dir / "protocol-invariants.md", repo_root),
         "web3_readiness_file": relative_path(prep_dir / "web3-readiness.md", repo_root),
         "context_pack_dir": relative_path(context_pack_dir, repo_root),
+        "kage_plan_file": relative_path(prep_dir / "kage-plan.md", repo_root) if (prep_dir / "kage-plan.md").exists() else "",
+        "caido_plan_file": relative_path(prep_dir / "caido-plan.md", repo_root) if (prep_dir / "caido-plan.md").exists() else "",
         "suggested_lane": suggested_lane,
         "surface_signals": surface_signals,
         "follow_on_lanes": follow_on_lanes,
@@ -1294,6 +1313,30 @@ def render_inventory(
     lines.extend(render_protocol_archetype_list(target.get("protocol_archetype")))
     lines.extend(["", "## Dependency Boundaries"])
     lines.extend(render_list(target.get("dependency_boundaries", [])))
+    lines.extend(
+        [
+            "",
+            "## Kage Tracking",
+            "- Preferred Mode: ",
+            "- Canonical Target URL Or Domain: ",
+            "- Greybox Source Path: ",
+            "- Pacing Constraints: ",
+        ]
+    )
+    lines.extend(
+        [
+            "",
+            "## Caido Tracking",
+            "- Caido Base URL: http://localhost:8080",
+            "- Project ID: ",
+            "- Project Name: ",
+            "- Seed Request IDs: ",
+            "- Replay Session IDs: ",
+            "- Filter Presets: ",
+            "- Exported Curl Paths: ",
+            "- Exported Evidence Paths: ",
+        ]
+    )
     lines.extend(["", "## Program Notes"])
     lines.extend(render_list(target["program_notes"]))
     lines.extend(["", "## Safe Harbor"])
@@ -1339,6 +1382,15 @@ def render_bootstrap_summary(
     if web3_readiness.get("is_web3_target"):
         lines.extend(["", "## Web3 Readiness"])
         lines.extend(render_web3_readiness_list(web3_readiness))
+    if should_prepare_web_handoff(suggested_lane, follow_on_lanes):
+        lines.extend(
+            [
+                "",
+                "## Web Hunting Handoff",
+                "- `prep/kage-plan.md` is the breadth and recon handoff for dynamic web/API testing.",
+                "- `prep/caido-plan.md` is the authenticated replay and traffic-corpus handoff for stateful web/API testing.",
+            ]
+        )
     lines.extend(["", "## Auth And Test State"])
     auth_state = target["auth_notes"] + target["environment_notes"]
     lines.extend(render_list(auth_state))
@@ -1383,6 +1435,8 @@ def write_context_pack(
     if web3_readiness.get("is_web3_target"):
         write_text(context_pack_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
     write_text(context_pack_dir / "protocol-archetype.md", render_protocol_archetype(protocol_archetype))
+    if should_prepare_web_handoff(suggested_lane, follow_on_lanes):
+        write_text(context_pack_dir / "web-handoff.md", render_context_web_handoff(target))
 
 
 def render_context_pack_readme() -> str:
@@ -1395,6 +1449,7 @@ def render_context_pack_readme() -> str:
         "- `protocol-archetype.md` - current protocol classification and why it was chosen\n"
         "- `dependency-boundaries.md` - off-chain and cross-surface trust edges that still matter\n"
         "- `attack-surface-map.md` - public, privileged, callback, and dependency-centric attack surface\n"
+        "- `web-handoff.md` - kage vs caido handoff guidance for web/API targets when applicable\n"
         "- `web3-readiness.md` - toolchain and replay readiness for web3-heavy targets when applicable\n"
     )
 
@@ -1460,6 +1515,23 @@ def render_context_asset_pointers(target: dict[str, Any], top_assets: list[str])
     lines.extend(render_list(top_assets))
     lines.extend(["", "## Source Pointers"])
     lines.extend(render_target_surface_items(target))
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_context_web_handoff(target: dict[str, Any]) -> str:
+    lines = [
+        "# Web Handoff",
+        "",
+        "Use `kage` for recon, breadth, and unauthenticated discovery.",
+        "Use `caido` for authenticated request mutation, intercept-driven flows, and traffic-corpus mining.",
+        "",
+        "## Candidate Breadth Surfaces",
+    ]
+    lines.extend(render_list(unique_preserve_order([*target["web_urls"], *target["api_urls"], *target["docs_urls"]])))
+    lines.extend(["", "## Candidate Authenticated Surfaces"])
+    lines.extend(render_list(unique_preserve_order([*target["api_urls"], *target["web_urls"]])))
+    lines.extend(["", "## Auth Notes"])
+    lines.extend(render_list(target["auth_notes"]))
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -1641,6 +1713,8 @@ def render_ready_for_bounty(
             "- `prep/protocol-invariants.md` for archetype-specific invariants",
             "- `prep/web3-readiness.md` for toolchain and replay readiness on web3-heavy targets",
             "- `prep/context-pack/` for the resumable hunting context pack",
+            "- `prep/kage-plan.md` when web/API breadth testing is part of the next pass",
+            "- `prep/caido-plan.md` when authenticated request replay or traffic-corpus work is part of the next pass",
             "- `findings/README.md` for the per-finding evidence bundle contract",
         ]
     )
@@ -1656,7 +1730,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md` and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
+        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1712,12 +1786,108 @@ def render_findings_readme() -> str:
         "- `findings/<finding-id>/reverify.md` - independent re-verification verdict and failed disproof attempts\n"
         "- `findings/<finding-id>/severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes\n"
         "- `findings/<finding-id>/artifacts/` - scripts, payloads, traces, screenshots, logs, or tx data\n\n"
+        "Suggested sub-layouts:\n\n"
+        "- `findings/<finding-id>/artifacts/caido/` - exported request metadata, curl PoCs, replay responses, and request snapshots from Caido\n"
+        "- `findings/<finding-id>/artifacts/http/` - raw request pairs, HAR slices, or manual diff logs\n"
+        "- `findings/<finding-id>/artifacts/runtime/` - debugger traces, screenshots, or transaction receipts\n\n"
         "Lifecycle:\n\n"
         "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists.\n"
         "2. Create the bundle and move the finding to `reverify-pending`.\n"
         "3. Run `security-finding-reverify` and record `true-positive`, `false-positive`, or `needs-more-evidence`.\n"
         "4. For each `true-positive`, write `severity.md` before the finding becomes `report-ready` and feeds the report submitter.\n"
     )
+
+
+def should_prepare_web_handoff(suggested_lane: str, follow_on_lanes: list[str]) -> bool:
+    if suggested_lane in {"bounty-program-web", "bounty-program-triage"}:
+        return suggested_lane == "bounty-program-web" or "bounty-program-web" in follow_on_lanes
+    return "bounty-program-web" in follow_on_lanes
+
+
+def render_kage_plan(target: dict[str, Any], *, top_assets: list[str], trust_boundaries: list[str]) -> str:
+    web_targets = unique_preserve_order([*target["web_urls"], *target["api_urls"]])
+    preferred_mode = "greybox" if any(item["status"] == "cloned" for item in target.get("repo_results", [])) else "blackbox"
+    source_paths = [
+        item["local_path"]
+        for item in target.get("repo_results", [])
+        if item["status"] == "cloned" and item["local_path"]
+    ]
+    lines = [
+        "# Kage Plan",
+        "",
+        f"- Preferred Mode: {preferred_mode}",
+        f"- Canonical Target URL Or Domain: {(web_targets[0] if web_targets else 'Not captured')}",
+        f"- Greybox Source Path: {(source_paths[0] if source_paths else 'Not captured')}",
+        "",
+        "## Auth Prerequisites",
+    ]
+    lines.extend(render_list(target["auth_notes"]))
+    lines.extend(["", "## Pacing Constraints"])
+    lines.extend(render_list(unique_preserve_order([*target["rules"], *target["environment_notes"]])))
+    lines.extend(["", "## First Surfaces For Kage"])
+    lines.extend(render_list(top_assets[:6]))
+    lines.extend(["", "## Trust Boundaries To Respect"])
+    lines.extend(render_list(trust_boundaries))
+    lines.extend(["", "## Notes"])
+    lines.extend(
+        [
+            "- Use Kage for breadth, content discovery, port and nuclei coverage, and unauthenticated probing.",
+            "- Reuse decisive Kage artifacts inside local finding bundles instead of keeping them only in loose notes.",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_caido_plan(target: dict[str, Any], *, top_assets: list[str], trust_boundaries: list[str]) -> str:
+    api_like = unique_preserve_order([*target["api_urls"], *target["web_urls"]])
+    auth_prereqs = unique_preserve_order([*target["auth_notes"], *target["environment_notes"]])
+    lines = [
+        "# Caido Plan",
+        "",
+        "- Caido Base URL: http://localhost:8080",
+        "- Project Context: create or select a project that matches this target before heavy replay work",
+        f"- Logged-In Traffic Already Available: {'likely' if auth_prereqs else 'unknown'}",
+        "",
+        "## Candidate Authenticated Surfaces",
+    ]
+    lines.extend(render_list(api_like[:8]))
+    lines.extend(["", "## Auth Prerequisites"])
+    lines.extend(render_list(auth_prereqs))
+    lines.extend(["", "## Suggested HTTPQL Seeds"])
+    seed_filters = []
+    for url in api_like[:4]:
+        parsed = urlparse(url)
+        if parsed.path and parsed.path != "/":
+            seed_filters.append(f"req.path.cont:\"{parsed.path}\"")
+        if parsed.netloc:
+            seed_filters.append(f"req.host.cont:\"{parsed.netloc}\"")
+    lines.extend(render_list(unique_preserve_order(seed_filters)))
+    lines.extend(["", "## First Request Classes To Mutate With edit"])
+    lines.extend(
+        render_list(
+            [
+                "object-ID-bearing API requests",
+                "role or admin workflow requests",
+                "header-sensitive endpoints such as internal-only or forwarded-host checks",
+                "webhook, callback, or replayable task requests",
+            ]
+        )
+    )
+    lines.extend(["", "## Local Evidence Rules"])
+    lines.extend(
+        render_list(
+            [
+                "export decisive requests with `export-evidence --out <finding>/artifacts/caido`",
+                "record request IDs, replay session IDs, and curl export paths in `prep/asset-inventory.md`",
+                "use `sync-finding` only as operator convenience; local finding bundles stay authoritative",
+            ]
+        )
+    )
+    lines.extend(["", "## Trust Boundaries To Exercise"])
+    lines.extend(render_list(trust_boundaries))
+    lines.extend(["", "## Candidate High-Value Assets"])
+    lines.extend(render_list(top_assets[:6]))
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def render_protocol_archetype(protocol_archetype: dict[str, str]) -> str:

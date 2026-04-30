@@ -24,6 +24,7 @@ Load these on demand:
 Optional helper:
 
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
 
 ## Preconditions
 
@@ -67,6 +68,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
    - When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
+   - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
 4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
 5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Draft the full detail body locally even if the live platform later splits it across several smaller fields.
 6. Run the evidence, structure, and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the local draft does not clearly show the vulnerable function, exact broken code or path, exploit walkthrough, and PoC output in the expected order, fix it before any submission work. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
@@ -103,6 +105,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - Do not attach raw source files, exploit scripts, full test suites, archives, or random code dumps by default.
 - If the platform requires a file upload or the field limit makes a fully honest report impossible inline, attach `report-appendix.md` with the same self-contained detail structure instead of a raw `.sol`, `.py`, `.js`, `.t.sol`, or archive file whenever the platform accepts markdown or plain text.
 - Supporting artifacts such as screenshots, HAR, video, or logs may be uploaded only as evidence supplements. They must never be the only place where the triager can learn the core bug mechanics.
+- Caido exports such as request metadata JSON, curl PoCs, or formatted responses count as supporting artifacts, not replacements for a self-contained body. Use them to anchor `artifacts.json`, not to offload the core claim.
 - Never inflate severity with generic breach language.
 - Never use `could potentially`, `may allow`, or similar hedging for the main claim.
 - Never invent screenshots, logs, identifiers, or attachments.
@@ -128,6 +131,7 @@ Return:
 - report title
 - submission URL
 - confirmation ID or blocker
+- saved `artifacts.json` and `evidence/` paths
 - saved `form-schema.json` and `submission.json` paths
 - saved local bundle path
 - any manual follow-up the user still needs
