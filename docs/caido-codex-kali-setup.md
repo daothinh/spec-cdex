@@ -114,6 +114,30 @@ If a profile was selected, it also applies that profile's `--user-data-dir` and
 `--profile-directory`. Close other Chrome windows using the same profile first
 to avoid profile lock conflicts.
 
+By default, the launcher also applies a small set of Chrome runtime flags that
+make Kali/VM sessions less noisy:
+
+- `CAIDO_CHROME_QUIET_MODE=1` disables most background-networking / sync noise
+  that otherwise produces repeated GCM timeout and quota errors in the terminal.
+- `CAIDO_CHROME_GPU_MODE=swiftshader` routes WebGL/GPU work through
+  SwiftShader, which avoids common `vaInitialize failed`, transient GPU command
+  buffer failures, and `WebGL1 blocklisted` messages on restricted Linux setups.
+
+You can override those defaults when needed:
+
+```bash
+CAIDO_CHROME_GPU_MODE=system bash scripts/launch-caido-chrome.sh
+CAIDO_CHROME_GPU_MODE=disabled bash scripts/launch-caido-chrome.sh
+CAIDO_CHROME_QUIET_MODE=0 bash scripts/launch-caido-chrome.sh
+CAIDO_CHROME_EXTRA_ARGS="--disable-extensions" bash scripts/launch-caido-chrome.sh
+```
+
+Reusing an existing daily-driver Chrome profile can still emit extension-related
+warnings such as `Failed to create API on Chrome object.` Those usually come
+from the profile's installed extensions rather than Caido itself. If you want a
+cleaner launch, either disable extensions for that session or let the launcher
+use the dedicated `~/.config/caido-codex-chrome` profile.
+
 ### 4. Verify the Codex wrapper
 
 ```bash
