@@ -7,6 +7,9 @@ PAT="${CAIDO_PAT:-}"
 CA_CERT_PATH=""
 CHROME_USER_DATA_DIR="${CAIDO_CHROME_USER_DATA_DIR:-}"
 CHROME_PROFILE_DIRECTORY="${CAIDO_CHROME_PROFILE_DIRECTORY:-}"
+CHROME_QUIET_MODE="${CAIDO_CHROME_QUIET_MODE:-1}"
+CHROME_GPU_MODE="${CAIDO_CHROME_GPU_MODE:-swiftshader}"
+CHROME_EXTRA_ARGS="${CAIDO_CHROME_EXTRA_ARGS:-}"
 # Use the effective user/home for this process. This script is often invoked via
 # `sudo -u <real-user> ...`, where SUDO_USER may still point at root.
 REAL_USER="$(id -un)"
@@ -14,7 +17,6 @@ REAL_HOME="${HOME:-}"
 if [[ -z "${REAL_HOME}" || ! -d "${REAL_HOME}" ]]; then
   REAL_HOME="$(getent passwd "${REAL_USER}" | cut -d: -f6 || true)"
 fi
-[[ -n "${REAL_HOME}" ]] || die "Could not resolve home directory for ${REAL_USER}"
 EXPORT_DIR="${REAL_HOME}/.codex/caido"
 ENV_OUT="${EXPORT_DIR}/manual-setup.env"
 GUIDE_OUT="${EXPORT_DIR}/manual-setup.txt"
@@ -41,6 +43,13 @@ Options:
                       Existing Chrome user-data-dir to reuse.
   --chrome-profile-directory NAME
                       Existing profile directory inside the user-data-dir.
+  --chrome-quiet-mode 0|1
+                      Whether the launcher should reduce background-service
+                      noise by default. Defaults to 1.
+  --chrome-gpu-mode MODE
+                      Launcher GPU mode: swiftshader, system, or disabled.
+  --chrome-extra-args "..."
+                      Extra Chrome args appended by the launcher.
   --export-dir PATH   Directory for manual setup artifacts.
   -h, --help          Show this help text.
 
@@ -112,6 +121,21 @@ parse_args() {
         CHROME_PROFILE_DIRECTORY="$2"
         shift 2
         ;;
+      --chrome-quiet-mode)
+        [[ $# -ge 2 ]] || die "--chrome-quiet-mode requires a value"
+        CHROME_QUIET_MODE="$2"
+        shift 2
+        ;;
+      --chrome-gpu-mode)
+        [[ $# -ge 2 ]] || die "--chrome-gpu-mode requires a value"
+        CHROME_GPU_MODE="$2"
+        shift 2
+        ;;
+      --chrome-extra-args)
+        [[ $# -ge 2 ]] || die "--chrome-extra-args requires a value"
+        CHROME_EXTRA_ARGS="$2"
+        shift 2
+        ;;
       --export-dir)
         [[ $# -ge 2 ]] || die "--export-dir requires a value"
         EXPORT_DIR="$2"
@@ -160,6 +184,9 @@ export CAIDO_CERT_PATH='${CA_CERT_PATH:-<path-to-ca.crt>}'
 export CAIDO_CHROME_CERT_MANAGER='chrome://certificate-manager/'
 export CAIDO_CHROME_USER_DATA_DIR='${CHROME_USER_DATA_DIR}'
 export CAIDO_CHROME_PROFILE_DIRECTORY='${CHROME_PROFILE_DIRECTORY}'
+export CAIDO_CHROME_QUIET_MODE='${CHROME_QUIET_MODE}'
+export CAIDO_CHROME_GPU_MODE='${CHROME_GPU_MODE}'
+export CAIDO_CHROME_EXTRA_ARGS='${CHROME_EXTRA_ARGS}'
 EOF
 }
 
@@ -177,6 +204,9 @@ CAIDO_PAT=${PAT:-<fill-me>}
 CAIDO_CERT_PATH=${CA_CERT_PATH:-<path-to-ca.crt>}
 CAIDO_CHROME_USER_DATA_DIR=${CHROME_USER_DATA_DIR:-<optional-existing-user-data-dir>}
 CAIDO_CHROME_PROFILE_DIRECTORY=${CHROME_PROFILE_DIRECTORY:-<optional-profile-directory>}
+CAIDO_CHROME_QUIET_MODE=${CHROME_QUIET_MODE}
+CAIDO_CHROME_GPU_MODE=${CHROME_GPU_MODE}
+CAIDO_CHROME_EXTRA_ARGS=${CHROME_EXTRA_ARGS:-<optional-extra-launcher-args>}
 
 Chrome HTTPS trust
 ------------------
@@ -195,6 +225,17 @@ If CAIDO_CHROME_USER_DATA_DIR / CAIDO_CHROME_PROFILE_DIRECTORY are set in
 manual-setup.env, the launcher will reuse that existing Chrome profile.
 If they are blank, the launcher falls back to a dedicated Caido-only profile at
 ${REAL_HOME}/.config/caido-codex-chrome.
+
+Launcher defaults:
+- CAIDO_CHROME_QUIET_MODE=1 suppresses most GCM/background-networking noise.
+- CAIDO_CHROME_GPU_MODE=swiftshader avoids common VAAPI/WebGL issues on Kali,
+  VMs, and GPU-restricted environments.
+- Switch CAIDO_CHROME_GPU_MODE to system if you need native GPU/WebGL.
+- Switch CAIDO_CHROME_GPU_MODE to disabled if the browser still crashes while
+  initializing GPU services.
+- If you reuse a noisy profile with many extensions, set:
+    CAIDO_CHROME_EXTRA_ARGS=--disable-extensions
+  or leave the profile fields blank to use the dedicated Caido profile instead.
 
 Or launch manually (adjust the browser binary name if your Kali package uses
 google-chrome-stable instead of google-chrome):
@@ -220,6 +261,7 @@ EOF
 }
 
 main() {
+  [[ -n "${REAL_HOME}" ]] || die "Could not resolve home directory for ${REAL_USER}"
   parse_args "$@"
   resolve_values
   write_env_file
