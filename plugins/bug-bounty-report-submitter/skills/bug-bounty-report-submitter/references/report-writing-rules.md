@@ -11,26 +11,28 @@ Use after validation and before any submit action. Write for a tired triager: im
 - Do not report until the issue reproduces from a fresh state with the saved proof path.
 - The report body must stand on its own. The triager should not need an attachment to understand the core bug.
 
-## Immunefi-Style Detail Body Is The Default
+## Evidence Order Is The Default
 
-Unless the live program forces a different field layout, draft the long-form body in this order:
+Unless the live program forces a different field layout, keep the long-form body in this logic order:
 
-1. `Brief/Intro`
-2. `Vulnerability Details`
-3. `The Vulnerable Function` or `Affected Endpoint` or `Affected Component`
-4. `Why The Check Fails` or `Root Cause`
-5. `Attack Vector Explained` or `Exploit Walkthrough`
-6. `Impact Details`
-7. `Output from POC`
-8. `Proof of Concept`
+1. Summary of the exact bug and observed effect
+2. Exact vulnerable location
+3. Root cause
+4. Exploit or replay path
+5. Impact details
+6. Decisive PoC output
+7. Minimal PoC or replay instructions
 
 Do not skip the vulnerable-location section for code-driven bugs. The triager should not have to hunt through the PoC to discover where the bug actually lives.
+Do not force those phrases as literal headings in the submitted text when the platform does not ask for them.
 
 ## Title And Subject Formula
 
-Default formula:
+Preferred formulas:
 
-`[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
+- `[Target] [bug class] in [location] exposes / breaks / bypasses [observed effect]`
+- `[Target] [root cause] in [location] causes [observed result]`
+- `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
 
 Good:
 - `[api.target.com] IDOR at GET /api/v2/invoices/{id} leads to invoice data exposure`
@@ -40,6 +42,7 @@ Good:
 Channel adaptation:
 - Keep the target prefix. It is part of the formula, not an optional addon.
 - If the field is short, preserve target, vulnerability type, and impact before trimming the location.
+- For availability-only or behavior-mismatch bugs, prefer the broken action or observed failure over inflated exploit language.
 
 ## Opening Paragraph
 
@@ -140,11 +143,21 @@ Good pattern:
 - No invented screenshots, logs, identifiers, or attachments.
 - No local workstation paths in prose, snippets, commands, screenshots, or attachment notes.
 
+## Anti-Template Hygiene
+
+- Do not ship literal headings such as `Brief/Intro`, `Vulnerability Details`, or `Impact Details` unless the platform uses those labels.
+- If the report still reads well after replacing the target name, function, and identifiers with placeholders, it is too generic. Rewrite it.
+- The first paragraph should carry at least two target-specific anchors: exact asset, exact function or endpoint, actor role, contract name, tx hash, market, or other concrete identifier.
+- Prefer one decisive snippet and one decisive output block over multiple near-duplicate snippets or repeated narrative restatements.
+- Do not post a follow-up comment that merely restates the same proof with a larger code dump. Follow-up comments should only add reviewer-requested delta.
+- If the issue is a documented-behavior mismatch or scoped availability break, say that plainly instead of forcing a more dramatic vulnerability label.
+
 ## Pre-Submit Checklist
 
 - Title follows the formula and names exact impact.
 - First sentence states the bug and practical consequence.
 - The detail body follows the Immunefi-style order or a platform-constrained equivalent.
+- The submitted text uses platform labels or target-specific headings, not reusable scaffold headings.
 - The report names the exact vulnerable function, endpoint, or component.
 - Steps contain exact requests, IDs, or UI actions.
 - Core proof and exploit logic are present inline, even if supporting evidence is also attached.
@@ -154,6 +167,7 @@ Good pattern:
 - The exploit function or replay sequence is shown without dumping a full unrelated file.
 - POC output shows the impact before the full PoC body.
 - No raw source file or archive is uploaded unless there is a documented reason it was unavoidable.
+- No unsolicited follow-up comment is queued that only reformats the same proof.
 - Two identities are used where an authorization boundary is claimed.
 - Severity or CVSS matches the observed impact and prerequisites.
 - Remediation is short and optional unless the program asks for it.

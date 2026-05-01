@@ -6,7 +6,7 @@ description: >
   and attachment flow.
 metadata:
   author: workers.io
-  version: "0.2.1"
+  version: "0.2.2"
 ---
 
 # Bug Bounty Report Submitter
@@ -14,9 +14,9 @@ metadata:
 Inspect the live submission form first, then turn independently re-verified findings into an evidence-backed report bundle and submit it through Playwright MCP.
 
 Load these on demand:
-- [references/report-writing-rules.md](references/report-writing-rules.md) for impact-first report rules, title formula, severity discipline, and final checklist
+- [references/report-writing-rules.md](references/report-writing-rules.md) for impact-first report rules, title guidance, severity discipline, and the final checklist
 - [references/report-structure.md](references/report-structure.md) for field mapping and section order
-- [references/immunefi-body-template.md](references/immunefi-body-template.md) for the default long-form body skeleton based on recurring accepted Immunefi report patterns
+- [references/immunefi-body-template.md](references/immunefi-body-template.md) for the evidence-first local drafting scaffold and content order
 - [references/writing-style.md](references/writing-style.md) for natural prose rules and anti-template cleanup
 - [references/playwright-submit.md](references/playwright-submit.md) for the browser automation sequence
 - `plugins/bounty-hunting-programs/skills/bounty-program-triage/SKILL.md` if target scope or program constraints are still unclear
@@ -70,23 +70,24 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
    - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
 4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
-5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Draft the full detail body locally even if the live platform later splits it across several smaller fields.
-6. Run the evidence, structure, and style pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the local draft does not clearly show the vulnerable function, exact broken code or path, exploit walkthrough, and PoC output in the expected order, fix it before any submission work. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Submit only after the visible form matches `submission.json`.
+5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
+6. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
+7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the visible form matches `submission.json`.
 8. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
 ## Report Rules
 
 - Lead with the bug and affected asset, not background.
 - Discover the live form schema before drafting prose.
-- Use the title formula from [references/report-writing-rules.md](references/report-writing-rules.md) when the form has a title-like field.
+- Use the title guidance from [references/report-writing-rules.md](references/report-writing-rules.md) when the form has a title-like field.
 - Keep the title technical and professional. Use target, exact vuln names, concrete locations, and the highest observed impact.
 - First sentence must state the practical impact in plain English, not background or jargon.
-- The default body order is `Brief/Intro -> Vulnerability Details -> The Vulnerable Function or Affected Endpoint -> Why The Check Fails -> Attack Vector Explained -> Impact Details -> Output from POC -> Proof of Concept`.
+- Keep the logic order `summary -> exact bug location -> root cause -> exploit path -> observed impact -> decisive PoC output -> minimal replay`, but do not force those exact phrases as literal headings in the submitted text.
 - Prefer short paragraphs and numbered reproduction steps.
 - For smart contract or code-heavy bugs, make `Vulnerability Details` code-first: show the vulnerable function or exact snippet immediately, then explain why that code path fails.
 - When the bug is code-driven, include file path plus repo or GitHub line reference whenever it exists.
 - The detail body must answer three questions without making the triager open a full attachment first: where the bug is, why the code or path is wrong, and how to replay the exploit.
+- Treat headings such as `Brief/Intro`, `Vulnerability Details`, `Impact Details`, `Output from POC`, and `Proof of Concept` as local drafting aids only. In the final submission, prefer the platform's labels or tighter target-specific headings such as the exact function, endpoint, or failure mode.
 - Show the exploit function, test case, or request sequence that triggers the bug. Do not paste the whole file unless the program explicitly requires it.
 - The report body is the primary source of truth. Do not offload core bug details, exploit reasoning, or replay steps to attachments.
 - Tie impact to the program context: auth bypass, account takeover, data exposure, privilege gain, funds risk, or availability.
@@ -101,11 +102,13 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `Output from POC` or its field-equivalent must appear before the full PoC whenever a PoC exists.
 - Use the independent re-verification verdict to sharpen the report claim, not to pad it with generic certainty language.
 - Prefer an `Output from POC` or equivalent evidence block before the full PoC when logs, balances, tx results, or assertions make the impact obvious faster than code alone.
+- If the issue is primarily a documented-behavior mismatch, fallback break, or availability-only failure, name the exact broken action in the title and opening paragraph instead of forcing stronger exploit labels than the reproduced effect supports.
 - If a coded PoC is impossible, state exactly why and replace it with a replayable actor timeline, transaction sequence, or state-machine walkthrough.
 - Do not attach raw source files, exploit scripts, full test suites, archives, or random code dumps by default.
 - If the platform requires a file upload or the field limit makes a fully honest report impossible inline, attach `report-appendix.md` with the same self-contained detail structure instead of a raw `.sol`, `.py`, `.js`, `.t.sol`, or archive file whenever the platform accepts markdown or plain text.
 - Supporting artifacts such as screenshots, HAR, video, or logs may be uploaded only as evidence supplements. They must never be the only place where the triager can learn the core bug mechanics.
 - Caido exports such as request metadata JSON, curl PoCs, or formatted responses count as supporting artifacts, not replacements for a self-contained body. Use them to anchor `artifacts.json`, not to offload the core claim.
+- Follow-up comments are off by default. Post one only when it adds missing, reviewer-relevant delta. Never paste a large code block into comments just to restate the body in a different format.
 - Never inflate severity with generic breach language.
 - Never use `could potentially`, `may allow`, or similar hedging for the main claim.
 - Never invent screenshots, logs, identifiers, or attachments.

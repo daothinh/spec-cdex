@@ -1,12 +1,16 @@
-# Immunefi-Style Detail Body Template
+# Evidence-First Detail Body Planning Template
 
-Use this as the default long-form skeleton for `report.md`, `email-draft.md`, or any single rich-text detail field. The structure is derived from repeated patterns visible in accepted public Immunefi reports: the best reports name the exact vulnerable location early, show the smallest decisive code or request fragment, explain the broken assumption, then prove the impact with PoC output before dumping the full exploit.
+The filename is kept for compatibility, but this document is a local planning aid, not a literal heading set to paste into every form.
 
-If the live platform splits the report into multiple fields, keep this exact logic order locally and then map each section into the closest field in `submission.json`.
+Use it to preserve content order for `report.md`, `email-draft.md`, or any single rich-text detail field. The winning pattern is still: name the exact vulnerable location early, show the smallest decisive code or request fragment, explain the broken assumption, then prove the impact with PoC output before dumping the full exploit.
+
+If the live platform splits the report into multiple fields, keep this logic order locally and then map each block into the closest field in `submission.json`.
+
+If the live platform gives you one long free-text field, do not blindly paste all of these headings. Collapse or rename them into platform-native or target-specific prose.
 
 The report body must remain self-contained. Attachments can support the report, but they must not carry the core explanation of where the bug is, why it works, or how to replay it.
 
-## Mandatory order
+## Required content order
 
 1. `Brief/Intro`
 2. `Vulnerability Details`
@@ -22,7 +26,7 @@ Optional sections:
 - `Recommendation`
 - `Environment / Setup`
 
-Do not change the order unless the platform forces a different field layout.
+The content order matters. The literal heading words do not.
 
 ## What each section must do
 
@@ -98,7 +102,9 @@ This section is mandatory whenever a PoC exists.
 - If the platform forces an attachment or the field limit prevents an honest inline explanation, generate `report-appendix.md` and keep it self-contained with the same section order used in the main report.
 - Supporting screenshots, HAR files, videos, and logs are allowed only as supplements to claims already explained in the body.
 
-## Copy-ready template
+## Local drafting scaffold
+
+Do not paste this verbatim into a live program. Rewrite the headings or collapse them before submission.
 
 ````md
 ## Brief/Intro
@@ -146,6 +152,12 @@ Observed output:
 ```
 ````
 
+Good submitted heading examples for a single long field:
+- `Broken fallback in SignatureValidator._validateSessionKeyApproval`
+- `Replay on commit <hash>`
+- `Observed revert after setAccountFactory(address(0))`
+- `Minimal Forge test`
+
 ## Channel mapping
 
 If the platform has separate fields:
@@ -156,7 +168,7 @@ If the platform has separate fields:
 - `Impact` field: `Impact Details`
 - `PoC` or `Additional Details` field: `Output from POC` + `Proof of Concept`
 
-If the platform has only one long field, keep the headings as written above.
+If the platform has only one long field, keep the same content order but use fewer, sharper headings or none at all when the report reads better without them.
 
 ## Non-negotiables
 
@@ -165,3 +177,4 @@ If the platform has only one long field, keep the headings as written above.
 - If you cannot provide a coded PoC, say exactly why and replace it with a replayable actor timeline, transaction sequence, or state machine walkthrough.
 - Keep the report focused on one confirmed exploit path. Do not pad it with alternative theories.
 - If an attachment is unavoidable, prefer a markdown appendix over raw source files.
+- The final submitted text must not read like a reusable 8-section form letter. If the same headings could be copied into a different target unchanged, rewrite them.

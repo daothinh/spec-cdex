@@ -11,14 +11,16 @@ Write after discovering the live form. Make the report read like a specific anal
 - Keep sentences direct. Prefer one claim per sentence.
 - Use short paragraphs. Break long explanations into steps or evidence bullets.
 - Vary the opening sentence so it reflects the actual bug, not a canned intro.
+- Use platform labels or target-specific headings. Remove generic scaffolding headings when they do not help the reviewer.
 - Prefer plain verbs: `returns`, `accepts`, `renders`, `bypasses`, `exposes`.
 - Keep observed impact separate from inferred extension.
-- Default to the section names and order from `immunefi-body-template.md` unless the live form forces something smaller.
+- Keep the content order from `immunefi-body-template.md`, but rewrite or collapse the section names before the final submission.
 - Make the body feel like a triager-ready whitehat note: exact bug location first, exploit path second, proof third.
 - Inline only the smallest decisive snippet or request. Put helpers and boilerplate elsewhere.
 - If you mention a function, route, component, or handler, explain why that exact location is the bug carrier.
 - Treat attachments as supplemental evidence, not as the main explanation.
 - If the report still makes sense only because the attachment exists, the body is not finished yet.
+- Do not add unsolicited post-submit comments that restate the report with more code unless the reviewer asked for that delta.
 
 ## Good Patterns
 
@@ -66,6 +68,8 @@ Before finalizing `report.md`, check:
 10. Did generic or speculative phrases survive from a prior report or template?
 11. Was the text rewritten for the actual field label and length?
 12. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
+13. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
+14. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
 
 ## Tone
 

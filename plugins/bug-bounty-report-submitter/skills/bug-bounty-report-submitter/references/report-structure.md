@@ -13,24 +13,26 @@ Start from `form-schema.json`, then write only the content the live form actuall
 
 ## Long-Form Detail Body
 
-Use the shared order from [immunefi-body-template.md](immunefi-body-template.md):
+Keep the shared logic order from [immunefi-body-template.md](immunefi-body-template.md):
 
-1. `Brief/Intro`
-2. `Vulnerability Details`
-3. `The Vulnerable Function` or `Affected Endpoint` or `Affected Component`
-4. `Why The Check Fails` or `Root Cause`
-5. `Attack Vector Explained` or `Exploit Walkthrough`
-6. `Impact Details`
-7. `Output from POC`
-8. `Proof of Concept`
+1. Summary of the bug and observed effect
+2. Exact vulnerable location
+3. Root cause
+4. Exploit or replay path
+5. Impact details
+6. Decisive PoC output
+7. Minimal PoC or replay instructions
 
-This is the default skeleton even when the live form later forces the content into smaller buckets.
+This is the default local scaffold even when the live form later forces the content into smaller buckets.
+It is not a requirement to keep those exact heading words in the final submission.
 
 ## Title
 
-Default formula from `report-writing-rules.md`:
+Preferred formulas from `report-writing-rules.md`:
 
-`[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
+- `[Target] [bug class] in [location] exposes / breaks / bypasses [observed effect]`
+- `[Target] [root cause] in [location] causes [observed result]`
+- `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`
 
 Examples:
 - `[api.target.com] IDOR at GET /api/v2/invoices/{id} leads to invoice data exposure`
@@ -47,6 +49,7 @@ Title rules:
 - Prefer observed impact over speculative worst case.
 - Keep it professional and information-dense, not emotional.
 - Avoid generic titles such as `Critical issue in your app` or `Serious bug found`.
+- For availability-only, replay-only, or documented-behavior mismatch bugs, prefer the exact broken action over a dramatic exploit label.
 - Keep it near 60-80 characters when the facts still fit cleanly, but keep the decisive technical detail if tradeoffs are required.
 - If the form title field is very short, preserve target, vuln type, and impact first, then compress the location.
 - If the platform has no dedicated title field, reuse this structure in the nearest summary or subject-like field.
@@ -83,6 +86,7 @@ Strong pattern from live Critical Immunefi reports:
 - explain the faulty loop, missing check, bad comparison, or accounting mistake in plain English
 
 Do not wait until the PoC section to show the vulnerable code if the bug is primarily in code.
+Do not preserve generic scaffold headings in the final submitted form when a shorter target-specific heading or plain prose is clearer.
 
 If the bug is not code-driven, replace the snippet with the smallest decisive request, state transition, or UI fragment that carries the same explanatory weight.
 
@@ -142,6 +146,7 @@ Avoid:
 - Do not upload raw source files or archives by default.
 - If the platform requires a file upload or the field length makes the report incomplete, create `report-appendix.md` and upload that markdown appendix before considering any raw code file.
 - Even when `report-appendix.md` is uploaded, the main report fields must still contain the full bug narrative, root cause, exploit path, and decisive PoC output.
+- Follow-up comments are not part of the default structure. Add one only when the reviewer needs missing delta that the original body or appendix could not convey.
 
 ## Web3 / Exchange Proof Details
 

@@ -66,9 +66,9 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `asset-delta.md`
    - `reproduction-matrix.md`
    - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
-11. Ensure the title or subject follows: `[Target] - [Vulnerability Type] at [Location] leads to [Impact]`.
-12. Keep the body self-contained and place `Output from POC` immediately before full PoC instructions.
-13. Attach files only when required or when a supported artifact is necessary for validation.
+11. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
+12. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, and place decisive PoC output before full PoC instructions.
+13. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
 14. Submit or send only after visible fields match the local JSON bundle.
 15. If captcha, MFA, unmapped mandatory fields, or anti-automation blocks the action, stop and save the exact blocker in `confirmation.md`.
 
