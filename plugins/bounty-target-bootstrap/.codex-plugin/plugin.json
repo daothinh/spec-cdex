@@ -1,7 +1,7 @@
 {
   "name": "bounty-target-bootstrap",
-  "version": "0.2.0",
-  "description": "Bootstrap a whitebox, Android, or smart-contract bounty target from a program URL with Playwright MCP, host-provided target-surface capture, source pull, and Bounty Hunting Program handoff.",
+  "version": "0.3.0",
+  "description": "Bootstrap web, whitebox, Android, smart-contract, or native bounty targets from a program URL with rendered scope capture, source pull, lane fingerprinting, and environment readiness handoff.",
   "author": {
     "name": "workers.io",
     "email": "chai+spec@workers.io",
@@ -17,6 +17,7 @@
     "whitebox",
     "android",
     "smart-contract",
+    "native",
     "blockchain",
     "wallet",
     "exchange"
@@ -25,7 +26,7 @@
   "interface": {
     "displayName": "Bounty Target Bootstrap",
     "shortDescription": "Bootstrap bounty targets from host-provided scope",
-    "longDescription": "Use Playwright MCP to read a scope page, persist the normalized target in-repo, inventory smart-contract and service metadata, clone source or direct artifacts, and prepare the next Bounty Hunting Program lane.",
+    "longDescription": "Use Playwright MCP to read a scope page, persist the normalized target in-repo, inventory smart-contract and service metadata, clone source or direct artifacts, assess local readiness, and prepare the next Bounty Hunting Program lane.",
     "developerName": "workers.io",
     "category": "Security",
     "capabilities": [
@@ -38,7 +39,8 @@
       "Open this bounty scope URL with Playwright and bootstrap the target locally",
       "Normalize this Android scope page and download the in-scope APK artifacts",
       "Clone the whitebox source repos from this program page and prepare the next bounty lane",
-      "Capture the host-provided smart-contract, explorer, ABI, and docs references from this bounty program page"
+      "Capture the host-provided smart-contract, explorer, ABI, and docs references from this bounty program page",
+      "Bootstrap this web or native target and make sure the local toolchain is ready before hunting starts"
     ],
     "brandColor": "#0F766E",
     "screenshots": []

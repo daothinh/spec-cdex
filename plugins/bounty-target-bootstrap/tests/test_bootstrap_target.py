@@ -104,6 +104,8 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "prep" / "tried-and-ruled-out.md").exists())
             self.assertTrue((target_root / "prep" / "finding-pipeline.md").exists())
             self.assertTrue((target_root / "prep" / "bootstrap-summary.md").exists())
+            self.assertTrue((target_root / "prep" / "environment-readiness.md").exists())
+            self.assertTrue((target_root / "prep" / "environment-readiness.json").exists())
             self.assertTrue((target_root / "prep" / "kage-plan.md").exists())
             self.assertTrue((target_root / "prep" / "caido-plan.md").exists())
             self.assertTrue((target_root / "prep" / "attack-surface-map.md").exists())
@@ -113,6 +115,7 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "prep" / "context-pack" / "trust-boundaries.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "lane-decision.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "asset-pointers.md").exists())
+            self.assertTrue((target_root / "prep" / "context-pack" / "environment-readiness.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "web-handoff.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "protocol-archetype.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "dependency-boundaries.md").exists())
@@ -135,8 +138,11 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertEqual(target_json["follow_on_lanes"], ["bounty-program-web"])
             self.assertEqual(target_json["protocol_archetype"]["name"], "Perps / Orderbook / Exchange")
             self.assertTrue(target_json["web3_readiness"]["is_web3_target"])
+            self.assertIn("web", target_json["environment_readiness"]["profiles"])
+            self.assertIn("smart-contract", target_json["environment_readiness"]["profiles"])
             self.assertTrue(stdout["kage_plan_file"].endswith("prep/kage-plan.md"))
             self.assertTrue(stdout["caido_plan_file"].endswith("prep/caido-plan.md"))
+            self.assertTrue(stdout["environment_readiness_file"].endswith("prep/environment-readiness.md"))
 
             self.assertIn("Production customer data", (target_root / "scope" / "out-of-scope.md").read_text(encoding="utf-8"))
             self.assertIn("No social engineering.", (target_root / "scope" / "program-notes.md").read_text(encoding="utf-8"))
@@ -151,10 +157,12 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("Primary Lane", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Next Best Attack Path", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Protocol Archetype", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
+            self.assertIn("Environment Readiness", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Caido Plan", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
             self.assertIn("Preferred Mode", (target_root / "prep" / "kage-plan.md").read_text(encoding="utf-8"))
             self.assertIn("Use `caido`", (target_root / "prep" / "context-pack" / "web-handoff.md").read_text(encoding="utf-8"))
             self.assertIn("Execution Mode", (target_root / "prep" / "web3-readiness.md").read_text(encoding="utf-8"))
+            self.assertIn("Overall Status", (target_root / "prep" / "environment-readiness.md").read_text(encoding="utf-8"))
 
     def test_smart_contract_bootstrap_collects_contract_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -241,6 +249,7 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "scope" / "proxy-topology.md").exists())
             self.assertTrue((target_root / "scope" / "dependency-boundaries.md").exists())
             self.assertTrue((target_root / "prep" / "bootstrap-summary.md").exists())
+            self.assertTrue((target_root / "prep" / "environment-readiness.md").exists())
             self.assertTrue((target_root / "prep" / "attack-surface-map.md").exists())
             self.assertTrue((target_root / "prep" / "protocol-invariants.md").exists())
             self.assertTrue((target_root / "prep" / "web3-readiness.md").exists())
@@ -255,6 +264,7 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("smart-contract", target_json["surface_signals"])
             self.assertIn("exchange", target_json["surface_signals"])
             self.assertEqual(target_json["protocol_archetype"]["name"], "Vault / Yield Strategy")
+            self.assertIn("smart-contract", target_json["environment_readiness"]["profiles"])
             self.assertIn("VaultProxy", (target_root / "scope" / "smart-contracts.md").read_text(encoding="utf-8"))
             self.assertIn("etherscan.local", (target_root / "scope" / "target-surface.md").read_text(encoding="utf-8"))
             self.assertIn("delegatecall", (target_root / "scope" / "proxy-topology.md").read_text(encoding="utf-8"))
@@ -320,10 +330,41 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertEqual(stdout["suggested_lane"], "bounty-program-mobile-android")
             self.assertEqual(stdout["follow_on_lanes"], ["bounty-program-mobile-android"])
             ready_file = workspace / stdout["ready_file"]
+            self.assertTrue((workspace / stdout["environment_readiness_file"]).exists())
             self.assertIn(
                 "bounty-program-mobile-android",
                 ready_file.read_text(encoding="utf-8"),
             )
+            self.assertIn(
+                "ADB",
+                (workspace / stdout["environment_readiness_file"]).read_text(encoding="utf-8"),
+            )
+
+    def test_web_target_type_is_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            workspace = temp_root / "workspace"
+            workspace.mkdir()
+
+            input_payload = {
+                "program_name": "Acme Web",
+                "program_url": "https://program.local/acme-web",
+                "target_type": "web",
+                "web_urls": ["https://app.acme.local"],
+                "api_urls": ["https://api.acme.local"],
+            }
+            input_path = temp_root / "input.json"
+            input_path.write_text(json.dumps(input_payload), encoding="utf-8")
+
+            result = self.run_script(input_path, workspace)
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+            stdout = json.loads(result.stdout)
+            self.assertEqual(stdout["suggested_lane"], "bounty-program-web")
+            self.assertIn("bounty-program-web", stdout["follow_on_lanes"])
+            self.assertTrue((workspace / stdout["environment_readiness_file"]).exists())
+            self.assertTrue((workspace / stdout["kage_plan_file"]).exists())
+            self.assertTrue((workspace / stdout["caido_plan_file"]).exists())
 
     def test_rejects_unsupported_target_type(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -334,7 +375,7 @@ class BootstrapTargetTests(unittest.TestCase):
             input_payload = {
                 "program_name": "Wrong Type",
                 "program_url": "https://program.local/wrong",
-                "target_type": "web",
+                "target_type": "wrong",
             }
             input_path = temp_root / "input.json"
             input_path.write_text(json.dumps(input_payload), encoding="utf-8")

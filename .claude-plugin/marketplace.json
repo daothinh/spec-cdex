@@ -248,7 +248,7 @@
     {
       "name": "bounty-target-bootstrap",
       "source": "./plugins/bounty-target-bootstrap",
-      "description": "Bootstrap a whitebox, Android, or smart-contract bounty target from a program URL with Playwright MCP, host-provided target-surface capture, source pull, and Bounty Hunting Program handoff."
+      "description": "Bootstrap web, whitebox, Android, smart-contract, or native bounty targets from a program URL with rendered scope capture, source pull, lane fingerprinting, and environment readiness handoff."
     },
     {
       "name": "bug-bounty-report-submitter",

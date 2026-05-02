@@ -12,7 +12,15 @@ from typing import Any
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname, urlopen
 
-SUPPORTED_TARGET_TYPES = {"whitebox", "android", "smart-contract"}
+from readiness import (
+    build_environment_readiness,
+    render_environment_readiness,
+    render_environment_readiness_context,
+    render_environment_summary_list,
+)
+
+
+SUPPORTED_TARGET_TYPES = {"whitebox", "web", "android", "smart-contract", "native"}
 APK_SUFFIXES = (".apk", ".xapk", ".apks")
 ARCHIVE_SUFFIXES = (".zip", ".tgz", ".tar.gz", ".tar", ".tar.bz2", ".tar.xz")
 ANDROID_MARKERS = {
@@ -268,6 +276,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--force", action="store_true", help="Replace an existing target directory.")
     parser.add_argument("--skip-clone", action="store_true", help="Do not clone source repositories.")
     parser.add_argument("--skip-downloads", action="store_true", help="Do not download artifacts.")
+    parser.add_argument(
+        "--readiness-mode",
+        choices=("skip", "assess", "ensure"),
+        default="assess",
+        help="Skip readiness, assess the toolchain only, or assess and auto-setup missing prerequisites.",
+    )
     return parser.parse_args()
 
 
@@ -287,6 +301,7 @@ def main() -> int:
             force=args.force,
             skip_clone=args.skip_clone,
             skip_downloads=args.skip_downloads,
+            readiness_mode=args.readiness_mode,
         )
     except Exception as exc:  # pragma: no cover - exercised via subprocess tests
         print(f"error: {exc}", file=sys.stderr)
@@ -505,6 +520,7 @@ def bootstrap_target(
     force: bool,
     skip_clone: bool,
     skip_downloads: bool,
+    readiness_mode: str,
 ) -> dict[str, Any]:
     target_root = repo_root / targets_dir / target["slug"]
     ensure_inside_root(repo_root, target_root)
@@ -561,6 +577,16 @@ def bootstrap_target(
     target_record["web3_readiness"] = web3_readiness
     target_record["next_attack_path"] = next_attack_path
 
+    environment_readiness = {}
+    if readiness_mode != "skip":
+        environment_readiness = build_environment_readiness(
+            target=target_record,
+            repo_root=repo_root,
+            target_root=target_root,
+            mode=readiness_mode,
+        )
+        target_record["environment_readiness"] = environment_readiness
+
     write_json(scope_dir / "input.json", raw_input)
     write_json(scope_dir / "target.json", target_record)
     write_json(scope_dir / "chain-inventory.json", chain_inventory)
@@ -581,6 +607,9 @@ def bootstrap_target(
     write_text(prep_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
     write_text(prep_dir / "protocol-invariants.md", render_protocol_invariants(protocol_archetype, protocol_invariants))
     write_text(prep_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
+    if environment_readiness:
+        write_json(prep_dir / "environment-readiness.json", environment_readiness)
+        write_text(prep_dir / "environment-readiness.md", render_environment_readiness(environment_readiness))
     if should_prepare_web_handoff(suggested_lane, follow_on_lanes):
         write_text(
             prep_dir / "kage-plan.md",
@@ -611,6 +640,7 @@ def bootstrap_target(
             top_assets=top_assets,
             next_attack_path=next_attack_path,
             web3_readiness=web3_readiness,
+            environment_readiness=environment_readiness,
         ),
     )
     write_context_pack(
@@ -627,6 +657,7 @@ def bootstrap_target(
         dependency_boundaries=dependency_boundaries,
         attack_surface_map=attack_surface_map,
         web3_readiness=web3_readiness,
+        environment_readiness=environment_readiness,
     )
     write_text(findings_dir / "README.md", render_findings_readme())
     write_text(
@@ -657,6 +688,12 @@ def bootstrap_target(
         "attack_surface_file": relative_path(prep_dir / "attack-surface-map.md", repo_root),
         "protocol_invariants_file": relative_path(prep_dir / "protocol-invariants.md", repo_root),
         "web3_readiness_file": relative_path(prep_dir / "web3-readiness.md", repo_root),
+        "environment_readiness_file": relative_path(prep_dir / "environment-readiness.md", repo_root)
+        if (prep_dir / "environment-readiness.md").exists()
+        else "",
+        "environment_readiness_json_file": relative_path(prep_dir / "environment-readiness.json", repo_root)
+        if (prep_dir / "environment-readiness.json").exists()
+        else "",
         "context_pack_dir": relative_path(context_pack_dir, repo_root),
         "kage_plan_file": relative_path(prep_dir / "kage-plan.md", repo_root) if (prep_dir / "kage-plan.md").exists() else "",
         "caido_plan_file": relative_path(prep_dir / "caido-plan.md", repo_root) if (prep_dir / "caido-plan.md").exists() else "",
@@ -664,6 +701,7 @@ def bootstrap_target(
         "surface_signals": surface_signals,
         "follow_on_lanes": follow_on_lanes,
         "prioritized_bug_classes": [item["name"] for item in prioritized_bug_classes],
+        "environment_status": environment_readiness.get("overall_status", "skipped") if environment_readiness else "skipped",
         "repo_results": repo_results,
         "artifact_results": artifact_results,
     }
@@ -738,6 +776,11 @@ def suggest_lane(
 ) -> tuple[str, str, list[str], list[str]]:
     target_type = target["target_type"]
     explicit_surface_signals = collect_surface_signals(target, set())
+    if target_type == "web":
+        follow_on_lanes = unique_preserve_order(
+            ["bounty-program-web", *[LANE_SIGNAL_TO_LANE[signal] for signal in explicit_surface_signals if signal in LANE_SIGNAL_TO_LANE and signal != "web"]]
+        )
+        return "bounty-program-web", "explicit web target type from scope page", explicit_surface_signals, follow_on_lanes
     if target_type == "android":
         follow_on_lanes = unique_preserve_order(
             ["bounty-program-mobile-android", *[LANE_SIGNAL_TO_LANE[signal] for signal in explicit_surface_signals if signal in LANE_SIGNAL_TO_LANE and signal != "android"]]
@@ -748,6 +791,11 @@ def suggest_lane(
             ["bounty-program-smart-contracts", *[LANE_SIGNAL_TO_LANE[signal] for signal in explicit_surface_signals if signal in LANE_SIGNAL_TO_LANE and signal != "smart-contract"]]
         )
         return "bounty-program-smart-contracts", "explicit smart-contract target type from scope page", explicit_surface_signals, follow_on_lanes
+    if target_type == "native":
+        follow_on_lanes = unique_preserve_order(
+            ["bounty-program-native", *[LANE_SIGNAL_TO_LANE[signal] for signal in explicit_surface_signals if signal in LANE_SIGNAL_TO_LANE and signal != "native"]]
+        )
+        return "bounty-program-native", "explicit native target type from scope page", explicit_surface_signals, follow_on_lanes
 
     available_paths = [
         Path(item["local_path"])
@@ -1358,6 +1406,7 @@ def render_bootstrap_summary(
     top_assets: list[str],
     next_attack_path: str,
     web3_readiness: dict[str, Any],
+    environment_readiness: dict[str, Any],
 ) -> str:
     lines = [
         "# Bootstrap Summary",
@@ -1379,6 +1428,9 @@ def render_bootstrap_summary(
     lines.extend(render_list(target.get("dependency_boundaries", [])))
     lines.extend(["", "## First 3 Prioritized Bug Classes"])
     lines.extend(render_bug_class_list(prioritized_bug_classes))
+    if environment_readiness:
+        lines.extend(["", "## Environment Readiness"])
+        lines.extend(render_environment_summary_list(environment_readiness))
     if web3_readiness.get("is_web3_target"):
         lines.extend(["", "## Web3 Readiness"])
         lines.extend(render_web3_readiness_list(web3_readiness))
@@ -1415,6 +1467,7 @@ def write_context_pack(
     dependency_boundaries: list[str],
     attack_surface_map: dict[str, list[str]],
     web3_readiness: dict[str, Any],
+    environment_readiness: dict[str, Any],
 ) -> None:
     write_text(context_pack_dir / "README.md", render_context_pack_readme())
     write_text(context_pack_dir / "trust-boundaries.md", render_context_trust_boundaries(trust_boundaries))
@@ -1432,6 +1485,11 @@ def write_context_pack(
     write_text(context_pack_dir / "asset-pointers.md", render_context_asset_pointers(target, top_assets))
     write_text(context_pack_dir / "dependency-boundaries.md", render_dependency_boundaries(dependency_boundaries))
     write_text(context_pack_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
+    if environment_readiness:
+        write_text(
+            context_pack_dir / "environment-readiness.md",
+            render_environment_readiness_context(environment_readiness),
+        )
     if web3_readiness.get("is_web3_target"):
         write_text(context_pack_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
     write_text(context_pack_dir / "protocol-archetype.md", render_protocol_archetype(protocol_archetype))
@@ -1449,6 +1507,7 @@ def render_context_pack_readme() -> str:
         "- `protocol-archetype.md` - current protocol classification and why it was chosen\n"
         "- `dependency-boundaries.md` - off-chain and cross-surface trust edges that still matter\n"
         "- `attack-surface-map.md` - public, privileged, callback, and dependency-centric attack surface\n"
+        "- `environment-readiness.md` - current toolchain status and remaining setup blockers when available\n"
         "- `web-handoff.md` - kage vs caido handoff guidance for web/API targets when applicable\n"
         "- `web3-readiness.md` - toolchain and replay readiness for web3-heavy targets when applicable\n"
     )
@@ -1670,12 +1729,26 @@ def render_ready_for_bounty(
                 "- Use the downloaded APKs and package names from `scope/target.json`.",
             ]
         )
+    elif suggested_lane == "bounty-program-web":
+        lines.extend(
+            [
+                "- Activate `bounty-program-web`.",
+                "- Start from `prep/environment-readiness.md`, `prep/kage-plan.md`, and `prep/caido-plan.md` before live testing.",
+            ]
+        )
     elif suggested_lane == "bounty-program-smart-contracts":
         lines.extend(
             [
                 "- Activate `bounty-program-smart-contracts`.",
                 "- Start from `scope/smart-contracts.md`, `scope/target-surface.md`, and any cloned repos or downloaded ABI files.",
                 "- If the contracts are Solidity or Vyper, prefer `evm-protocol-audit` for the first deep pass after entry-point mapping.",
+            ]
+        )
+    elif suggested_lane == "bounty-program-native":
+        lines.extend(
+            [
+                "- Activate `bounty-program-native`.",
+                "- Start from `prep/environment-readiness.md` and confirm debugger, mitigation, and exploit-helper readiness before deep work.",
             ]
         )
     elif suggested_lane == "bounty-program-triage":
@@ -1709,6 +1782,7 @@ def render_ready_for_bounty(
             "- `prep/tried-and-ruled-out.md` to track attack paths that were tested and discarded",
             "- `prep/finding-pipeline.md` to track candidate, re-verify, and reporting status",
             "- `prep/bootstrap-summary.md` for trust boundaries, lane choice, bug-class priorities, and the next attack path",
+            "- `prep/environment-readiness.md` and `prep/environment-readiness.json` for the current toolchain state, auto-setup actions, and remaining blockers",
             "- `prep/attack-surface-map.md` for public, privileged, callback, and dependency-centric attack surface",
             "- `prep/protocol-invariants.md` for archetype-specific invariants",
             "- `prep/web3-readiness.md` for toolchain and replay readiness on web3-heavy targets",
@@ -1730,7 +1804,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
+        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 

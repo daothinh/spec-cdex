@@ -22,6 +22,8 @@ Bootstrap should also emit:
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
 - `prep/bootstrap-summary.md`
+- `prep/environment-readiness.md`
+- `prep/environment-readiness.json`
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
 - `prep/web3-readiness.md`
@@ -37,6 +39,7 @@ Bootstrap should also emit:
 - `protocol-archetype.md`
 - `dependency-boundaries.md`
 - `attack-surface-map.md`
+- `environment-readiness.md` when bootstrap assessed or repaired the local toolchain
 - `web3-readiness.md` for web3-heavy targets
 
 ## Finding Bundle

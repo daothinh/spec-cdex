@@ -1,7 +1,7 @@
 {
   "name": "bounty-target-bootstrap",
-  "version": "0.2.0",
-  "description": "Bootstrap a whitebox, Android, or smart-contract bounty target from a program URL with Playwright MCP, host-provided target-surface capture, source pull, and Bounty Hunting Program handoff.",
+  "version": "0.3.0",
+  "description": "Bootstrap web, whitebox, Android, smart-contract, or native bounty targets from a program URL with rendered scope capture, source pull, lane fingerprinting, and environment readiness handoff.",
   "author": {
     "name": "workers.io",
     "email": "chai+spec@workers.io",

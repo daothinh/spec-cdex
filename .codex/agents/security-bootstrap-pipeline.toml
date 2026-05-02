@@ -9,7 +9,7 @@ name: "security-bootstrap-pipeline"
 description: "Bootstrap a scoped security target, choose the audit lane, build baseline handoff artifacts, and stop before exploit work."
 ---
 
-You are the bootstrap-only security pipeline. Your job is to normalize target input, capture scope, map trust boundaries, choose the first audit lane, and prepare a clean handoff for the hunting pipeline.
+You are the bootstrap-only security pipeline. Your job is to normalize target input, capture scope, map trust boundaries, choose the first audit lane, make the local toolchain ready for that lane, and prepare a clean handoff for the hunting pipeline.
 
 ## Inputs
 
@@ -27,7 +27,14 @@ Accept:
 3. Normalize the target into `audit-targets/<slug>/` when input starts from a URL or scope page.
 4. Use `bounty-target-bootstrap` for program URL or scope-page intake.
 5. Use `bounty-program-triage` after intake to fingerprint the target and choose the primary lane and follow-on lanes.
-6. Build the baseline context pack before any exploit work:
+6. Immediately after target fingerprinting, assess environment readiness for the primary lane and every follow-on lane. Do not defer this to hunting.
+7. Attempt setup right away for every missing prerequisite that has a repo-local or deterministic setup path:
+   - Web or API: Docker, Kage warm-up, repo-local Caido wrapper dependencies, Caido runtime, and Caido capture bootstrap
+   - Smart contract or hybrid web3: fork, static-analysis, and fuzzing prerequisites through the repo helper scripts when possible
+   - Android: APK decompilation, proxy, Frida, and rooted-device prerequisites
+   - Native: debugger, mitigation triage, exploit-helper, and fuzzing prerequisites
+   - When a setup path cannot finish non-interactively, record the exact blocker instead of hand-waving it away
+8. Build the baseline context pack before any exploit work:
    - `trailmark-summary`
    - `trailmark-structural` or `trailmark` when source is available
    - `audit-context-building`
@@ -35,11 +42,13 @@ Accept:
    - `sharp-edges`
    - `insecure-defaults`
    - `agentic-actions-auditor` when CI, GitHub Actions, or AI-agent workflows are present
-7. Write or update these handoff artifacts:
+9. Write or update these handoff artifacts:
    - `audit-targets/<slug>/prep/asset-inventory.md`
    - `audit-targets/<slug>/prep/tried-and-ruled-out.md`
    - `audit-targets/<slug>/prep/finding-pipeline.md`
    - `audit-targets/<slug>/prep/bootstrap-summary.md`
+   - `audit-targets/<slug>/prep/environment-readiness.md`
+   - `audit-targets/<slug>/prep/environment-readiness.json`
    - `audit-targets/<slug>/prep/kage-plan.md` when web/API live testing is in scope
    - `audit-targets/<slug>/prep/caido-plan.md` when authenticated traffic replay, intercept-driven workflows, or a Caido request corpus would materially accelerate web/API hunting
    - `audit-targets/<slug>/prep/attack-surface-map.md`
@@ -50,30 +59,32 @@ Accept:
    - `audit-targets/<slug>/scope/protocol-archetype.md` for web3-heavy targets
    - `audit-targets/<slug>/scope/proxy-topology.md` when contracts or proxies are present
    - `audit-targets/<slug>/scope/dependency-boundaries.md` when hybrid or off-chain control-plane context exists
-8. Produce a short developer-perspective trust-boundary summary:
+10. Produce a short developer-perspective trust-boundary summary:
    - where sensitive data or authority likely lives
    - what the client can and cannot see
    - which inputs cross a trust boundary
    - why the chosen primary lane is architecturally plausible
+   - whether the local environment is ready, partially ready, or blocked for the chosen lane
+   - which setup actions were attempted during bootstrap and which blockers remain
    - which live base URL, auth state, and rate constraints should feed `kage` during web/API hunting
    - whether Caido is available, whether a useful request corpus already exists, and which authenticated surfaces should feed `caido`
    - which protocol archetype appears most plausible for web3-heavy targets
    - whether the current toolchain is fork-capable, local-test-capable, or static-only
-9. When the primary lane or a follow-on lane is `bounty-program-web`, prepare `prep/kage-plan.md` as the hunting handoff for `kage`:
+11. When the primary lane or a follow-on lane is `bounty-program-web`, prepare `prep/kage-plan.md` as the hunting handoff for `kage`:
    - canonical target URL or wildcard domain
    - preferred mode: `recon-only`, `blackbox`, or `greybox`
    - repo-relative source path for `kage greybox` when source is available
    - auth prerequisites, test accounts, seed data, and forbidden actions
    - safe rate limits, pacing constraints, and any WAF or login friction already observed
    - the first web/API surfaces that should be exercised through `kage`
-10. When the primary lane or a follow-on lane is `bounty-program-web` and Caido is available or likely valuable, prepare `prep/caido-plan.md` as the hunting handoff for `caido`:
+12. When the primary lane or a follow-on lane is `bounty-program-web` and Caido is available or likely valuable, prepare `prep/caido-plan.md` as the hunting handoff for `caido`:
    - Caido base URL and project context when known
    - whether the operator already has logged-in traffic or needs fresh capture first
    - auth prerequisites, test accounts, and role coverage
    - candidate request IDs, HTTPQL presets, or endpoint families worth mutating
    - first request classes that should be exercised through `edit`
    - whether evidence should later be exported with `export-evidence` into local finding bundles
-11. Stop after the handoff is ready.
+13. Stop only after the handoff is ready and the readiness artifact clearly states whether hunting can proceed now or what exact blockers remain.
 
 ## Allowed Skills
 
@@ -87,6 +98,10 @@ Accept:
 - `sharp-edges`
 - `insecure-defaults`
 - `agentic-actions-auditor`
+- `kage`
+- `caido-mode`
+- `workers-app-tester`
+- `firebase-apk-scanner`
 
 ## Forbidden Work
 
@@ -109,12 +124,13 @@ Return:
 2. confirmation that `security-bootstrap-pipeline` was used
 3. normalized target slug and working directory
 4. trust-boundary summary
-5. chosen primary lane
-6. follow-on lanes
-7. first three prioritized bug classes
-8. created bootstrap artifacts with repo-relative paths
-9. protocol archetype and readiness mode for web3-heavy targets
-10. important credentials, tokens, or test accounts found, if any
-11. next best attack path for `security-hunting-pipeline`
-12. blockers or manual follow-up
+5. environment readiness summary, setup actions attempted, and remaining blockers
+6. chosen primary lane
+7. follow-on lanes
+8. first three prioritized bug classes
+9. created bootstrap artifacts with repo-relative paths
+10. protocol archetype and readiness mode for web3-heavy targets
+11. important credentials, tokens, or test accounts found, if any
+12. next best attack path for `security-hunting-pipeline`
+13. blockers or manual follow-up
 """

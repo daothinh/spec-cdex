@@ -8,7 +8,7 @@ The bootstrap script expects one JSON object.
 - `program_url`
 - `target_type`
 
-`target_type` must be `whitebox`, `android`, or `smart-contract`.
+`target_type` must be `web`, `whitebox`, `android`, `smart-contract`, or `native`.
 
 ## Optional Keys
 
@@ -165,6 +165,8 @@ Each `smart_contracts` entry may include:
 - `prep/tried-and-ruled-out.md`
 - `prep/finding-pipeline.md`
 - `prep/bootstrap-summary.md`
+- `prep/environment-readiness.md`
+- `prep/environment-readiness.json`
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
 - `prep/web3-readiness.md`
@@ -173,8 +175,10 @@ Each `smart_contracts` entry may include:
 
 ## Lane Routing
 
+- `web` -> `bounty-program-web`
 - `android` -> `bounty-program-mobile-android`
 - `smart-contract` -> `bounty-program-smart-contracts`
+- `native` -> `bounty-program-native`
 - `whitebox` -> script fingerprints cloned source and suggests:
   - `bounty-program-web`
   - `bounty-program-native`
@@ -191,6 +195,7 @@ The generated `scope/target.json` also records:
 - `protocol_invariants` - initial invariants to preserve before exploit work
 - `attack_surface_map` - public, privileged, callback, and dependency-centric attack surfaces
 - `web3_readiness` - toolchain and replay readiness for smart-contract and hybrid web3 work
+- `environment_readiness` - cross-lane local toolchain state, auto-setup actions, and remaining blockers before hunting
 
 The generated `findings/README.md` defines the closed-loop per-finding bundle contract used by the standard pipeline:
 
@@ -213,6 +218,7 @@ The generated `prep/bootstrap-summary.md` is the hunting handoff contract and sh
 - follow-on lanes
 - protocol archetype
 - first three prioritized bug classes
+- environment readiness status, active tool profiles, and remaining blockers
 - auth or test-account state
 - top endpoints, repos, binaries, APKs, contracts, or other assets
 - toolchain and replay readiness for web3-heavy targets

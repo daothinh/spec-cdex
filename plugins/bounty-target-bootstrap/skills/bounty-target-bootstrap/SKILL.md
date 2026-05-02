@@ -1,13 +1,12 @@
 ---
 name: bounty-target-bootstrap
 description: >
-  Bootstrap a bounty target from a program URL. Use Playwright MCP to capture
-  host-provided scope, save target metadata in-repo, pull source or binary
-  artifacts, preserve smart-contract references, and prep the next bounty
-  playbook.
+  Bootstrap web, whitebox, Android, smart-contract, or native bounty targets
+  from a program URL. Capture scope, stage artifacts, fingerprint lanes, and
+  ready the local toolchain for hunting.
 metadata:
   author: workers.io
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Bounty Target Bootstrap
@@ -26,7 +25,7 @@ Load these on demand:
 ## Inputs To Capture
 
 - program name and program URL
-- target type: `whitebox`, `android`, or `smart-contract`
+- target type: `web`, `whitebox`, `android`, `smart-contract`, or `native`
 - focus areas such as `Wallet`, `Smart Contract`, `Blockchain`, and `Exchange`
 - scope summary, full in-scope list, full out-of-scope list, and rules
 - safe-harbor notes, submission notes, auth notes, and environment limits
@@ -39,20 +38,27 @@ Load these on demand:
 ## Workflow
 
 1. Use Playwright MCP, not plain HTTP, so rendered scope tables and collapsed sections are visible.
-2. Navigate to the URL, expand scope and rule accordions, and capture only assets explicitly marked in scope for `whitebox`, `android`, or `smart-contract`.
+2. Navigate to the URL, expand scope and rule accordions, and capture only assets explicitly marked in scope for `web`, `whitebox`, `android`, `smart-contract`, or `native`.
 3. Ignore unsupported assets. If the page exposes no in-scope target for those lanes, write the unsupported note and stop.
 4. Normalize findings into a JSON file matching `references/workspace-contract.md`.
 5. Run:
-   `python plugins/bounty-target-bootstrap/skills/bounty-target-bootstrap/scripts/bootstrap_target.py --input <json> --repo-root .`
-6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, `prep/bootstrap-summary.md`, `prep/context-pack/`, and `prep/ready-for-bounty.md`.
+   `python plugins/bounty-target-bootstrap/skills/bounty-target-bootstrap/scripts/bootstrap_target.py --input <json> --repo-root . --readiness-mode ensure`
+6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/context-pack/`, and `prep/ready-for-bounty.md`.
 7. For web3-heavy targets, ensure the generated handoff also includes `scope/chain-inventory.json`, `scope/protocol-archetype.md`, `scope/proxy-topology.md`, `scope/dependency-boundaries.md`, `prep/attack-surface-map.md`, `prep/protocol-invariants.md`, and `prep/web3-readiness.md`.
 8. When the target keeps a web/API lane alive, ensure bootstrap also emits `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/web-handoff.md`.
-9. Stop after intake and handoff. Do not continue into the next lane from this skill; the hunting pipeline owns that step.
-10. Preserve the generated handoff files even when no finding exists yet:
+9. Do not stop at scope capture if the environment is not ready. Assess the local toolchain and attempt repo-local setup immediately:
+   - web or API: Docker, Kage warm-up, Caido runtime, repo-local Caido wrapper dependencies, and capture bootstrap
+   - Android: APK decompilation, proxy, Frida, and rooted-device prerequisites
+   - native: debugger, mitigation triage, and exploit-helper prerequisites
+   - smart contract or hybrid web3: fork, static-analysis, and fuzzing prerequisites
+10. Stop after intake, readiness, and handoff. Do not continue into the next lane from this skill; the hunting pipeline owns that step.
+11. Preserve the generated handoff files even when no finding exists yet:
    - `prep/asset-inventory.md`
    - `prep/tried-and-ruled-out.md`
    - `prep/finding-pipeline.md`
    - `prep/bootstrap-summary.md`
+   - `prep/environment-readiness.md`
+   - `prep/environment-readiness.json`
    - `prep/kage-plan.md` when web/API breadth testing stays in scope
    - `prep/caido-plan.md` when authenticated replay is likely useful
    - `prep/attack-surface-map.md`
@@ -84,6 +90,7 @@ Load these on demand:
 - Write `prep/caido-plan.md` for authenticated replay-heavy web/API follow-up when a web lane exists.
 - For web3-heavy targets, write dedicated files for chain inventory, proxy topology, dependency boundaries, attack-surface mapping, protocol invariants, and readiness.
 - Write a reusable handoff state bundle for asset inventory, tried paths, finding lifecycle state, and the per-finding evidence contract.
+- Write a reusable readiness bundle that records the current toolchain state, auto-setup actions, and remaining blockers.
 - Write `prep/bootstrap-summary.md` so the hunting pipeline can resume without reconstructing trust boundaries, lane choice, or next best attack path.
 - Write `prep/context-pack/` with bootstrap-friendly summaries or pointers for the baseline context.
 - Clone source repos when a git URL exists.

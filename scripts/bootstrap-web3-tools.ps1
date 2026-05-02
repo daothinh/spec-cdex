@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("status", "guide")]
+    [ValidateSet("status", "guide", "ensure")]
     [string]$Mode = "status"
 )
 
@@ -63,6 +63,64 @@ $rows = foreach ($tool in $tools) {
         Source = if ($cmd) { $cmd.Source } else { "" }
         Install = $tool.Install
         Blocks = ($tool.Blocks -join "; ")
+    }
+}
+
+function Get-PythonCommand {
+    $py = Get-Command py -ErrorAction SilentlyContinue
+    if ($py) {
+        return @($py.Source, "-m", "pip")
+    }
+
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if ($python) {
+        return @($python.Source, "-m", "pip")
+    }
+
+    return @()
+}
+
+function Ensure-Tool {
+    param(
+        [Parameter(Mandatory = $true)]
+        [pscustomobject]$Tool
+    )
+
+    switch ($Tool.Name) {
+        "slither" {
+            $pip = Get-PythonCommand
+            if (-not $pip) { return "skipped" }
+            & $pip[0] $pip[1] $pip[2] install --user slither-analyzer
+            return if ($LASTEXITCODE -eq 0) { "ok" } else { "error" }
+        }
+        "medusa" {
+            $go = Get-Command go -ErrorAction SilentlyContinue
+            if (-not $go) { return "skipped" }
+            & $go.Source install github.com/crytic/medusa@latest
+            return if ($LASTEXITCODE -eq 0) { "ok" } else { "error" }
+        }
+        "trailmark" {
+            $pip = Get-PythonCommand
+            if (-not $pip) { return "skipped" }
+            & $pip[0] $pip[1] $pip[2] install --user trailmark
+            return if ($LASTEXITCODE -eq 0) { "ok" } else { "error" }
+        }
+        default {
+            return "skipped"
+        }
+    }
+}
+
+if ($Mode -eq "ensure") {
+    foreach ($tool in $tools) {
+        $cmd = Get-Command $tool.Name -ErrorAction SilentlyContinue
+        if ($cmd) {
+            Write-Host "[web3-bootstrap] $($tool.Label) already installed"
+            continue
+        }
+
+        $result = Ensure-Tool -Tool ([pscustomobject]$tool)
+        Write-Host "[web3-bootstrap] $($tool.Label) auto-install result: $result"
     }
 }
 
