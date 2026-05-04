@@ -484,6 +484,11 @@ $workspaceEntries = @(
         Name = "workspace:.codex\docs"
         LinkPath = (Normalize-Path (Join-Path $targetRepo ".codex\docs"))
         TargetPath = (Normalize-Path (Join-Path $sourceRepo "docs"))
+    },
+    [pscustomobject]@{
+        Name = "workspace:.codex\step-by-step.txt"
+        LinkPath = (Normalize-Path (Join-Path $targetRepo ".codex\step-by-step.txt"))
+        TargetPath = (Normalize-Path (Join-Path $sourceRepo "step-by-step.txt"))
     }
 )
 

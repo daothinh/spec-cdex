@@ -110,11 +110,14 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "prep" / "caido-plan.md").exists())
             self.assertTrue((target_root / "prep" / "attack-surface-map.md").exists())
             self.assertTrue((target_root / "prep" / "protocol-invariants.md").exists())
+            self.assertTrue((target_root / "prep" / "domain-logic.md").exists())
+            self.assertTrue((target_root / "prep" / "manual-review-checkpoint.md").exists())
             self.assertTrue((target_root / "prep" / "web3-readiness.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "README.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "trust-boundaries.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "lane-decision.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "asset-pointers.md").exists())
+            self.assertTrue((target_root / "prep" / "context-pack" / "domain-logic.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "environment-readiness.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "web-handoff.md").exists())
             self.assertTrue((target_root / "prep" / "context-pack" / "protocol-archetype.md").exists())
@@ -154,6 +157,11 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("environment.md", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
             self.assertIn("severity.md", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
             self.assertIn("artifacts/caido/", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
+            self.assertIn("dangerous function call", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
+            self.assertIn(
+                "attacker-observable consequence",
+                (target_root / "findings" / "README.md").read_text(encoding="utf-8"),
+            )
             self.assertIn("Primary Lane", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Next Best Attack Path", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Protocol Archetype", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
@@ -162,6 +170,11 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("Preferred Mode", (target_root / "prep" / "kage-plan.md").read_text(encoding="utf-8"))
             self.assertIn("Use `caido`", (target_root / "prep" / "context-pack" / "web-handoff.md").read_text(encoding="utf-8"))
             self.assertIn("Execution Mode", (target_root / "prep" / "web3-readiness.md").read_text(encoding="utf-8"))
+            self.assertIn("preimage", (target_root / "prep" / "domain-logic.md").read_text(encoding="utf-8"))
+            self.assertIn(
+                "20 minutes",
+                (target_root / "prep" / "manual-review-checkpoint.md").read_text(encoding="utf-8"),
+            )
             self.assertIn("Overall Status", (target_root / "prep" / "environment-readiness.md").read_text(encoding="utf-8"))
 
     def test_smart_contract_bootstrap_collects_contract_inventory(self) -> None:
@@ -252,6 +265,8 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((target_root / "prep" / "environment-readiness.md").exists())
             self.assertTrue((target_root / "prep" / "attack-surface-map.md").exists())
             self.assertTrue((target_root / "prep" / "protocol-invariants.md").exists())
+            self.assertTrue((target_root / "prep" / "domain-logic.md").exists())
+            self.assertTrue((target_root / "prep" / "manual-review-checkpoint.md").exists())
             self.assertTrue((target_root / "prep" / "web3-readiness.md").exists())
             self.assertTrue((target_root / "source" / "repos" / "protocol-repo" / "foundry.toml").exists())
             self.assertTrue((target_root / "source" / "artifacts" / "vault-abi.json").exists())
@@ -269,6 +284,8 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("etherscan.local", (target_root / "scope" / "target-surface.md").read_text(encoding="utf-8"))
             self.assertIn("delegatecall", (target_root / "scope" / "proxy-topology.md").read_text(encoding="utf-8"))
             self.assertIn("privileged entry point", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
+            self.assertIn("signature", (target_root / "prep" / "domain-logic.md").read_text(encoding="utf-8"))
+            self.assertIn("manual-review.md", (target_root / "findings" / "README.md").read_text(encoding="utf-8"))
             readiness_text = (target_root / "prep" / "web3-readiness.md").read_text(encoding="utf-8")
             self.assertIn("Execution Mode", readiness_text)
             self.assertIn("scripts/bootstrap-web3-tools.ps1", readiness_text)

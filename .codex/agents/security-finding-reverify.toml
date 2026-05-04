@@ -48,9 +48,10 @@ Entry criteria:
 - A candidate finding has already been confirmed once by the hunting pipeline.
 
 Actions:
-1. Restate the claim precisely: asset, attacker capability, trusted control that should block the attack, exact boundary that fails, and claimed consequence.
+1. Restate the claim precisely: asset, attacker capability, trusted control that should block the attack, exact boundary that fails, claimed consequence, and the exact observed success signal.
 2. Strip out hype, platform boilerplate, and speculative blast radius.
-3. If the original claim mixes multiple root causes, split them into separate findings before continuing.
+3. For financial, wallet, bridge, exchange, escrow, or Lightning findings, state the value-realization step explicitly: who must know the preimage, hold the signing authority, produce the required proof or witness, control settlement, receive the asset, or cash out the payment.
+4. If the original claim mixes multiple root causes, split them into separate findings before continuing.
 
 Exit criteria:
 - `claim.md` contains one falsifiable security claim.
@@ -63,8 +64,11 @@ Entry criteria:
 Actions:
 1. Rebuild the attacker path from scratch: input, reachability, state mutation or rendered effect, and consequence.
 2. Verify attacker control over every decisive variable.
-3. Use the narrowest decisive evidence first: code path, request pair, state diff, trace, transaction, or runtime hook.
-4. If architecture is still unclear, use `audit-context-building`, `trailmark-summary`, `trailmark-structural`, or `trailmark` before attempting more exploitation.
+3. List every cryptographic or business-logic gate that must be satisfied for the claim to work: signature, preimage, ZK proof or witness, nonce, replay domain, finality, funding state, or settlement right.
+4. List every dependency that is not attacker-controlled but must cooperate for the claimed impact to happen: server secret, preimage, signature, prover or witness, keeper, relayer, oracle update, liquidity source, settlement worker, admin role, or off-chain service.
+5. Distinguish internal side effects from attacker benefit. A dangerous function call, saved invoice, emitted event, queued transfer, outbound request, or initiated HTLC is not enough unless it leads to an attacker-observable consequence.
+6. Use the narrowest decisive evidence first: code path, request pair, state diff, trace, transaction, or runtime hook.
+7. If architecture is still unclear, use `audit-context-building`, `trailmark-summary`, `trailmark-structural`, or `trailmark` before attempting more exploitation.
 
 Exit criteria:
 - You can explain the attack path without relying on the hunter's original conclusion.
@@ -79,12 +83,15 @@ Actions:
 2. Record exact prerequisites, input values, environment assumptions, and the success signal.
 3. Change one variable at a time while replaying so the decisive condition stays attributable.
 4. Save decisive artifacts under `artifacts/` and summarize the replay in `facts.md`.
-5. If the original path depended on Caido request history or replay sessions, keep the request IDs and session IDs aligned with local `artifacts/caido/` exports instead of relying on the Caido UI alone.
+5. Produce at least one negative control replay: same path with the expected blocker restored, attacker input changed, or missing prerequisite removed.
+6. For financial or payment findings, capture whether the attacker can actually realize value: claim funds, settle the HTLC, withdraw the asset, receive the payout, or otherwise control the end-state.
+7. For financial, payment, or stateful custody findings, record attacker-side and victim-side before/after balances or state transitions whenever measurable. If one side is not measurable, explain the exact proxy used instead.
+8. If the original path depended on Caido request history or replay sessions, keep the request IDs and session IDs aligned with local `artifacts/caido/` exports instead of relying on the Caido UI alone.
 
 Exit criteria:
 - The PoC either reproduces end to end with decisive evidence, or it fails in a way that can be explained.
 
-### Phase 4: Falsification Pass
+### Phase 4: Devil's Advocate / Falsification Pass
 
 Entry criteria:
 - A replay attempt has completed.
@@ -98,8 +105,10 @@ Actions:
    - nonce, sequence, timing, or race assumptions that do not hold
    - environment protections that entirely remove exploitability
    - accounting or math constraints that make the claimed state impossible
+   - cryptographic constraints that remain unsatisfied: signature, preimage, proof, witness, replay domain, or finality condition
    - liquidity, attack-capital, oracle, or market-state assumptions that make the claimed exploit unrealistic
    - off-chain signer, relayer, keeper, or settlement dependencies that fully block or materially weaken the claim
+   - recipient cannot actually claim or settle the funds because the attacker lacks the required preimage, key, signature, or payout control
 3. Produce at least one negative check that would have falsified the claim if the control were actually sound.
 4. If the issue is really a spec mismatch question, use `spec-to-code-compliance`. If the uncertainty is invariant-heavy, use `property-based-testing`, `mutation-testing`, `genotoxic`, or `kani-proof` when they are cheaper than repeated manual guessing.
 
@@ -114,7 +123,9 @@ Entry criteria:
 Actions:
 1. Separate observed impact from reasoned extension.
 2. State whether the failure is a real security boundary break or only an operational robustness issue.
-3. If exploitation needs unusual preconditions, document them explicitly and downgrade the claim accordingly.
+3. State explicitly whether the proof ends at an internal side effect or at a user- or attacker-visible consequence.
+4. A dangerous function call, queued invoice, initiated HTLC, emitted event, or partially-complete workflow step is not impact on its own. For financial findings, initiation and settlement are different gates.
+5. If exploitation needs unusual preconditions, document them explicitly and downgrade the claim accordingly.
 
 Exit criteria:
 - `impact.md` distinguishes observed consequence from inferred blast radius.
@@ -126,7 +137,7 @@ Entry criteria:
 
 Actions:
 1. Issue exactly one verdict:
-   - `TRUE POSITIVE` — reproducible end to end, attacker control proved, boundary failure proved, impact real, and no full blocker remains
+   - `TRUE POSITIVE` — reproducible end to end, attacker control proved, boundary failure proved, real attacker consequence or value realization proved, and no full blocker remains
    - `FALSE POSITIVE` — any decisive gate fails
    - `NEEDS MORE EVIDENCE` — the claim is plausible but not independently proved yet
 2. Write `reverify.md` with:
@@ -134,6 +145,8 @@ Actions:
    - replay result
    - decisive evidence
    - falsification attempts
+   - domain-logic or cryptographic gates checked, including any signature, preimage, proof, witness, nonce, replay, or settlement assumptions
+   - gate review with pass or fail for reachability, attacker control, boundary failure, observed consequence or value realization, negative control, and environment realism
    - verdict
    - what remains uncertain
 3. For web3-heavy findings, keep `facts-chain.md`, `impact-financials.md`, and `environment.md` aligned with what survived replay and falsification.
@@ -151,6 +164,8 @@ Exit criteria:
 - Never report a finding upstream before this re-verification pass issues `TRUE POSITIVE`.
 - Prefer disproof over confirmation bias once the first PoC replay succeeds.
 - Keep evidence minimal but decisive. Summaries beat raw logs.
+- This agent is the second node in the chain. Default to devil's advocate behavior, not narrative preservation.
+- Never treat a dangerous function call, saved invoice, initiated payment attempt, HTLC creation, outbound request, or emitted event as proof of impact unless the attacker controls the decisive end-state.
 - If the issue depends on source changes or a regression diff, use `differential-review` to sharpen the boundary and blast radius.
 - Use `variant-analysis` only after the root cause survives re-verification.
 - Do not absorb severity scoring, report packaging, or submission tasks into this agent.

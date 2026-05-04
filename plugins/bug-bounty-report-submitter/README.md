@@ -24,7 +24,8 @@ Inspect live bug bounty forms or webmail with Playwright MCP, then draft and del
 2. Choose the matching skill:
    - `bug-bounty-report-submitter` for live submission forms
    - `bug-bounty-email-submitter` for disclosure by email through webmail
-3. Let Codex inspect the live surface with Playwright MCP, build `bug-bounty-reports/<slug>/<finding-id>/`, carry the `reverify.md` verdict and `severity.md` triage into the bundle, then draft, submit, or send and capture the confirmation state.
+3. Let Codex inspect the live surface with Playwright MCP, build `bug-bounty-reports/<slug>/<finding-id>/`, carry the `reverify.md` verdict, `severity.md` triage, and `manual-review.md` checkpoint into the bundle, then draft, submit, or send and capture the confirmation state.
 4. Normalize local evidence before drafting. Run `prepare_report_artifacts.py` so `artifacts.json` and `evidence/` exist, and run `prepare_web3_report_bundle.py` when web3-specific report files still need to be materialized.
-5. Draft the detail body from the shared evidence-first scaffold before adapting it to the live form or mailbox, then rewrite it into platform-native prose so the final report always shows the exact bug location, root cause, exploit path, PoC output, and minimal exploit excerpt without reading like a reusable template.
-6. Keep the final report self-contained. Only upload attachments when the platform genuinely requires them or when a supplemental artifact adds decisive evidence. If a file is mandatory, prefer a markdown appendix such as `report-appendix.md` over raw code files.
+5. Stop if the proof still depends on unresolved domain-logic or cryptographic assumptions. The manual 20-minute review is a hard gate, not a nicety.
+6. Draft the detail body from the shared evidence-first scaffold before adapting it to the live form or mailbox, then rewrite it into platform-native prose so the final report always shows the exact bug location, root cause, exploit path, PoC output, and minimal exploit excerpt without reading like a reusable template.
+7. Keep the final report self-contained. Only upload attachments when the platform genuinely requires them or when a supplemental artifact adds decisive evidence. If a file is mandatory, prefer a markdown appendix such as `report-appendix.md` over raw code files.

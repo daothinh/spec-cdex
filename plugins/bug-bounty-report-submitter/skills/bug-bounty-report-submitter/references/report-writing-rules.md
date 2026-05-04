@@ -10,6 +10,10 @@ Use after validation and before any submit action. Write for a tired triager: im
 - Separate observed impact from broader blast radius.
 - Do not report until the issue reproduces from a fresh state with the saved proof path.
 - The report body must stand on its own. The triager should not need an attachment to understand the core bug.
+- Do not confuse an internal side effect with impact. A dangerous function call, queued payment, initiated HTLC, emitted event, outbound request, or partial state transition is not enough unless it produces an attacker-observable consequence.
+- For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove settlement, claimability, cash-out, balance delta, or a clearly equivalent end-state. If the attacker does not control the preimage, signature, relayer, keeper, or liquidity dependency required to realize value, downgrade or block the report.
+- For signature-, proof-, or preimage-based findings, name the exact signature, proof, or preimage gate the attacker satisfies. If you cannot show how the attacker obtains the required signature, witness, preimage, or approval, keep that claim out of the title, opening paragraph, and severity rationale.
+- A completed `manual-review.md` is mandatory before submission. If the 20-minute manual review did not happen, the report is not ready.
 
 ## Evidence Order Is The Default
 
@@ -112,6 +116,8 @@ Good pattern:
 - Quantify records, roles, funds, or tenant scope when known.
 - Say when only a free account is required.
 - For Web3 and exchange bugs, include chain, contract or wallet, tx hash, block, market or pool, asset delta, and attack cost when known.
+- For payment-style bugs, show the point where the attacker actually receives or can claim value, not only the function call that initiates the flow.
+- For cryptographic workflows, state exactly when the proof, signature, nonce, or preimage is checked and how the attacker satisfies that gate.
 - Keep total blast radius separate unless it is also proved.
 
 ## POC Evidence Order
@@ -166,10 +172,14 @@ Good pattern:
 - The broken assumption or root cause is explained right below the decisive snippet or request.
 - The exploit function or replay sequence is shown without dumping a full unrelated file.
 - POC output shows the impact before the full PoC body.
+- The proof does not stop at an internal side effect when the title or severity claims real exploit impact.
+- Financial-impact claims prove claimability, settlement, or asset movement rather than only initiation.
+- Domain-logic or cryptographic assumptions are explained explicitly instead of being hand-waved inside prose like `the attacker can then claim the funds`.
 - No raw source file or archive is uploaded unless there is a documented reason it was unavoidable.
 - No unsolicited follow-up comment is queued that only reformats the same proof.
 - Two identities are used where an authorization boundary is claimed.
 - Severity or CVSS matches the observed impact and prerequisites.
+- `manual-review.md` exists and confirms the 20-minute domain-logic review happened before submission.
 - Remediation is short and optional unless the program asks for it.
 - No speculative verbs survived the final pass.
 - The report is reproducible from the saved local bundle.

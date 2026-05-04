@@ -558,6 +558,7 @@ def bootstrap_target(
     trust_boundaries = describe_trust_boundaries(target_record, suggested_lane, surface_signals)
     prioritized_bug_classes = prioritize_bug_classes(suggested_lane)
     protocol_invariants = build_protocol_invariants(protocol_archetype)
+    domain_logic_checks = build_domain_logic_checks(target_record, surface_signals, protocol_archetype)
     attack_surface_map = build_attack_surface_map(target_record, surface_signals, protocol_archetype)
     web3_readiness = assess_web3_readiness(target_record)
     top_assets = collect_top_assets(target_record, repo_results, artifact_results)
@@ -573,6 +574,7 @@ def bootstrap_target(
     target_record["trust_boundaries"] = trust_boundaries
     target_record["prioritized_bug_classes"] = prioritized_bug_classes
     target_record["protocol_invariants"] = protocol_invariants
+    target_record["domain_logic_checks"] = domain_logic_checks
     target_record["attack_surface_map"] = attack_surface_map
     target_record["web3_readiness"] = web3_readiness
     target_record["next_attack_path"] = next_attack_path
@@ -606,6 +608,17 @@ def bootstrap_target(
     write_text(prep_dir / "finding-pipeline.md", render_finding_pipeline())
     write_text(prep_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
     write_text(prep_dir / "protocol-invariants.md", render_protocol_invariants(protocol_archetype, protocol_invariants))
+    write_text(
+        prep_dir / "domain-logic.md",
+        render_domain_logic(
+            target_record,
+            protocol_archetype=protocol_archetype,
+            trust_boundaries=trust_boundaries,
+            dependency_boundaries=dependency_boundaries,
+            checks=domain_logic_checks,
+        ),
+    )
+    write_text(prep_dir / "manual-review-checkpoint.md", render_manual_review_checkpoint())
     write_text(prep_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
     if environment_readiness:
         write_json(prep_dir / "environment-readiness.json", environment_readiness)
@@ -656,6 +669,7 @@ def bootstrap_target(
         next_attack_path=next_attack_path,
         dependency_boundaries=dependency_boundaries,
         attack_surface_map=attack_surface_map,
+        domain_logic_checks=domain_logic_checks,
         web3_readiness=web3_readiness,
         environment_readiness=environment_readiness,
     )
@@ -687,6 +701,8 @@ def bootstrap_target(
         "bootstrap_summary_file": relative_path(prep_dir / "bootstrap-summary.md", repo_root),
         "attack_surface_file": relative_path(prep_dir / "attack-surface-map.md", repo_root),
         "protocol_invariants_file": relative_path(prep_dir / "protocol-invariants.md", repo_root),
+        "domain_logic_file": relative_path(prep_dir / "domain-logic.md", repo_root),
+        "manual_review_checkpoint_file": relative_path(prep_dir / "manual-review-checkpoint.md", repo_root),
         "web3_readiness_file": relative_path(prep_dir / "web3-readiness.md", repo_root),
         "environment_readiness_file": relative_path(prep_dir / "environment-readiness.md", repo_root)
         if (prep_dir / "environment-readiness.md").exists()
@@ -1113,6 +1129,44 @@ def build_protocol_invariants(protocol_archetype: dict[str, str]) -> list[str]:
     return list(PROTOCOL_INVARIANT_LIBRARY.get(protocol_archetype["name"], PROTOCOL_INVARIANT_LIBRARY["Unknown / Needs Triage"]))
 
 
+def build_domain_logic_checks(
+    target: dict[str, Any], surface_signals: list[str], protocol_archetype: dict[str, str]
+) -> list[str]:
+    checks = [
+        "Name the asset, authority boundary, and exact attacker win condition before calling anything exploitable.",
+        "Identify the final step that realizes attacker value or control. Do not stop at an intermediate function call, queued payment, event, or partial state transition.",
+        "List the strongest impossible-attacker assumptions first, then try to break them deliberately.",
+    ]
+    if is_web3_target(target, surface_signals) or target["smart_contracts"]:
+        checks.extend(
+            [
+                "List which actor controls the decisive key, signature, permit, preimage, proof, witness, or approval.",
+                "State the nonce, replay, domain-separation, chain-binding, funding-state, and finality assumptions.",
+                "If the flow is payment-like, explain who can actually settle, claim, or cash out the value-bearing end-state.",
+            ]
+        )
+    if target["signer_urls"] or target["relayer_urls"] or target["keeper_urls"]:
+        checks.append(
+            "If a signer, relayer, keeper, sequencer, or settlement engine must cooperate, prove attacker control or treat it as a blocker."
+        )
+    if target["package_names"] or "wallet" in surface_signals:
+        checks.append(
+            "Assume the client should not know server-held secrets or peer-held preimages unless you can prove disclosure, derivation, or compromise."
+        )
+
+    archetype = protocol_archetype["name"]
+    if archetype == "Bridge / Messaging":
+        checks.append("Map message uniqueness, verifier set, proof verification, and replay domain before claiming bridge exploitability.")
+    if archetype == "Perps / Orderbook / Exchange":
+        checks.append("Map who authorizes order matching, settlement, liquidation, and withdrawal, and how the attacker satisfies that gate.")
+    if archetype == "NFT / Marketplace":
+        checks.append("Map listing signatures, order nonce rules, approval scope, and payout routing before claiming unauthorized fill or settlement.")
+    if archetype == "Token / Vesting / Escrow":
+        checks.append("Map release conditions, permit or signature checks, vesting proofs, and rescue authority before claiming withdrawability.")
+
+    return unique_preserve_order(checks)
+
+
 def build_attack_surface_map(
     target: dict[str, Any], surface_signals: list[str], protocol_archetype: dict[str, str]
 ) -> dict[str, list[str]]:
@@ -1426,6 +1480,14 @@ def render_bootstrap_summary(
     lines.extend(render_list(trust_boundaries))
     lines.extend(["", "## Dependency Boundaries"])
     lines.extend(render_list(target.get("dependency_boundaries", [])))
+    lines.extend(
+        [
+            "",
+            "## Domain Logic Gate",
+            "- Use `prep/domain-logic.md` to capture custody, settlement, signature, preimage, proof, and replay assumptions before calling a finding confirmed.",
+            "- Use `prep/manual-review-checkpoint.md` before any finding becomes `report-ready` or enters submission packaging.",
+        ]
+    )
     lines.extend(["", "## First 3 Prioritized Bug Classes"])
     lines.extend(render_bug_class_list(prioritized_bug_classes))
     if environment_readiness:
@@ -1466,6 +1528,7 @@ def write_context_pack(
     next_attack_path: str,
     dependency_boundaries: list[str],
     attack_surface_map: dict[str, list[str]],
+    domain_logic_checks: list[str],
     web3_readiness: dict[str, Any],
     environment_readiness: dict[str, Any],
 ) -> None:
@@ -1485,6 +1548,16 @@ def write_context_pack(
     write_text(context_pack_dir / "asset-pointers.md", render_context_asset_pointers(target, top_assets))
     write_text(context_pack_dir / "dependency-boundaries.md", render_dependency_boundaries(dependency_boundaries))
     write_text(context_pack_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
+    write_text(
+        context_pack_dir / "domain-logic.md",
+        render_domain_logic(
+            target,
+            protocol_archetype=protocol_archetype,
+            trust_boundaries=trust_boundaries,
+            dependency_boundaries=dependency_boundaries,
+            checks=domain_logic_checks,
+        ),
+    )
     if environment_readiness:
         write_text(
             context_pack_dir / "environment-readiness.md",
@@ -1507,6 +1580,7 @@ def render_context_pack_readme() -> str:
         "- `protocol-archetype.md` - current protocol classification and why it was chosen\n"
         "- `dependency-boundaries.md` - off-chain and cross-surface trust edges that still matter\n"
         "- `attack-surface-map.md` - public, privileged, callback, and dependency-centric attack surface\n"
+        "- `domain-logic.md` - business-logic and cryptographic gates that must be satisfied before calling a finding real\n"
         "- `environment-readiness.md` - current toolchain status and remaining setup blockers when available\n"
         "- `web-handoff.md` - kage vs caido handoff guidance for web/API targets when applicable\n"
         "- `web3-readiness.md` - toolchain and replay readiness for web3-heavy targets when applicable\n"
@@ -1785,6 +1859,8 @@ def render_ready_for_bounty(
             "- `prep/environment-readiness.md` and `prep/environment-readiness.json` for the current toolchain state, auto-setup actions, and remaining blockers",
             "- `prep/attack-surface-map.md` for public, privileged, callback, and dependency-centric attack surface",
             "- `prep/protocol-invariants.md` for archetype-specific invariants",
+            "- `prep/domain-logic.md` for business-logic, settlement, and cryptographic gates that must be satisfied",
+            "- `prep/manual-review-checkpoint.md` for the mandatory 20-minute human review before submission",
             "- `prep/web3-readiness.md` for toolchain and replay readiness on web3-heavy targets",
             "- `prep/context-pack/` for the resumable hunting context pack",
             "- `prep/kage-plan.md` when web/API breadth testing is part of the next pass",
@@ -1804,7 +1880,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
+        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/domain-logic.md`, `prep/manual-review-checkpoint.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1826,14 +1902,19 @@ def render_finding_pipeline() -> str:
     return (
         "# Finding Pipeline\n\n"
         "Use this file to track candidate findings from first hypothesis through independent re-verification and reporting.\n\n"
+        "## Evidence Bar\n\n"
+        "- Do not move a finding to `confirmed` from a source pattern or internal side effect alone.\n"
+        "- A dangerous function call, queued invoice or payment, emitted event, outbound request, or partial state transition is not impact by itself.\n"
+        "- `confirmed` requires an attacker-observable consequence.\n"
+        "- For wallet, payment, bridge, escrow, Lightning, or exchange findings, prove the value-realization or settlement step instead of only the initiation step.\n\n"
         "## Status Vocabulary\n\n"
         "- `untested` - hypothesis exists but no decisive path has been proved yet\n"
-        "- `confirmed` - hunter reproduced the issue and has a runnable PoC\n"
+        "- `confirmed` - hunter reproduced the issue, proved an attacker-observable consequence, and has a runnable PoC\n"
         "- `reverify-pending` - packaged for independent re-verification but no verdict yet\n"
         "- `true-positive` - independent re-verification passed\n"
         "- `false-positive` - independent re-verification disproved the claim\n"
         "- `needs-more-evidence` - plausible claim but independent proof is incomplete\n"
-        "- `report-ready` - true positive with `severity.md` and a complete evidence bundle ready for disclosure\n"
+        "- `report-ready` - true positive with `severity.md`, `manual-review.md`, and a complete evidence bundle ready for disclosure\n"
         "- `reported` - disclosure submitted or sent\n\n"
         "## Candidate Findings\n\n"
         "| ID | Surface | Hypothesis | Hunt Status | PoC Path | Evidence | Next Action |\n"
@@ -1850,25 +1931,31 @@ def render_findings_readme() -> str:
         "# Findings\n\n"
         "Create one directory per finding under this folder once a hypothesis becomes a real candidate for reporting.\n\n"
         "Recommended layout:\n\n"
-        "- `findings/<finding-id>/claim.md` - one falsifiable security claim\n"
-        "- `findings/<finding-id>/facts.md` - observed facts only\n"
+        "- `findings/<finding-id>/claim.md` - one falsifiable security claim naming the asset, attacker capability, intended control, broken boundary, and observed consequence\n"
+        "- `findings/<finding-id>/facts.md` - observed facts only, including negative controls and decisive success signals\n"
         "- `findings/<finding-id>/facts-chain.md` - chain, market, tx, block, and contract identifiers for web3 or exchange findings\n"
         "- `findings/<finding-id>/poc.md` - replayable exploit or reproduction path\n"
-        "- `findings/<finding-id>/impact.md` - observed impact and inferred blast radius kept separate\n"
+        "- `findings/<finding-id>/impact.md` - observed impact and inferred blast radius kept separate; internal side effects do not count as impact\n"
         "- `findings/<finding-id>/impact-financials.md` - asset delta, required capital, solvency impact, and downgrade notes for web3-heavy findings\n"
         "- `findings/<finding-id>/environment.md` - fork, staging, testnet, or static-analysis assumptions needed to replay the finding\n"
-        "- `findings/<finding-id>/reverify.md` - independent re-verification verdict and failed disproof attempts\n"
+        "- `findings/<finding-id>/reverify.md` - independent re-verification verdict, failed disproof attempts, and gate review for attacker control, boundary failure, and observed consequence or value realization\n"
         "- `findings/<finding-id>/severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes\n"
+        "- `findings/<finding-id>/manual-review.md` - completed 20-minute human review of the mechanism, cryptographic gates, and strongest blocker hypotheses before disclosure\n"
         "- `findings/<finding-id>/artifacts/` - scripts, payloads, traces, screenshots, logs, or tx data\n\n"
         "Suggested sub-layouts:\n\n"
         "- `findings/<finding-id>/artifacts/caido/` - exported request metadata, curl PoCs, replay responses, and request snapshots from Caido\n"
         "- `findings/<finding-id>/artifacts/http/` - raw request pairs, HAR slices, or manual diff logs\n"
         "- `findings/<finding-id>/artifacts/runtime/` - debugger traces, screenshots, or transaction receipts\n\n"
+        "Verification notes:\n\n"
+        "- Do not report from a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition alone.\n"
+        "- For financial or payment findings, prove the attacker can realize value, settle the flow, or claim the asset.\n"
+        "- For signature-, proof-, or preimage-based findings, state exactly how the attacker satisfies that gate or keep the claim below reportable severity.\n"
+        "- Capture at least one negative control that would have falsified the claim if the security boundary were actually sound.\n\n"
         "Lifecycle:\n\n"
-        "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists.\n"
+        "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists and the proof reaches an attacker-observable consequence.\n"
         "2. Create the bundle and move the finding to `reverify-pending`.\n"
         "3. Run `security-finding-reverify` and record `true-positive`, `false-positive`, or `needs-more-evidence`.\n"
-        "4. For each `true-positive`, write `severity.md` before the finding becomes `report-ready` and feeds the report submitter.\n"
+        "4. For each `true-positive`, write `severity.md`, complete `manual-review.md`, and only then let the finding become `report-ready` and feed the report submitter.\n"
     )
 
 
@@ -2038,6 +2125,59 @@ def render_protocol_invariants(protocol_archetype: dict[str, str], invariants: l
     ]
     lines.extend(render_list(invariants))
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_domain_logic(
+    target: dict[str, Any],
+    *,
+    protocol_archetype: dict[str, str],
+    trust_boundaries: list[str],
+    dependency_boundaries: list[str],
+    checks: list[str],
+) -> str:
+    lines = [
+        "# Domain Logic",
+        "",
+        "Use this file to capture the business-logic and cryptographic conditions that must be satisfied before a suspected finding can be called real.",
+        "",
+        "## Custody And Authority Hints",
+    ]
+    lines.extend(render_list(trust_boundaries))
+    lines.extend(["", "## Settlement And Dependency Hints"])
+    lines.extend(render_list(dependency_boundaries))
+    lines.extend(["", "## Protocol Archetype"])
+    lines.extend(render_protocol_archetype_list(protocol_archetype))
+    lines.extend(["", "## Domain-Logic Checks"])
+    lines.extend(render_list(checks))
+    lines.extend(
+        [
+            "",
+            "## Submission Reminder",
+            "- Before disclosure, copy the relevant reasoning into `findings/<finding-id>/manual-review.md` and record the manual 20-minute review result.",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_manual_review_checkpoint() -> str:
+    return (
+        "# Manual Review Checkpoint\n\n"
+        "Use this before any finding becomes `report-ready` or enters submission packaging.\n\n"
+        "## Rule\n\n"
+        "- Spend at least 20 minutes manually reading the decisive mechanism before disclosure.\n"
+        "- Focus on business logic, custody, settlement, and cryptographic gates rather than prose polish.\n"
+        "- If the manual read uncovers an impossible attacker assumption, stop or downgrade the finding.\n\n"
+        "## Create In Each Reportable Finding Bundle\n\n"
+        "- `findings/<finding-id>/manual-review.md`\n\n"
+        "## Required Sections For `manual-review.md`\n\n"
+        "- Reviewer or operator\n"
+        "- Date or timestamp\n"
+        "- Approximate time spent, with a target of at least 20 minutes\n"
+        "- Mechanism manually reviewed\n"
+        "- Cryptographic or domain-logic gates checked: signatures, preimages, proofs, witnesses, nonce, replay, settlement, custody, or equivalent\n"
+        "- Strongest blocker hypotheses considered\n"
+        "- Why the claim still holds, or why it was downgraded or stopped\n"
+    )
 
 
 def render_web3_readiness(web3_readiness: dict[str, Any]) -> str:

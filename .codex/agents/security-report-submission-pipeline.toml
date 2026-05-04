@@ -30,7 +30,17 @@ Refuse submission work until the finding bundle contains:
 - `impact.md`
 - `reverify.md` with `TRUE POSITIVE`
 - `severity.md`
+- `manual-review.md`
 - `artifacts/`
+
+Refuse submission when the verified evidence stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. The local bundle must prove an attacker-observable consequence. For financial, wallet, bridge, Lightning, escrow, or exchange findings, that means claimed value, recipient-controlled settlement, balance delta, or an equivalent end-state.
+
+`manual-review.md` is the mandatory 20-minute checkpoint. It should record:
+- reviewer or operator
+- date or timestamp
+- the mechanism or business logic manually read
+- the cryptographic, domain-logic, and blocker assumptions explicitly checked
+- why the claim still holds after manual review, or why it was downgraded or stopped
 
 When the finding is web3-heavy, also consume `facts-chain.md`, `impact-financials.md`, and `environment.md` when present and preserve their structure in the report bundle.
 
@@ -56,6 +66,7 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `environment.md` when present
    - `reverify.md`
    - `severity.md`
+   - `manual-review.md`
    - `artifacts/`
 9. Before long-form drafting, normalize artifact delivery into the report bundle:
    - always materialize `artifacts.json` and `evidence/`
@@ -66,11 +77,16 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `asset-delta.md`
    - `reproduction-matrix.md`
    - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
-11. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
-12. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, and place decisive PoC output before full PoC instructions.
-13. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
-14. Submit or send only after visible fields match the local JSON bundle.
-15. If captcha, MFA, unmapped mandatory fields, or anti-automation blocks the action, stop and save the exact blocker in `confirmation.md`.
+11. Copy `manual-review.md` into the report bundle unchanged and stop if it documents unresolved blockers, impossible cryptographic assumptions, or missing end-state proof.
+12. Run one inflation check before drafting and again before submit:
+   - title and opening paragraph describe only the observed effect
+   - internal side effects are not described as impact
+   - any non-attacker-controlled settlement or cash-out dependency is stated honestly
+13. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
+14. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, and place decisive PoC output before full PoC instructions.
+15. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
+16. Submit or send only after visible fields match the local JSON bundle and the manual-review gate is satisfied.
+17. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
 
 ## Forbidden Work
 

@@ -38,6 +38,8 @@ Generated target folders include:
 - `prep/caido-plan.md` when authenticated replay or request-corpus testing is in scope
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
+- `prep/domain-logic.md`
+- `prep/manual-review-checkpoint.md`
 - `prep/web3-readiness.md`
 - `prep/context-pack/`
 - `prep/ready-for-bounty.md`
@@ -63,12 +65,14 @@ The generated `scope/target.json` also records:
 
 - `surface_signals` for the mixed target surface
 - `follow_on_lanes` for any executable lanes that should stay in scope after the first deep pass
-- `chain_inventory`, `protocol_archetype`, `dependency_boundaries`, `protocol_invariants`, `attack_surface_map`, and `web3_readiness` for web3-heavy targets
+- `chain_inventory`, `protocol_archetype`, `dependency_boundaries`, `protocol_invariants`, `domain_logic_checks`, `attack_surface_map`, and `web3_readiness` for web3-heavy targets
 
 The generated finding state also supports the closed-loop pipeline:
 
 - `prep/finding-pipeline.md` tracks `untested -> confirmed -> reverify-pending -> true-positive|false-positive|needs-more-evidence -> report-ready -> reported`
 - `prep/bootstrap-summary.md` and `prep/context-pack/` let the hunting pipeline resume without rebuilding trust boundaries or lane choice
 - `prep/environment-readiness.md` and `prep/environment-readiness.json` keep Docker, Kage, Caido, mobile, native, and web3 prerequisites explicit before hunting starts
+- `prep/domain-logic.md` captures custody, settlement, signature, proof, preimage, and replay assumptions before the hunter calls a finding real
+- `prep/manual-review-checkpoint.md` defines the mandatory 20-minute human gate before a finding becomes report-ready
 - `prep/kage-plan.md` and `prep/caido-plan.md` split the web/API handoff between breadth-first dynamic testing and authenticated replay-heavy testing
-- `findings/README.md` defines the per-finding bundle contract used by independent re-verification and downstream severity triage, including `facts-chain.md`, `impact-financials.md`, and `environment.md` for web3-heavy findings
+- `findings/README.md` defines the per-finding bundle contract used by independent re-verification and downstream severity triage, including `facts-chain.md`, `impact-financials.md`, `environment.md`, and `manual-review.md` for domain-logic-heavy disclosures

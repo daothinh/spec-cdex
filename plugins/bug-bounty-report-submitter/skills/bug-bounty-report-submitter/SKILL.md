@@ -35,6 +35,8 @@ Optional helper:
 - Have the submission URL and any login requirements.
 - Have a minimal PoC or replayable proof path for the bug.
 - For Web3, blockchain, or exchange findings, know the chain, contract or account identifiers, and any tx hash, block number, order ID, or session identifier that makes the proof concrete.
+- Have `manual-review.md` in the finding bundle. This is the mandatory 20-minute checkpoint before submission. It should record who reviewed the claim, what mechanism or business logic was read manually, which cryptographic or domain-logic blockers were checked, and why the finding still survives.
+- Do not begin submission work when the proof stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. For financial or payment findings, the bundle must prove value realization, recipient-controlled settlement, claimed funds, balance delta, or a clearly equivalent end-state.
 
 If any precondition is missing, gather it before submission work starts.
 
@@ -46,6 +48,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `impact.md` - observed impact and reasoned extension kept separate
 - `impact-financials.md` - optional asset delta, attack capital, and solvency or settlement impact for web3 or exchange findings
 - `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
+- `manual-review.md` - human checkpoint recording the 20-minute domain-logic review and blockers checked before disclosure
 - `environment.md` - optional fork, staging, testnet, or static-only replay assumptions
 - `form-schema.json` - live form fields, options, limits, and notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
@@ -69,11 +72,12 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
    - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
-4. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
-5. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, and `severity.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
-6. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-7. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the visible form matches `submission.json`.
-8. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
+4. Stop unless `manual-review.md` survives a sanity read. If it documents unresolved blockers, impossible cryptographic assumptions, or a failure to prove end-state impact, do not draft.
+5. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
+6. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
+7. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
+8. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the visible form matches `submission.json`.
+9. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
 ## Report Rules
 
@@ -92,6 +96,8 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - The report body is the primary source of truth. Do not offload core bug details, exploit reasoning, or replay steps to attachments.
 - Tie impact to the program context: auth bypass, account takeover, data exposure, privilege gain, funds risk, or availability.
 - When the bug is on-chain or exchange-related, separate observed fund movement, permission gain, or market-state change from the larger blast radius you infer.
+- Never equate a dangerous function call, queued invoice, initiated payment attempt, emitted event, or other internal side effect with user-visible impact.
+- For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove the attacker can reach the cash-out or settlement step. If a preimage, signature, keeper, relayer, or liquidity dependency is not attacker-controlled, state that and do not overclaim.
 - State prerequisites honestly. If auth, timing, or rare roles are required, say so.
 - Use two identities when claiming an authorization boundary failure unless the boundary is visible without that setup.
 - Mention observed result before expected result.
