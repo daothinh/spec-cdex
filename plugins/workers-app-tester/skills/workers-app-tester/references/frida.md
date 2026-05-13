@@ -20,7 +20,15 @@ frida-ps -Uia
 
 ## SSL Pinning Bypass
 
-When HTTPS traffic is missing after the proxy is set, the app uses certificate pinning.
+When HTTPS traffic is still missing after the proxy path is verified on port `18088`, the app is usually pinning certificates.
+
+Raw certificate trust check:
+
+```bash
+python3 scripts/mitm_watch.py verify
+```
+
+The helper verifies that the mitmproxy CA hash from `C:\Users\emet\.mitmproxy\mitmproxy-ca-cert.pem` exists in the Android certificate store before you blame pinning.
 
 Bundled bypass (covers TrustManagerImpl, OkHttp3, SSLContext, WebViewClient, Conscrypt):
 
@@ -93,7 +101,7 @@ frida -U -f <package> -l scripts/bypass.js -l "$SESSION_DIR/hook.js"```
 
 ## Frida with Custom Certificate
 
-If the bypass script needs to load a specific cert (e.g. Burp):
+If you intentionally need a certificate outside the normal preinstalled MITM CA path, load it explicitly:
 
 ```bash
 openssl x509 -in burpsuite.cer -out cert-der.crt -outform DER

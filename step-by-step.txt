@@ -25,8 +25,6 @@ Goal:
 - Triage trust boundaries and choose the primary lane
 - Assess the local toolchain for the chosen lane and attempt setup immediately when prerequisites are missing
 - If a web/API lane exists, prepare both breadth-first and authenticated-replay handoff when justified
-- If the target is Web3, wallet, exchange, Lightning, payment, or crypto-heavy, prepare `prep/domain-logic.md` for custody, settlement, signature, proof, preimage, replay, and off-chain dependency assumptions
-- Prepare `prep/manual-review-checkpoint.md` so later reporting cannot skip the manual 20-minute gate
 - Prepare a clean handoff for hunting
 
 Return:
@@ -37,12 +35,8 @@ Return:
 - environment readiness summary, setup actions attempted, and remaining blockers
 - chosen primary lane and follow-on lanes
 - first 3 prioritized bug classes
-- created bootstrap artifact paths
-- saved `prep/environment-readiness.md` and `prep/environment-readiness.json` paths, if created
-- saved `prep/kage-plan.md` path, if created
-- saved `prep/caido-plan.md` path, if created
-- saved `prep/domain-logic.md` path, if created
-- saved `prep/manual-review-checkpoint.md` path
+- created bootstrap artifacts with repo-relative paths
+- protocol archetype and readiness mode for web3-heavy targets
 - important creds, tokens, or test accounts found
 - next best attack path for hunting
 - blockers or manual follow-up
@@ -108,6 +102,5 @@ Return:
 - confirmation ID or explicit blocker reason
 - saved report bundle path
 - saved `artifacts.json` and `evidence/` paths
-- saved schema and submission-envelope paths
-- saved `manual-review.md` path or explicit blocker if the manual gate is missing
+- saved `form-schema.json` and `submission.json` paths for forms, or `mail-ui-schema.json` and `mail-envelope.json` paths for email
 - manual follow-up still needed

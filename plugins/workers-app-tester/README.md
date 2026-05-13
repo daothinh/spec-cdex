@@ -9,18 +9,21 @@ Test Android apps on a rooted device. Give a coding agent access to a phone — 
 - [mitmproxy](https://mitmproxy.org/) installed
 - [Frida](https://frida.re/) installed (for SSL pinning bypass)
 - Python 3.10+
+- Stable lab defaults are supported: Android global proxy already on port `18088`, CA certificate already installed, mitmproxy config at `C:\Users\emet\.mitmproxy\config.yaml`
 
 ## What's included
 
 | File | Purpose |
 |------|---------|
 | `scripts/ui.py` | Parse UI hierarchy into numbered interactive elements |
+| `scripts/mitm_watch.py` | Verify proxy/root/cert trust, patch `config.yaml`, and manage `mitmdump` |
 | `scripts/capture.py` | mitmproxy addon — logs HTTP flows to JSONL |
 | `scripts/traffic.py` | Summarize recent traffic by time window |
 | `scripts/analyze.py` | Security analyzer — IDORs, auth, exposure, headers |
 | `scripts/bypass.js` | Frida SSL pinning bypass (8 hook targets) |
 | `references/frida.md` | Frida setup, codeshare scripts, hooking patterns |
 | `references/testing-methodology.md` | What to do with each finding type |
+| `references/android-vuln-chain-pipeline.md` | Android recon-to-vulnerability-chain mindset and operator checklist |
 | `references/agents/reverse-agent.md` | APK decompilation sub-agent |
 
 ## Install
@@ -37,7 +40,7 @@ Tell the agent to test an app:
 Test com.example.app. creds: user@example.com / password123
 ```
 
-The agent will set up the proxy on port `18088`, launch the app, login, intercept traffic, and find vulnerabilities.
+The agent will verify the existing proxy/cert path, pull the APK from the connected device to seed host discovery, patch `C:\Users\emet\.mitmproxy\config.yaml`, start `mitmdump`, launch the app, login, intercept traffic, and find vulnerabilities.
 
 ## The loop
 

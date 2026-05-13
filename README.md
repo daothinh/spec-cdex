@@ -137,8 +137,7 @@ scripts\install-workspace.bat "D:\path\to\target-repo"
 
 What it does:
 
-- Creates repo-root links in the target workspace for `plugins\`, `skills\`, `.agents\plugins`, and `.codex\agents`
-- Exposes the repo cheat sheet at `.codex\step-by-step.txt` inside the target workspace
+- Creates repo-root links in the target workspace for `plugins\`, `skills\`, `.agents\plugins`, `.codex\agents`, `.codex\scripts`, and `.codex\docs`
 - Generates a workspace-safe `AGENTS.md` from this repo's rule prelude and preserves any target-local `AGENTS.md` content inside a managed block
 - Makes repo-local reusable Codex agents available inside the target workspace through `.codex\agents`
 - Pre-enables every `AVAILABLE` `workersio` Codex plugin by linking `%USERPROFILE%\.codex\plugins\<name>` or `$HOME/.codex/plugins/<name>` to the target workspace and writing `[plugins."<name>@workersio"] enabled = true` into the matching Codex `config.toml`
@@ -325,7 +324,7 @@ Status: Codex-ready. Headless benchmark runs now use `codex exec --json`.
 
 ### workers-app-tester
 
-Penetration test Android applications on a rooted device. Drives the UI over ADB, intercepts HTTPS traffic through mitmproxy, bypasses SSL pinning with Frida, decompiles APKs for static analysis, and runs security checks for IDORs, auth issues, data exposure, and hardcoded secrets.
+Penetration test Android applications on a rooted device. Verifies proxy/cert trust, patches mitmproxy host filters, drives the UI over ADB, intercepts HTTPS traffic through mitmproxy, bypasses SSL pinning with Frida, decompiles APKs for static analysis, and runs security checks for IDORs, auth issues, data exposure, and hardcoded secrets.
 
 **Use case** — Security test mobile applications for common vulnerabilities before release.
 

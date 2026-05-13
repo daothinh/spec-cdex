@@ -39,7 +39,7 @@ Write a TOML agent file in this shape:
 
 ```toml
 # Optional: include only when pinning the model materially matters.
-# model = "gpt-5.2"
+# model = "gpt-5.5"
 
 sandbox_mode = "workspace-write"
 

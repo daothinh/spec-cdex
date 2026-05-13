@@ -373,11 +373,14 @@ def assess_android_profile(
         tools = reassess_command_tools(tools)
 
     rooted_device_tool = check_rooted_device()
+    proxy_tool = check_android_global_proxy()
+    mitm_config_tool = check_mitmproxy_default_config()
+    cert_trust_tool = check_mitmproxy_ca_trust()
     if target.get("package_names"):
         rooted_device_tool["manual_follow_up"].append(
             "Connect a rooted device or emulator before running workers-app-tester dynamic flows."
         )
-    tools.append(rooted_device_tool)
+    tools.extend([rooted_device_tool, proxy_tool, mitm_config_tool, cert_trust_tool])
     return tools, actions
 
 
@@ -672,10 +675,140 @@ def check_rooted_device() -> dict[str, Any]:
         return result
 
     if any("\tdevice" in line for line in completed["stdout"].splitlines()):
-        result["status"] = "ready"
-        result["evidence"] = "At least one ADB device is connected."
+        root_check = run_command(["adb", "shell", "su", "-c", "id"], timeout=20)
+        if root_check["returncode"] == 0 and "uid=0" in root_check["stdout"]:
+            result["status"] = "ready"
+            result["evidence"] = "At least one ADB device is connected and su returned uid=0."
+        else:
+            result["manual_follow_up"].append("ADB device is connected, but `adb shell su -c id` did not confirm root access.")
     else:
         result["manual_follow_up"].append("ADB is installed but no connected device or emulator is ready.")
+    return result
+
+
+def check_android_global_proxy() -> dict[str, Any]:
+    adb_path = shutil.which("adb")
+    result = {
+        "profile": "android",
+        "tool_id": "android-global-proxy",
+        "label": "Android global proxy on port 18088",
+        "status": "partial",
+        "critical": False,
+        "auto_setup_supported": False,
+        "install": "Keep the Android global proxy pointed at the existing MITM listener on port 18088.",
+        "evidence": "",
+        "manual_follow_up": [],
+    }
+    if not adb_path:
+        result["manual_follow_up"].append("ADB is missing, so the Android proxy setting could not be verified.")
+        return result
+
+    completed = run_command(["adb", "shell", "settings", "get", "global", "http_proxy"], timeout=20)
+    if completed["returncode"] != 0:
+        result["manual_follow_up"].append("Could not read `settings get global http_proxy` from the connected device.")
+        return result
+
+    proxy_value = completed["stdout"].strip()
+    if proxy_value and proxy_value.lower() != "null" and proxy_value.endswith(":18088"):
+        result["status"] = "ready"
+        result["evidence"] = f"http_proxy={proxy_value}"
+    else:
+        display = proxy_value or "<empty>"
+        result["manual_follow_up"].append(
+            f"Android global proxy is {display}; expected an existing listener on port 18088 before dynamic capture."
+        )
+    return result
+
+
+def check_mitmproxy_default_config() -> dict[str, Any]:
+    config_path = Path.home() / ".mitmproxy" / "config.yaml"
+    result = {
+        "profile": "android",
+        "tool_id": "mitmproxy-default-config",
+        "label": "mitmproxy default config",
+        "status": "ready" if config_path.exists() else "partial",
+        "critical": False,
+        "auto_setup_supported": False,
+        "install": f"Keep the stable mitmproxy defaults at {config_path}.",
+        "evidence": "",
+        "manual_follow_up": [],
+    }
+    if config_path.exists():
+        result["evidence"] = str(config_path)
+        try:
+            config_text = config_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            result["status"] = "partial"
+            result["manual_follow_up"].append(f"Could not read {config_path}: {exc}")
+            return result
+        if "ignore_hosts:" in config_text and "'.*\\.*'" in config_text and "allow_hosts:" not in config_text:
+            result["status"] = "partial"
+            result["manual_follow_up"].append(
+                "The mitmproxy config still bypasses every host. Run `python3 scripts/mitm_watch.py start --session-dir <dir> --package <pkg> --host <host>` before dynamic capture."
+            )
+    else:
+        result["manual_follow_up"].append(
+            f"The expected mitmproxy default config was not found at {config_path}."
+        )
+    return result
+
+
+def check_mitmproxy_ca_trust() -> dict[str, Any]:
+    cert_pem = Path.home() / ".mitmproxy" / "mitmproxy-ca-cert.pem"
+    cert_cer = Path.home() / ".mitmproxy" / "mitmproxy-ca-cert.cer"
+    cert_path = cert_pem if cert_pem.exists() else cert_cer
+    result = {
+        "profile": "android",
+        "tool_id": "mitmproxy-ca-trust",
+        "label": "mitmproxy CA trust on device",
+        "status": "partial",
+        "critical": False,
+        "auto_setup_supported": False,
+        "install": "Keep the mitmproxy CA installed in the Android trust store before traffic capture.",
+        "evidence": "",
+        "manual_follow_up": [],
+    }
+    if not cert_path.exists():
+        result["manual_follow_up"].append(
+            f"Local mitmproxy CA cert was not found at {cert_pem} or {cert_cer}."
+        )
+        return result
+    if not shutil.which("adb"):
+        result["manual_follow_up"].append("ADB is missing, so Android certificate trust could not be verified.")
+        return result
+    openssl_path = shutil.which("openssl")
+    if not openssl_path:
+        result["manual_follow_up"].append("openssl is missing, so the mitmproxy CA hash could not be verified.")
+        return result
+
+    hash_result = run_command([openssl_path, "x509", "-in", str(cert_path), "-subject_hash_old", "-noout"], timeout=20)
+    if hash_result["returncode"] != 0:
+        result["manual_follow_up"].append(
+            hash_result["stderr"].strip() or "Failed to compute the mitmproxy CA subject hash."
+        )
+        return result
+
+    expected_hash = next((line.strip() for line in hash_result["stdout"].splitlines() if line.strip()), "")
+    if not expected_hash:
+        result["manual_follow_up"].append("openssl did not return a subject hash for the mitmproxy CA.")
+        return result
+
+    device_path = ""
+    for candidate in (
+        f"/data/misc/user/0/cacerts-added/{expected_hash}.0",
+        f"/system/etc/security/cacerts/{expected_hash}.0",
+    ):
+        device_result = run_command(["adb", "shell", f"su -c 'ls {candidate}'"], timeout=20)
+        if device_result["returncode"] == 0 and candidate in device_result["stdout"]:
+            device_path = candidate
+            break
+    if device_path:
+        result["status"] = "ready"
+        result["evidence"] = f"{cert_path.name} -> {device_path}"
+    else:
+        result["manual_follow_up"].append(
+            f"mitmproxy CA hash {expected_hash} was not found in the Android certificate stores."
+        )
     return result
 
 

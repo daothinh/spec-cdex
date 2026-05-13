@@ -104,6 +104,7 @@ Return a summary to the main agent with:
 - Exported components and how to reach them
 - Deeplink schemes found
 - API endpoints found in code
+- Host candidates worth feeding into `python3 scripts/mitm_watch.py configure --host ...`
 - Any hardcoded secrets (redact values)
 - Security anti-patterns found
 - Files worth reading deeper
