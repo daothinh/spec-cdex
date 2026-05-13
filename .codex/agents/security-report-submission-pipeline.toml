@@ -34,6 +34,7 @@ Refuse submission work until the finding bundle contains:
 - `artifacts/`
 
 Refuse submission when the verified evidence stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. The local bundle must prove an attacker-observable consequence. For financial, wallet, bridge, Lightning, escrow, or exchange findings, that means claimed value, recipient-controlled settlement, balance delta, or an equivalent end-state.
+Refuse submission when `poc.md` does not include either an exact run command or a deterministic replay sequence plus a decisive success signal. A pasted exploit file name without replay instructions is not enough.
 
 `manual-review.md` is the mandatory 20-minute checkpoint. It should record:
 - reviewer or operator
@@ -77,16 +78,17 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `asset-delta.md`
    - `reproduction-matrix.md`
    - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
-11. Copy `manual-review.md` into the report bundle unchanged and stop if it documents unresolved blockers, impossible cryptographic assumptions, or missing end-state proof.
-12. Run one inflation check before drafting and again before submit:
+11. If the live channel cannot honestly carry the full runnable PoC, generate `report-appendix.md`, `proof-pack/`, and `external-evidence.json` with `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>"`. Publish a secret gist only when the channel allows a reference URL and the inline body still contains the exact bug location, replay command or sequence, and decisive output.
+12. Copy `manual-review.md` into the report bundle unchanged and stop if it documents unresolved blockers, impossible cryptographic assumptions, or missing end-state proof.
+13. Run one inflation check before drafting and again before submit:
    - title and opening paragraph describe only the observed effect
    - internal side effects are not described as impact
    - any non-attacker-controlled settlement or cash-out dependency is stated honestly
-13. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
-14. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, and place decisive PoC output before full PoC instructions.
-15. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
-16. Submit or send only after visible fields match the local JSON bundle and the manual-review gate is satisfied.
-17. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
+14. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
+15. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, place decisive PoC output before full PoC instructions, and keep the exact run command or replay sequence inline even if a proof pack exists.
+16. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
+17. Submit or send only after visible fields match the local JSON bundle and the manual-review gate is satisfied.
+18. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
 
 ## Forbidden Work
 

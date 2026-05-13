@@ -6,7 +6,7 @@ description: >
   and attachment flow.
 metadata:
   author: workers.io
-  version: "0.2.2"
+  version: "0.3.0"
 ---
 
 # Bug Bounty Report Submitter
@@ -18,6 +18,7 @@ Load these on demand:
 - [references/report-structure.md](references/report-structure.md) for field mapping and section order
 - [references/immunefi-body-template.md](references/immunefi-body-template.md) for the evidence-first local drafting scaffold and content order
 - [references/writing-style.md](references/writing-style.md) for natural prose rules and anti-template cleanup
+- [references/external-proof-pack.md](references/external-proof-pack.md) for secret-gist and field-limit handling without offloading the core claim
 - [references/playwright-submit.md](references/playwright-submit.md) for the browser automation sequence
 - `plugins/bounty-hunting-programs/skills/bounty-program-triage/SKILL.md` if target scope or program constraints are still unclear
 
@@ -25,6 +26,7 @@ Optional helper:
 
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>"`
 
 ## Preconditions
 
@@ -33,7 +35,8 @@ Optional helper:
 - Have `severity.md` in the finding bundle. Use it as the source of truth for Severity, CWE, CVSS, affected asset, exploit preconditions, impact reasoning, and downgrade notes.
 - Know the affected asset, prerequisites, impact, and evidence set.
 - Have the submission URL and any login requirements.
-- Have a minimal PoC or replayable proof path for the bug.
+- Have a runnable PoC or an exact replayable actor timeline, request sequence, or transaction path for the bug.
+- Have decisive PoC output, logs, assertions, tx results, or balance deltas proving the replay worked from a clean state.
 - For Web3, blockchain, or exchange findings, know the chain, contract or account identifiers, and any tx hash, block number, order ID, or session identifier that makes the proof concrete.
 - Have `manual-review.md` in the finding bundle. This is the mandatory 20-minute checkpoint before submission. It should record who reviewed the claim, what mechanism or business logic was read manually, which cryptographic or domain-logic blockers were checked, and why the finding still survives.
 - Do not begin submission work when the proof stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. For financial or payment findings, the bundle must prove value realization, recipient-controlled settlement, claimed funds, balance delta, or a clearly equivalent end-state.
@@ -57,9 +60,11 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `reverify.md` - independent re-verification verdict and blockers already checked
 - `report.md` - final prose draft
 - `submission.json` - field-to-value map for the form
+- `external-evidence.json` - optional secret-gist or proof-pack pointer for field-limited submissions
 - `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
 - `asset-delta.md` - optional observed fund movement or market-state change summary
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
+- `proof-pack/` - optional gist-ready runnable PoC pack with appendix, logs, helper files, and manifest
 - `evidence/` - screenshots, HAR, video, logs, payloads, PoC files
 - `confirmation.md` - final URL, report ID, screenshots, follow-up notes
 
@@ -72,12 +77,14 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
    - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
+   - Treat `poc.md` as incomplete until it includes an exact run command or deterministic replay sequence plus a success signal that can be observed again.
 4. Stop unless `manual-review.md` survives a sanity read. If it documents unresolved blockers, impossible cryptographic assumptions, or a failure to prove end-state impact, do not draft.
 5. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
 6. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
 7. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-8. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the visible form matches `submission.json`.
-9. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
+8. If the live form cannot honestly carry the full runnable PoC, create `report-appendix.md` and build `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md). Publish a secret gist only when the channel allows an external URL and the inline body still names the exact bug, exploit path, run command, and decisive output.
+9. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the visible form matches `submission.json`.
+10. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
 ## Report Rules
 
@@ -91,6 +98,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - For smart contract or code-heavy bugs, make `Vulnerability Details` code-first: show the vulnerable function or exact snippet immediately, then explain why that code path fails.
 - When the bug is code-driven, include file path plus repo or GitHub line reference whenever it exists.
 - The detail body must answer three questions without making the triager open a full attachment first: where the bug is, why the code or path is wrong, and how to replay the exploit.
+- If a coded PoC exists, the body must show an exact run command or deterministic replay sequence plus the shortest decisive success signal before it points to any appendix, attachment, or gist.
 - Treat headings such as `Brief/Intro`, `Vulnerability Details`, `Impact Details`, `Output from POC`, and `Proof of Concept` as local drafting aids only. In the final submission, prefer the platform's labels or tighter target-specific headings such as the exact function, endpoint, or failure mode.
 - Show the exploit function, test case, or request sequence that triggers the bug. Do not paste the whole file unless the program explicitly requires it.
 - The report body is the primary source of truth. Do not offload core bug details, exploit reasoning, or replay steps to attachments.
@@ -112,6 +120,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - If a coded PoC is impossible, state exactly why and replace it with a replayable actor timeline, transaction sequence, or state-machine walkthrough.
 - Do not attach raw source files, exploit scripts, full test suites, archives, or random code dumps by default.
 - If the platform requires a file upload or the field limit makes a fully honest report impossible inline, attach `report-appendix.md` with the same self-contained detail structure instead of a raw `.sol`, `.py`, `.js`, `.t.sol`, or archive file whenever the platform accepts markdown or plain text.
+- If the channel supports external reference URLs and the full runnable PoC needs multiple files or long logs, create `proof-pack/` and reference the resulting secret gist naturally in the evidence field or inline note. The body must still stand alone without that link.
 - Supporting artifacts such as screenshots, HAR, video, or logs may be uploaded only as evidence supplements. They must never be the only place where the triager can learn the core bug mechanics.
 - Caido exports such as request metadata JSON, curl PoCs, or formatted responses count as supporting artifacts, not replacements for a self-contained body. Use them to anchor `artifacts.json`, not to offload the core claim.
 - Follow-up comments are off by default. Post one only when it adds missing, reviewer-relevant delta. Never paste a large code block into comments just to restate the body in a different format.
@@ -127,6 +136,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - Prefer `browser_fill_form` for standard controls and `browser_type` for editors with live validation.
 - Update `form-schema.json` if hidden or dynamic fields appear after a selection.
 - Use `browser_file_upload` only after `submission.json`, `artifacts.json`, and local artifact paths are final.
+- If the form has a dedicated evidence URL, reference URL, or supplemental notes field, use it for a secret-gist proof pack only after the inline body already contains the minimal runnable replay.
 - Before final submit, confirm the visible title still matches the target, vuln type, location, and impact formula and was not truncated into ambiguity.
 - If a field strips markdown or truncates text, rewrite for that field instead of forcing the template.
 - If the platform supports drafts, save one before final submit.

@@ -13,10 +13,11 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 7. Fill metadata fields first with `browser_fill_form` or `browser_select_option`.
 8. Snapshot again if asset, severity, or classification choices reveal new prompts. Update `form-schema.json` and `submission.json` when they do.
 9. Fill long-form fields with `browser_type` when editors have live validation or markdown quirks.
-10. Use `browser_file_upload` only after confirming the platform actually needs an attachment. If a file is required, prefer `report-appendix.md` first and upload raw source files only as a last resort.
-11. Save draft or preview if the platform supports it.
-12. Take a final `browser_snapshot` and verify the visible content matches `submission.json`. Confirm the title or subject-like field still carries target, vuln type, location, and impact without ambiguous truncation.
-13. Submit with `browser_click`, then capture the confirmation screen and report ID.
+10. If the form's limits would hide the runnable PoC, prepare `report-appendix.md` and `proof-pack/` before you start squeezing text. If the form has a URL-like evidence field, use the secret-gist proof-pack link there only after the body already contains the minimal replay and decisive output.
+11. Use `browser_file_upload` only after confirming the platform actually needs an attachment. If a file is required, prefer `report-appendix.md` first and upload raw source files only as a last resort.
+12. Save draft or preview if the platform supports it.
+13. Take a final `browser_snapshot` and verify the visible content matches `submission.json`. Confirm the title or subject-like field still carries target, vuln type, location, and impact without ambiguous truncation.
+14. Submit with `browser_click`, then capture the confirmation screen and report ID.
 
 ## Practical Rules
 
@@ -27,6 +28,7 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 - If the platform has a short title field, compress the location before dropping the impact or vuln type.
 - If the platform has one long rich-text field, preserve the shared heading order from `immunefi-body-template.md`.
 - If the platform splits fields, keep the vulnerable function or endpoint details and exploit walkthrough together in the most relevant detail field instead of scattering them randomly.
+- Never let field compression delete the run command, deterministic replay sequence, or decisive PoC output block.
 - Do not upload files just because an upload control exists.
 - If the platform requires an attachment, upload a markdown appendix that repeats the essential bug details instead of outsourcing them to a raw code file.
 - If the form rewrites markdown, inspect the preview and edit the field-specific text.
@@ -38,6 +40,6 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 Stop and report the blocker instead of brute forcing when:
 - the form requires captcha or MFA that cannot be completed in-session
 - the program blocks uploads needed for proof
-- the field limit forces loss of decisive evidence and no attachment path exists
+- the field limit forces loss of the runnable replay or decisive evidence and no attachment path or honest external-reference path exists
 - the form rejects a required value and the correct platform-specific format is unknown
 - the live form requires fields that cannot be filled honestly from the verified finding

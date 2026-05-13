@@ -13,10 +13,11 @@ Use Playwright MCP to discover the live webmail UI and send without assuming pro
 7. Build `mail-envelope.json` and `email-draft.md` before filling. Draft the body with the shared `immunefi-body-template.md` first, then adapt it to the actual editor. Do not improvise directly in the mailbox.
 8. Fill the `To` field with the user-specified address and confirm the provider accepted it. In Gmail-like UIs, confirm the recipient chip is committed before moving on.
 9. Fill the subject, then the body. Use `browser_type` for editors that need real keystrokes or preserve line breaks.
-10. Upload attachments with `browser_file_upload` only if they are truly required. Prefer `report-appendix.md` over raw source files when the email must carry an attachment.
-11. Save a draft if the provider supports it, then snapshot the draft for verification.
-12. Verify the visible recipient, subject, body, and attachments match the local bundle. Check that the subject still follows the shared title formula from `report-writing-rules.md` and was not truncated or auto-rewritten by the UI.
-13. Send with `browser_click`, then capture the success toast, sent-folder item, message ID, or resulting URL.
+10. If the mailbox UI is too cramped for the full runnable PoC, prepare `report-appendix.md` and `proof-pack/` before forcing more text into the compose view. Use a secret-gist link only when the recipient can receive links and the body already contains the minimal replay and decisive output.
+11. Upload attachments with `browser_file_upload` only if they are truly required. Prefer `report-appendix.md` over raw source files when the email must carry an attachment.
+12. Save a draft if the provider supports it, then snapshot the draft for verification.
+13. Verify the visible recipient, subject, body, and attachments match the local bundle. Check that the subject still follows the shared title formula from `report-writing-rules.md` and was not truncated or auto-rewritten by the UI.
+14. Send with `browser_click`, then capture the success toast, sent-folder item, message ID, or resulting URL.
 
 ## Practical Rules
 
@@ -26,6 +27,7 @@ Use Playwright MCP to discover the live webmail UI and send without assuming pro
 - For Gmail, prefer a compact subject that preserves the target, vuln type, location, and impact without spilling into noisy prose.
 - If the body editor collapses blank lines or strips markdown, rewrite the body for that editor instead of forcing formatting.
 - Even in plain text, keep the body logic order intact: vulnerable location, root cause, exploit path, impact, PoC output, full PoC.
+- Do not let cramped compose windows delete the exact run command, replay sequence, or success signal.
 - Do not attach files just because the compose view supports them.
 - If an attachment is mandatory, the body must still contain the full core narrative.
 - If attachments need time to upload, wait for the upload-complete indicator before sending.

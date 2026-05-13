@@ -100,6 +100,7 @@ This section is mandatory whenever a PoC exists.
 - Do not write `see attached file` instead of explaining the bug inline.
 - Do not attach raw exploit source files, full test suites, zip archives, or unrelated helper code by default.
 - If the platform forces an attachment or the field limit prevents an honest inline explanation, generate `report-appendix.md` and keep it self-contained with the same section order used in the main report.
+- If the platform still cannot hold the full runnable PoC, keep the minimal replay command or sequence plus decisive output inline, and move the longer helper files or logs into `proof-pack/` or a markdown appendix.
 - Supporting screenshots, HAR files, videos, and logs are allowed only as supplements to claims already explained in the body.
 
 ## Local drafting scaffold
@@ -173,6 +174,7 @@ If the platform has only one long field, keep the same content order but use few
 ## Non-negotiables
 
 - The triager must be able to answer `where is the bug?`, `why is this code/path wrong?`, and `how exactly do I replay it?` without opening a full attachment.
+- If a coded PoC exists, the body must expose the exact run command or replay sequence and the success signal, even when a gist or appendix carries the full helper files.
 - Show the exploit function or request sequence, not a whole helper library or test suite.
 - If you cannot provide a coded PoC, say exactly why and replace it with a replayable actor timeline, transaction sequence, or state machine walkthrough.
 - Keep the report focused on one confirmed exploit path. Do not pad it with alternative theories.

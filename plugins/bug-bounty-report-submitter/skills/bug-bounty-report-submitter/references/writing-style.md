@@ -20,6 +20,7 @@ Write after discovering the live form. Make the report read like a specific anal
 - If you mention a function, route, component, or handler, explain why that exact location is the bug carrier.
 - Treat attachments as supplemental evidence, not as the main explanation.
 - If the report still makes sense only because the attachment exists, the body is not finished yet.
+- If a proof pack or secret gist exists, describe it as supplemental storage for the long PoC, logs, or helper files, not as the place where the triager first learns the exploit.
 - Do not add unsolicited post-submit comments that restate the report with more code unless the reviewer asked for that delta.
 
 ## Good Patterns
@@ -62,14 +63,15 @@ Before finalizing `report.md`, check:
 4. Does the body explicitly name the vulnerable function, endpoint, or component?
 5. Is the broken assumption explained directly below the decisive snippet or request?
 6. Is the exploit function or replay path shown without dumping the whole file?
-7. Does `Output from POC` prove the impact before the full PoC body?
-8. Would the report still be fully understandable if every attachment were removed? If no, move the missing explanation into the body.
-9. Are reproduction steps specific enough to replay without guessing?
-10. Did generic or speculative phrases survive from a prior report or template?
-11. Was the text rewritten for the actual field label and length?
-12. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
-13. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
-14. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
+7. Does the body include the exact run command or deterministic replay sequence plus the success signal?
+8. Does `Output from POC` prove the impact before the full PoC body?
+9. Would the report still be fully understandable if every attachment or gist link were removed? If no, move the missing explanation into the body.
+10. Are reproduction steps specific enough to replay without guessing?
+11. Did generic or speculative phrases survive from a prior report or template?
+12. Was the text rewritten for the actual field label and length?
+13. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
+14. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
+15. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
 
 ## Tone
 

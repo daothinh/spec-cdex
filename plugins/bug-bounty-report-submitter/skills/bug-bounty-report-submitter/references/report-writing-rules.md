@@ -9,6 +9,7 @@ Use after validation and before any submit action. Write for a tired triager: im
 - If the broader consequence is only inferred, label it as inferred and keep it out of the main title and severity claim.
 - Separate observed impact from broader blast radius.
 - Do not report until the issue reproduces from a fresh state with the saved proof path.
+- Do not report a coded PoC as "runnable" unless you can point to the exact run command or deterministic replay sequence and the success signal it produces.
 - The report body must stand on its own. The triager should not need an attachment to understand the core bug.
 - Do not confuse an internal side effect with impact. A dangerous function call, queued payment, initiated HTLC, emitted event, outbound request, or partial state transition is not enough unless it produces an attacker-observable consequence.
 - For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove settlement, claimability, cash-out, balance delta, or a clearly equivalent end-state. If the attacker does not control the preimage, signature, relayer, keeper, or liquidity dependency required to realize value, downgrade or block the report.
@@ -70,6 +71,7 @@ For smart contract, parser, auth logic, and other code-centric findings, do not 
 - Redact unrelated lines with `...` rather than pasting the whole file.
 - Do not write `see attached PoC for details` before naming the exact function, endpoint, or component where the bug is.
 - If the bug is endpoint-driven rather than source-driven, show the shortest decisive request and response pair with the same level of precision.
+- If the channel is cramped, compress the exploit excerpt before dropping the run command or the decisive output block.
 
 Good pattern:
 - vulnerable snippet
@@ -99,6 +101,7 @@ Good pattern:
 - Do not attach raw source files, exploit scripts, or full test suites when the same information can be expressed inline.
 - Do not write `see attachment for the PoC` as a substitute for the inline exploit walkthrough.
 - If the platform requires an attachment or field limits make inline detail impossible, attach a markdown appendix such as `report-appendix.md` that mirrors the same self-contained structure.
+- If field limits still make the runnable proof incomplete, build `proof-pack/` and optionally publish it as a secret gist. The inline body must still include the exact bug location, replay command or sequence, and decisive output.
 - Upload screenshots, HAR files, videos, and logs only as supporting evidence for claims already made inline.
 - If an attachment is optional and adds no decisive evidence, do not upload it.
 
@@ -129,6 +132,7 @@ Good pattern:
 - For Forge or Foundry-style reports, include the exact run command when it matters.
 - If a coded PoC is impossible, say exactly why and replace it with a replayable sequence of actors, calls, or transactions.
 - The full exploit should still be a minimal excerpt in the report body, not a hand-off to an uploaded source file.
+- A secret gist or external proof pack is acceptable only as a supplemental carrier for long helper files, raw logs, or multi-file PoCs. `see gist for the PoC` is not enough.
 
 ## Severity And CVSS
 
@@ -171,7 +175,9 @@ Good pattern:
 - Vulnerable code snippet appears in `Vulnerability Details` for code-driven findings.
 - The broken assumption or root cause is explained right below the decisive snippet or request.
 - The exploit function or replay sequence is shown without dumping a full unrelated file.
+- The PoC section names the exact run command or replay sequence and the success signal the triager should observe.
 - POC output shows the impact before the full PoC body.
+- If field limits or attachment policy required `proof-pack/`, the report or evidence field points to that pack and says what extra files it preserves.
 - The proof does not stop at an internal side effect when the title or severity claims real exploit impact.
 - Financial-impact claims prove claimability, settlement, or asset movement rather than only initiation.
 - Domain-logic or cryptographic assumptions are explained explicitly instead of being hand-waved inside prose like `the attacker can then claim the funds`.

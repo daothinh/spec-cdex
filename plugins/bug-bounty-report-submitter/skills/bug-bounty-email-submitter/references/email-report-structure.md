@@ -116,13 +116,14 @@ Attach only files that support a claim already explained in the body.
 
 For code-heavy findings:
 - summarize `Output from POC` in the body with the most convincing logs or deltas
-- then include the minimal exploit excerpt inline; keep `poc.md` as a local drafting artifact rather than something the recipient must open
+- then include the minimal exploit excerpt inline together with the exact run command or replay sequence; keep `poc.md` as a local drafting artifact rather than something the recipient must open
 - include the exploit function or replay sequence in the body, not just a statement that code is attached
 - do not paste an entire helper file when a short exploit excerpt will do
 
 Attachment discipline:
 - do not attach raw source files, exploit scripts, or archives by default
 - if an attachment is required, prefer `report-appendix.md` or a plain-text appendix that mirrors the same self-contained report structure
+- if the full runnable PoC still needs multiple files or long logs, create `proof-pack/` and reference a secret gist naturally in the body while keeping the core replay and decisive output inline
 - screenshots, HAR, video, and logs remain supplemental only
 
 If a coded PoC is impossible:

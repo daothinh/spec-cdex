@@ -7,7 +7,9 @@ Start from `form-schema.json`, then write only the content the live form actuall
 - Read the live labels, help text, validators, and limits from `form-schema.json`.
 - Build `submission.json` from those fields first.
 - Treat `artifacts.json`, `poc.md`, `impact.md`, and `severity.md` as required inputs, not optional extras.
+- Treat `poc.md` as incomplete unless it contains an exact run command or deterministic replay sequence and a success signal.
 - Treat attachments as optional by default, not part of the primary report payload.
+- When field limits or upload policy would hide the runnable PoC, prepare `report-appendix.md`, `proof-pack/`, and `external-evidence.json` before final compression.
 - For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
 - Draft the full local body with [immunefi-body-template.md](immunefi-body-template.md) before compressing or splitting it for platform-specific fields.
 
@@ -139,12 +141,13 @@ Avoid:
 - Mention attachments naturally only when they are truly needed: `Attached HAR shows the cross-tenant response.` Avoid dumping raw filenames without context.
 - When the exploit is code-heavy, add an `Output from POC` block before the full PoC if the platform supports headings or separate fields.
 - `Output from POC` should show the shortest decisive evidence: balances, logs, tx deltas, claim amounts, changed state, or assertion results.
-- After the output block, include the minimal runnable PoC excerpt inline. Keep `poc.md` as a local drafting artifact, not as something the submitted report depends on.
+- After the output block, include the minimal runnable PoC excerpt inline together with the exact run command or deterministic replay sequence. Keep `poc.md` as a local drafting artifact, not as something the submitted report depends on.
 - Show the exploit function, test case, or request sequence, not the whole helper file.
 - If a full helper file is needed for local replay, keep it in `poc.md` or `evidence/` and keep only the decisive excerpt in the body.
 - If a coded PoC is impossible, say why and replace it with a replayable actor timeline or transaction sequence.
 - Do not upload raw source files or archives by default.
 - If the platform requires a file upload or the field length makes the report incomplete, create `report-appendix.md` and upload that markdown appendix before considering any raw code file.
+- If the platform allows a reference URL and the full runnable proof needs multiple files or long logs, create `proof-pack/` and publish a secret gist from that pack. Mention the link as a supplement, never as a substitute for the inline narrative.
 - Even when `report-appendix.md` is uploaded, the main report fields must still contain the full bug narrative, root cause, exploit path, and decisive PoC output.
 - Follow-up comments are not part of the default structure. Add one only when the reviewer needs missing delta that the original body or appendix could not convey.
 
