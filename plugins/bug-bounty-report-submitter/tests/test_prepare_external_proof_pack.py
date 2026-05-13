@@ -18,7 +18,7 @@ SCRIPT_PATH = (
 
 
 class PrepareExternalProofPackTests(unittest.TestCase):
-    def test_builds_local_proof_pack_and_external_metadata(self) -> None:
+    def test_builds_gist_backed_proof_pack_and_external_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             bundle_dir = root / "bundle"
@@ -84,7 +84,14 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             (evidence_dir / "test-output.log").write_text("[PASS] replay\n", encoding="utf-8")
 
             result = subprocess.run(
-                [sys.executable, str(SCRIPT_PATH), "--bundle-dir", str(bundle_dir)],
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "--bundle-dir",
+                    str(bundle_dir),
+                    "--gist-url",
+                    "https://gist.github.com/example/proof-pack",
+                ],
                 check=False,
                 capture_output=True,
                 text=True,
@@ -100,14 +107,62 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             self.assertTrue((proof_pack_dir / "external-proof-pack.json").exists())
 
             external_evidence = json.loads((bundle_dir / "external-evidence.json").read_text(encoding="utf-8"))
-            self.assertEqual(external_evidence["type"], "local-proof-pack")
+            self.assertEqual(external_evidence["type"], "secret-gist")
             self.assertIn("forge test --match-path", external_evidence["run_commands"][0])
             self.assertIn("[PASS]", external_evidence["success_signals"][0])
+            self.assertIn("Reference URL", external_evidence["recommended_field_labels"])
+            self.assertTrue(external_evidence["requires_url_field"])
+            self.assertEqual(external_evidence["submission_requirement"], "include-secret-gist-reference")
+            self.assertIn("exact vulnerable location", external_evidence["suggested_inline_note"])
+            self.assertEqual(external_evidence["gist"]["url"], "https://gist.github.com/example/proof-pack")
 
             manifest = json.loads((proof_pack_dir / "external-proof-pack.json").read_text(encoding="utf-8"))
             filenames = {item["pack_filename"] for item in manifest["files"]}
             self.assertIn("evidence__RemoveLiquidityReentrancyPoC.t.sol", filenames)
             self.assertIn("evidence__test-output.log", filenames)
+            self.assertEqual(manifest["gist"]["url"], "https://gist.github.com/example/proof-pack")
+
+    def test_fails_without_gist_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bundle_dir = Path(temp_dir) / "bundle"
+            bundle_dir.mkdir()
+            (bundle_dir / "poc.md").write_text(
+                "\n".join(
+                    [
+                        "## Proof of Concept",
+                        "",
+                        "```bash",
+                        "python exploit.py",
+                        "```",
+                        "",
+                        "1. Run the exploit.",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "report.md").write_text(
+                "\n".join(
+                    [
+                        "## Output from POC",
+                        "",
+                        "```text",
+                        "[PASS] replay worked",
+                        "```",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT_PATH), "--bundle-dir", str(bundle_dir)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("gist link is required", result.stderr)
 
     def test_fails_without_replay_details(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -116,7 +171,14 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             (bundle_dir / "poc.md").write_text("See attached PoC file.\n", encoding="utf-8")
 
             result = subprocess.run(
-                [sys.executable, str(SCRIPT_PATH), "--bundle-dir", str(bundle_dir)],
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "--bundle-dir",
+                    str(bundle_dir),
+                    "--gist-url",
+                    "https://gist.github.com/example/proof-pack",
+                ],
                 check=False,
                 capture_output=True,
                 text=True,

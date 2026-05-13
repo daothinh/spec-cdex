@@ -6,10 +6,12 @@ Start from `form-schema.json`, then write only the content the live form actuall
 
 - Read the live labels, help text, validators, and limits from `form-schema.json`.
 - Build `submission.json` from those fields first.
+- Add a first-class `external_proof` block to `submission.json` or `mail-envelope.json` before drafting.
 - Treat `artifacts.json`, `poc.md`, `impact.md`, and `severity.md` as required inputs, not optional extras.
 - Treat `poc.md` as incomplete unless it contains an exact run command or deterministic replay sequence and a success signal.
 - Treat attachments as optional by default, not part of the primary report payload.
-- When field limits or upload policy would hide the runnable PoC, prepare `report-appendix.md`, `proof-pack/`, and `external-evidence.json` before final compression.
+- Prepare `report-appendix.md`, `proof-pack/`, and `external-evidence.json` before final compression. Every report bundle needs the gist-backed proof pack because the detailed PoC and raw logs do not belong solely in normal report fields.
+- The payload must name the exact target field or inline location that will carry the proof reference. Missing that mapping is a hard stop.
 - For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
 - Draft the full local body with [immunefi-body-template.md](immunefi-body-template.md) before compressing or splitting it for platform-specific fields.
 
@@ -190,3 +192,26 @@ Keep remediation short and implementation-agnostic unless the program asks for d
 | Chain / contract / tx / market | verified Web3 or exchange identifiers when the form provides dedicated fields |
 
 If the platform adds custom fields, source them from `form-schema.json` and store the final mapping in `submission.json`.
+
+## External Proof Contract
+
+The payload must carry:
+
+```json
+{
+  "external_proof": {
+    "required": true,
+    "type": "secret-gist",
+    "url": "https://gist.github.com/...",
+    "source": "external-evidence.json",
+    "target_field": "Reference URL",
+    "inline_note_required": true
+  }
+}
+```
+
+Rules:
+
+- `required` is always `true`.
+- Missing `url`, `target_field`, or `inline_note_required` is a blocker.
+- The primary report body must also include the gist URL inline so the triager sees where the detailed PoC and logs live.

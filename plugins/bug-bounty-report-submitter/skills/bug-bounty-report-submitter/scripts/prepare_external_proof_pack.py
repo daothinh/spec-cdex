@@ -64,6 +64,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-command", action="append", default=[], help="Exact replay command. Repeatable.")
     parser.add_argument("--success-signal", action="append", default=[], help="Decisive expected output. Repeatable.")
     parser.add_argument("--publish-gist", action="store_true", help="Publish the proof pack with `gh gist create`.")
+    parser.add_argument("--gist-url", help="Use an existing secret gist URL instead of publishing one.")
     parser.add_argument("--gist-desc", help="Optional gist description. Defaults to the proof-pack title.")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing proof-pack directory and metadata.")
     return parser.parse_args()
@@ -132,27 +133,31 @@ def main() -> int:
     manifest_path = output_dir / "external-proof-pack.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
-    gist_url = ""
+    gist_url = (args.gist_url or "").strip()
+    if args.publish_gist and gist_url:
+        raise SystemExit("error: provide either --publish-gist or --gist-url, not both")
     if args.publish_gist:
         gist_desc = args.gist_desc or title
         gist_url = publish_gist(output_dir=output_dir, description=gist_desc)
-        manifest["gist"] = {"published": True, "url": gist_url, "visibility": "secret"}
-        manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-        index_path.write_text(
-            render_index(
-                title=title,
-                summary=args.summary,
-                gist_url=gist_url,
-                run_commands=run_commands,
-                replay_steps=replay_steps,
-                success_signals=success_signals,
-                files=pack_files,
-            ),
-            encoding="utf-8",
-        )
+    if not gist_url:
+        raise SystemExit("error: gist link is required. Use --publish-gist or provide --gist-url.")
+    manifest["gist"] = {"published": True, "url": gist_url, "visibility": "secret"}
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    index_path.write_text(
+        render_index(
+            title=title,
+            summary=args.summary,
+            gist_url=gist_url,
+            run_commands=run_commands,
+            replay_steps=replay_steps,
+            success_signals=success_signals,
+            files=pack_files,
+        ),
+        encoding="utf-8",
+    )
 
     external_evidence = {
-        "type": "secret-gist" if gist_url else "local-proof-pack",
+        "type": "secret-gist",
         "title": title,
         "summary": args.summary,
         "proof_pack_dir": relative_or_absolute(output_dir, bundle_dir),
@@ -165,10 +170,22 @@ def main() -> int:
             "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist. "
             "The inline body still contains the vulnerable location, replay command or sequence, and decisive output."
         ),
+        "recommended_field_labels": [
+            "Reference URL",
+            "Evidence URL",
+            "Supporting Links",
+            "Additional References",
+        ],
+        "suggested_inline_note": (
+            "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist. "
+            "This report body still contains the exact vulnerable location, replay command or sequence, and decisive output."
+        ),
+        "requires_url_field": True,
+        "submission_requirement": "include-secret-gist-reference",
         "gist": {
-            "published": bool(gist_url),
-            "url": gist_url or None,
-            "visibility": "secret" if gist_url else None,
+            "published": True,
+            "url": gist_url,
+            "visibility": "secret",
         },
     }
     external_evidence_path = bundle_dir / "external-evidence.json"
@@ -181,7 +198,7 @@ def main() -> int:
                 "manifest_json": manifest_path.as_posix(),
                 "index_markdown": index_path.as_posix(),
                 "external_evidence_json": external_evidence_path.as_posix(),
-                "gist_url": gist_url or None,
+                "gist_url": gist_url,
                 "count": len(pack_files),
             },
             indent=2,

@@ -26,7 +26,8 @@ Optional helper:
 
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
-- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>"`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>" --publish-gist`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form`
 
 ## Preconditions
 
@@ -60,7 +61,8 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `reverify.md` - independent re-verification verdict and blockers already checked
 - `report.md` - final prose draft
 - `submission.json` - field-to-value map for the form
-- `external-evidence.json` - optional secret-gist or proof-pack pointer for field-limited submissions
+- `submission.json.external_proof` - required proof-reference contract when `external-evidence.json` exists
+- `external-evidence.json` - required secret-gist pointer for the detailed PoC, helper files, and raw logs
 - `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
 - `asset-delta.md` - optional observed fund movement or market-state change summary
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
@@ -80,11 +82,19 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - Treat `poc.md` as incomplete until it includes an exact run command or deterministic replay sequence plus a success signal that can be observed again.
 4. Stop unless `manual-review.md` survives a sanity read. If it documents unresolved blockers, impossible cryptographic assumptions, or a failure to prove end-state impact, do not draft.
 5. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
+   - When `external-evidence.json` exists, add `submission.json.external_proof` with:
+     - `required`
+     - `type`
+     - `url`
+     - `source: "external-evidence.json"`
+     - `target_field`
+     - `inline_note_required`
 6. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
 7. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-8. If the live form cannot honestly carry the full runnable PoC, create `report-appendix.md` and build `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md). Publish a secret gist only when the channel allows an external URL and the inline body still names the exact bug, exploit path, run command, and decisive output.
-9. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the visible form matches `submission.json`.
-10. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
+8. Build `report-appendix.md` and `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md) for every report bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, and raw logs that the main form cannot hold comfortably. The inline body must still name the exact bug, exploit path, run command, decisive output, and the gist URL.
+9. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form` after bundle prep and again immediately before submit. Treat any failure as a hard blocker.
+10. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the validator passes and the visible form matches `submission.json`, including the required gist reference.
+11. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
 ## Report Rules
 

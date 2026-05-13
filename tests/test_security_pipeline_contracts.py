@@ -37,6 +37,11 @@ class SecurityPipelineContractTests(unittest.TestCase):
         self.assertIn("queued payment", text)
         self.assertIn("manual-review.md", text)
         self.assertIn("20-minute checkpoint", text)
+        self.assertIn("validate_submission_bundle.py", text)
+        self.assertIn("external_proof", text)
+        self.assertIn("required proof reference", text)
+        self.assertIn("secret gist link is mandatory", text)
+        self.assertIn("primary report body includes that gist URL inline", text)
 
     def test_report_rules_do_not_allow_initiation_to_be_reported_as_impact(self) -> None:
         text = read(
@@ -48,6 +53,15 @@ class SecurityPipelineContractTests(unittest.TestCase):
         self.assertIn("settlement", text)
         self.assertIn("manual-review.md", text)
         self.assertIn("signature, proof, or preimage", text)
+
+    def test_report_structure_requires_external_proof_contract(self) -> None:
+        text = read(
+            "plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/references/report-structure.md"
+        )
+        self.assertIn("external_proof", text)
+        self.assertIn("target_field", text)
+        self.assertIn("gist URL inline", text)
+        self.assertIn("required` is always `true", text)
 
     def test_verification_contract_doc_exists(self) -> None:
         text = read("docs/security-finding-verification-contract.md")

@@ -13,11 +13,13 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 7. Fill metadata fields first with `browser_fill_form` or `browser_select_option`.
 8. Snapshot again if asset, severity, or classification choices reveal new prompts. Update `form-schema.json` and `submission.json` when they do.
 9. Fill long-form fields with `browser_type` when editors have live validation or markdown quirks.
-10. If the form's limits would hide the runnable PoC, prepare `report-appendix.md` and `proof-pack/` before you start squeezing text. If the form has a URL-like evidence field, use the secret-gist proof-pack link there only after the body already contains the minimal replay and decisive output.
-11. Use `browser_file_upload` only after confirming the platform actually needs an attachment. If a file is required, prefer `report-appendix.md` first and upload raw source files only as a last resort.
-12. Save draft or preview if the platform supports it.
-13. Take a final `browser_snapshot` and verify the visible content matches `submission.json`. Confirm the title or subject-like field still carries target, vuln type, location, and impact without ambiguous truncation.
-14. Submit with `browser_click`, then capture the confirmation screen and report ID.
+10. Ensure `report-appendix.md`, `proof-pack/`, and the secret gist already exist before the final fill pass. The gist URL is mandatory and must appear in the report body plus the intended reference field or inline note.
+11. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form` before any final submit attempt. Treat a failing validator as a hard blocker, not a warning.
+12. Use `browser_file_upload` only after confirming the platform actually needs an attachment. If a file is required, prefer `report-appendix.md` first and upload raw source files only as a last resort.
+13. Save draft or preview if the platform supports it.
+14. Take a final `browser_snapshot` and verify the visible content matches `submission.json`. Confirm the title or subject-like field still carries target, vuln type, location, and impact without ambiguous truncation.
+15. Verify the intended URL field or inline note is visibly populated with the expected gist URL before submit.
+16. Submit with `browser_click`, then capture the confirmation screen and report ID.
 
 ## Practical Rules
 
@@ -29,6 +31,7 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 - If the platform has one long rich-text field, preserve the shared heading order from `immunefi-body-template.md`.
 - If the platform splits fields, keep the vulnerable function or endpoint details and exploit walkthrough together in the most relevant detail field instead of scattering them randomly.
 - Never let field compression delete the run command, deterministic replay sequence, or decisive PoC output block.
+- Never let the last-mile UI state omit the required gist reference.
 - Do not upload files just because an upload control exists.
 - If the platform requires an attachment, upload a markdown appendix that repeats the essential bug details instead of outsourcing them to a raw code file.
 - If the form rewrites markdown, inspect the preview and edit the field-specific text.

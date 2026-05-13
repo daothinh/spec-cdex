@@ -78,17 +78,30 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `asset-delta.md`
    - `reproduction-matrix.md`
    - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
-11. If the live channel cannot honestly carry the full runnable PoC, generate `report-appendix.md`, `proof-pack/`, and `external-evidence.json` with `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>"`. Publish a secret gist only when the channel allows a reference URL and the inline body still contains the exact bug location, replay command or sequence, and decisive output.
-12. Copy `manual-review.md` into the report bundle unchanged and stop if it documents unresolved blockers, impossible cryptographic assumptions, or missing end-state proof.
-13. Run one inflation check before drafting and again before submit:
+11. Generate `report-appendix.md`, `proof-pack/`, and `external-evidence.json` with `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>" --publish-gist` or `--gist-url <url>`. A secret gist link is mandatory for every report bundle because it carries the detailed PoC, helper files, and raw logs that do not fit cleanly in normal report fields.
+12. When `external-evidence.json` exists, encode the final payload contract explicitly:
+   - form bundles: add `submission.json.external_proof`
+   - email bundles: add `mail-envelope.json.external_proof`
+   - required shape:
+     - `required`: always `true`
+     - `type`: `secret-gist`
+     - `url`: published gist URL
+     - `source`: `external-evidence.json`
+     - `target_field`: exact live field or inline location that will carry the reference
+     - `inline_note_required`: always `true` because the report body must mention the gist inline
+13. Run `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form|email` after bundle prep and again immediately before final submit or send. Treat any validator failure as a hard blocker.
+14. Submit/send is forbidden unless the payload contains the required proof reference, that reference is the gist URL, the primary report body includes that gist URL inline, and the final visible UI shows it in the intended field or inline note.
+15. If a secret gist cannot be published or the channel cannot carry that gist reference honestly, stop with a blocker instead of silently degrading the report.
+16. Copy `manual-review.md` into the report bundle unchanged and stop if it documents unresolved blockers, impossible cryptographic assumptions, or missing end-state proof.
+17. Run one inflation check before drafting and again before submit:
    - title and opening paragraph describe only the observed effect
    - internal side effects are not described as impact
    - any non-attacker-controlled settlement or cash-out dependency is stated honestly
-14. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
-15. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, place decisive PoC output before full PoC instructions, and keep the exact run command or replay sequence inline even if a proof pack exists.
-16. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
-17. Submit or send only after visible fields match the local JSON bundle and the manual-review gate is satisfied.
-18. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
+18. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
+19. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, place decisive PoC output before full PoC instructions, and keep the exact run command or replay sequence inline even if a proof pack exists.
+20. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
+21. Submit or send only after the validator passes, visible fields match the local JSON bundle, the gist link is visibly present in the report, and the manual-review gate is satisfied.
+22. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
 
 ## Forbidden Work
 

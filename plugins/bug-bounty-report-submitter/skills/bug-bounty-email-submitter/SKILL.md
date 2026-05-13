@@ -25,7 +25,8 @@ Optional helper:
 
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
-- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>"`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>" --publish-gist`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py --bundle-dir <bundle-dir> --channel email`
 
 ## Preconditions
 
@@ -54,9 +55,10 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `poc.md` - replayable exploit or reproduction details
 - `report-appendix.md` - optional markdown appendix used only when the email program explicitly requires an attachment or the provider makes the full detail body impossible inline
 - `reverify.md` - independent re-verification verdict and blockers already checked
-- `external-evidence.json` - optional secret-gist or proof-pack pointer for cramped disclosure channels
+- `external-evidence.json` - required secret-gist pointer for the detailed PoC, helper files, and raw logs
 - `mail-ui-schema.json` - live compose controls, attachment flow, and send confirmation signals
 - `mail-envelope.json` - `to`, optional `cc` and `bcc`, subject, and attachment plan
+- `mail-envelope.json.external_proof` - required proof-reference contract when `external-evidence.json` exists
 - `email-draft.md` - final subject and body draft
 - `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
 - `asset-delta.md` - optional observed fund movement or market-state change summary
@@ -74,11 +76,19 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before drafting the email body.
 5. Stop unless `manual-review.md` survives a sanity read. If it records unresolved blockers, impossible assumptions, or missing end-state proof, do not send.
 6. Build `mail-envelope.json` from the verified recipient, `severity.md`, and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
+   - When `external-evidence.json` exists, add `mail-envelope.json.external_proof` with:
+     - `required`
+     - `type`
+     - `url`
+     - `source: "external-evidence.json"`
+     - `target_field`
+     - `inline_note_required`
 7. Draft `email-draft.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
 8. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) plus the checklist in the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Every major claim must map to an artifact or be marked as an explicit assumption. The body must still show the vulnerable function or endpoint, exploit path, exact run command or replay sequence, `Output from POC`, and exploit excerpt even in plain text. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-9. If the email channel is too cramped for the full runnable PoC, create `report-appendix.md` and build `proof-pack/` with the shared external-proof-pack workflow. Prefer a secret gist only when a link is acceptable and the email body still stands on its own.
-10. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
-11. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
+9. Create `report-appendix.md` and build `proof-pack/` with the shared external-proof-pack workflow for every disclosure bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, and raw logs; the email body must also include that gist URL inline.
+10. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel email` after bundle prep and again immediately before send. Treat any failure as a hard blocker.
+11. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
+12. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, including the required gist reference, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
 
 ## Email Rules
 
