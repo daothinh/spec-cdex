@@ -138,7 +138,7 @@ def main() -> int:
         raise SystemExit("error: provide either --publish-gist or --gist-url, not both")
     if args.publish_gist:
         gist_desc = args.gist_desc or title
-        gist_url = publish_gist(output_dir=output_dir, description=gist_desc)
+        gist_url = publish_gist(output_dir=output_dir, description=gist_desc, pack_files=pack_files)
     if not gist_url:
         raise SystemExit("error: gist link is required. Use --publish-gist or provide --gist-url.")
     manifest["gist"] = {"published": True, "url": gist_url, "visibility": "secret"}
@@ -373,8 +373,8 @@ def validate_replay_material(*, poc_text: str, run_commands: list[str], replay_s
         raise SystemExit("error: no decisive success signal found. Add --success-signal or include observed output in report.md/report-appendix.md.")
 
 
-def publish_gist(*, output_dir: Path, description: str) -> str:
-    files = sorted(str(path) for path in output_dir.iterdir() if path.is_file())
+def publish_gist(*, output_dir: Path, description: str, pack_files: list[dict[str, Any]]) -> str:
+    files = select_gist_files(output_dir=output_dir, pack_files=pack_files)
     if not files:
         raise SystemExit("error: proof-pack directory is empty; nothing to publish")
     result = subprocess.run(
@@ -391,6 +391,135 @@ def publish_gist(*, output_dir: Path, description: str) -> str:
     if not stdout:
         raise SystemExit("error: gh gist create succeeded without returning a gist URL")
     return stdout.splitlines()[-1].strip()
+
+
+def select_gist_files(*, output_dir: Path, pack_files: list[dict[str, Any]]) -> list[str]:
+    evidence_items = [item for item in pack_files if str(item.get("source_relative_path") or "").startswith("evidence/")]
+    reference_text = "\n".join(
+        part
+        for part in (
+            read_text_if_exists(output_dir / "poc.md"),
+            read_text_if_exists(output_dir / "report.md"),
+            read_text_if_exists(output_dir / "report-appendix.md"),
+        )
+        if part
+    )
+
+    replay_files: list[str] = []
+    report_files: list[str] = []
+    log_files: list[str] = []
+    replay_seen: set[str] = set()
+    log_seen: set[str] = set()
+
+    referenced_items = referenced_evidence_items(reference_text=reference_text, evidence_items=evidence_items)
+    if referenced_items:
+        for item in referenced_items:
+            filename = str(item.get("pack_filename") or "").strip()
+            source_relative_path = str(item.get("source_relative_path") or "").strip()
+            category = str(item.get("category") or "").strip().lower()
+            path = output_dir / filename
+            if not path.is_file():
+                continue
+            if is_output_log_file(filename=filename, source_relative_path=source_relative_path, category=category):
+                log_files.append(str(path))
+                log_seen.add(filename)
+            else:
+                replay_files.append(str(path))
+                replay_seen.add(filename)
+
+    for item in pack_files:
+        filename = str(item.get("pack_filename") or "").strip()
+        if not filename:
+            continue
+        source_relative_path = str(item.get("source_relative_path") or "").strip()
+        category = str(item.get("category") or "").strip().lower()
+        path = output_dir / filename
+        if not path.is_file():
+            continue
+
+        if filename in replay_seen or filename in log_seen:
+            continue
+        if not replay_files and is_default_replay_file(source_relative_path=source_relative_path, category=category):
+            replay_files.append(str(path))
+            replay_seen.add(filename)
+            continue
+        if filename == "report.md" or (filename == "report-appendix.md" and not report_files):
+            report_files.append(str(path))
+            continue
+        if is_output_log_file(filename=filename, source_relative_path=source_relative_path, category=category):
+            log_files.append(str(path))
+            log_seen.add(filename)
+
+    ordered = unique_paths(replay_files) + unique_paths(report_files) + unique_paths(log_files)
+    return ordered
+
+
+def is_default_replay_file(*, source_relative_path: str, category: str) -> bool:
+    if not source_relative_path.startswith("evidence/"):
+        return False
+    return category in {"code", "script"}
+
+
+def referenced_evidence_items(*, reference_text: str, evidence_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if not reference_text.strip():
+        return []
+
+    ranked: list[tuple[int, int, dict[str, Any]]] = []
+    for index, item in enumerate(evidence_items):
+        filename = str(item.get("pack_filename") or "").strip()
+        source_relative_path = str(item.get("source_relative_path") or "").strip()
+        basename = Path(source_relative_path).name if source_relative_path else ""
+        candidates = unique(
+            [
+                source_relative_path,
+                filename,
+                basename,
+                f"`{source_relative_path}`" if source_relative_path else "",
+                f"`{basename}`" if basename else "",
+            ]
+        )
+        position = first_match_position(reference_text, candidates)
+        if position is None:
+            continue
+        ranked.append((position, index, item))
+
+    ranked.sort(key=lambda row: (row[0], row[1]))
+    return [item for _, _, item in ranked]
+
+
+def first_match_position(text: str, candidates: list[str]) -> int | None:
+    best: int | None = None
+    haystack = text
+    for candidate in candidates:
+        if not candidate:
+            continue
+        position = haystack.find(candidate)
+        if position == -1:
+            continue
+        if best is None or position < best:
+            best = position
+    return best
+
+
+def is_output_log_file(*, filename: str, source_relative_path: str, category: str) -> bool:
+    if filename.endswith(".log"):
+        return True
+    if category == "text" and source_relative_path.startswith("evidence/"):
+        lower_name = Path(filename).name.lower()
+        lower_source = source_relative_path.lower()
+        return "log" in lower_name or "output" in lower_name or "trace" in lower_name or "log" in lower_source
+    return False
+
+
+def unique_paths(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    output: list[str] = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        output.append(value)
+    return output
 
 
 def render_index(

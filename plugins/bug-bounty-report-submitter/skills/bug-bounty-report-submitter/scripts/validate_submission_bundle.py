@@ -202,6 +202,9 @@ def validate_external_proof(
     if gist_url:
         if gist_url not in primary_draft_text:
             errors.append("primary report draft must include the gist URL")
+        opening_paragraph = extract_opening_paragraph(primary_draft_text)
+        if opening_paragraph and gist_url not in opening_paragraph:
+            errors.append("opening summary/intro must include the gist URL")
         if not payload_contains_text_outside_external_proof(payload, gist_url):
             errors.append("submission payload must include the gist URL in a report field")
 
@@ -300,6 +303,22 @@ def normalize_command(line: str) -> str:
     if stripped.startswith("#"):
         return ""
     return stripped if any(stripped.startswith(prefix.strip()) for prefix in COMMAND_PREFIXES) else ""
+
+
+def extract_opening_paragraph(text: str) -> str:
+    if not text:
+        return ""
+    paragraph_lines: list[str] = []
+    for raw_line in text.splitlines():
+        stripped = raw_line.strip()
+        if not stripped:
+            if paragraph_lines:
+                break
+            continue
+        if not paragraph_lines and (stripped.startswith("#") or stripped.startswith(">")):
+            continue
+        paragraph_lines.append(stripped)
+    return " ".join(paragraph_lines).strip()
 
 
 def infer_success_signals(texts: list[str]) -> list[str]:

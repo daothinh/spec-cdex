@@ -42,6 +42,7 @@ class SecurityPipelineContractTests(unittest.TestCase):
         self.assertIn("required proof reference", text)
         self.assertIn("secret gist link is mandatory", text)
         self.assertIn("primary report body includes that gist URL inline", text)
+        self.assertIn("opening summary or intro includes that gist URL", text)
 
     def test_report_rules_do_not_allow_initiation_to_be_reported_as_impact(self) -> None:
         text = read(
@@ -62,6 +63,7 @@ class SecurityPipelineContractTests(unittest.TestCase):
         self.assertIn("target_field", text)
         self.assertIn("gist URL inline", text)
         self.assertIn("required` is always `true", text)
+        self.assertIn("opening summary or intro paragraph must carry that gist URL", text)
 
     def test_verification_contract_doc_exists(self) -> None:
         text = read("docs/security-finding-verification-contract.md")

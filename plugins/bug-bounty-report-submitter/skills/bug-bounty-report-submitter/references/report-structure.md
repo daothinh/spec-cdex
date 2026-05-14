@@ -11,6 +11,7 @@ Start from `form-schema.json`, then write only the content the live form actuall
 - Treat `poc.md` as incomplete unless it contains an exact run command or deterministic replay sequence and a success signal.
 - Treat attachments as optional by default, not part of the primary report payload.
 - Prepare `report-appendix.md`, `proof-pack/`, and `external-evidence.json` before final compression. Every report bundle needs the gist-backed proof pack because the detailed PoC and raw logs do not belong solely in normal report fields.
+- The secret gist must contain the full runnable PoC, helper files, raw logs, and the final report copy so the reviewer has one canonical proof pack.
 - The payload must name the exact target field or inline location that will carry the proof reference. Missing that mapping is a hard stop.
 - For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
 - Draft the full local body with [immunefi-body-template.md](immunefi-body-template.md) before compressing or splitting it for platform-specific fields.
@@ -64,7 +65,8 @@ Keep the first paragraph to 2-4 sentences:
 1. Name the affected asset and entry point.
 2. State the bug and exact impact in plain English.
 3. Add the prerequisite only if it materially changes severity.
-4. Point to the decisive proof when the field length allows it.
+4. Include the secret gist URL in this summary or intro paragraph.
+5. Point to the decisive proof when the field length allows it.
 
 If the form has separate summary and impact fields, keep the summary factual and move consequence detail to impact.
 
@@ -215,3 +217,4 @@ Rules:
 - `required` is always `true`.
 - Missing `url`, `target_field`, or `inline_note_required` is a blocker.
 - The primary report body must also include the gist URL inline so the triager sees where the detailed PoC and logs live.
+- The opening summary or intro paragraph must carry that gist URL, not only a later evidence section.

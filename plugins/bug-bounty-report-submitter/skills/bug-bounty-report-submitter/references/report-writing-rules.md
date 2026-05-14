@@ -11,6 +11,7 @@ Use after validation and before any submit action. Write for a tired triager: im
 - Do not report until the issue reproduces from a fresh state with the saved proof path.
 - Do not report a coded PoC as "runnable" unless you can point to the exact run command or deterministic replay sequence and the success signal it produces.
 - The report body must stand on its own. The triager should not need an attachment to understand the core bug.
+- The opening summary or intro must include the secret gist URL when a gist-backed proof pack exists.
 - Do not confuse an internal side effect with impact. A dangerous function call, queued payment, initiated HTLC, emitted event, outbound request, or partial state transition is not enough unless it produces an attacker-observable consequence.
 - For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove settlement, claimability, cash-out, balance delta, or a clearly equivalent end-state. If the attacker does not control the preimage, signature, relayer, keeper, or liquidity dependency required to realize value, downgrade or block the report.
 - For signature-, proof-, or preimage-based findings, name the exact signature, proof, or preimage gate the attacker satisfies. If you cannot show how the attacker obtains the required signature, witness, preimage, or approval, keep that claim out of the title, opening paragraph, and severity rationale.
@@ -57,6 +58,7 @@ Channel adaptation:
 
 Good pattern:
 - `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Attached HAR and response body reproduce this with two normal accounts.`
+- `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Full PoC pack, raw logs, and report copy: https://gist.github.com/...`
 
 ## Code-First Body Detail
 
@@ -148,6 +150,7 @@ Good pattern:
 
 - Human tone, technical content.
 - Short paragraphs and numbered steps.
+- Read like a careful human whitehat who prepared the report specifically for this program, not like an AI bulk submission.
 - No generic filler such as `I would like to report` or `Please find below`.
 - No lectures about what IDOR, XSS, or SSRF means.
 - No invented screenshots, logs, identifiers, or attachments.
@@ -157,6 +160,7 @@ Good pattern:
 
 - Do not ship literal headings such as `Brief/Intro`, `Vulnerability Details`, or `Impact Details` unless the platform uses those labels.
 - If the report still reads well after replacing the target name, function, and identifiers with placeholders, it is too generic. Rewrite it.
+- If the report reads like it was mass-produced by AI, rewrite it until the wording, proof selection, and opening summary feel specific to this target and this exploit path.
 - The first paragraph should carry at least two target-specific anchors: exact asset, exact function or endpoint, actor role, contract name, tx hash, market, or other concrete identifier.
 - Prefer one decisive snippet and one decisive output block over multiple near-duplicate snippets or repeated narrative restatements.
 - Do not post a follow-up comment that merely restates the same proof with a larger code dump. Follow-up comments should only add reviewer-requested delta.
@@ -178,6 +182,7 @@ Good pattern:
 - The PoC section names the exact run command or replay sequence and the success signal the triager should observe.
 - POC output shows the impact before the full PoC body.
 - If field limits or attachment policy required `proof-pack/`, the report or evidence field points to that pack and says what extra files it preserves.
+- The opening summary or intro includes the gist URL, and that gist is described as carrying the full runnable PoC, raw logs, and report copy.
 - The proof does not stop at an internal side effect when the title or severity claims real exploit impact.
 - Financial-impact claims prove claimability, settlement, or asset movement rather than only initiation.
 - Domain-logic or cryptographic assumptions are explained explicitly instead of being hand-waved inside prose like `the attacker can then claim the funds`.

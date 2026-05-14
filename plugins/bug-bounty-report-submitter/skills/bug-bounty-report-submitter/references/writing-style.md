@@ -8,6 +8,7 @@ Write after discovering the live form. Make the report read like a specific anal
 - Write from concrete evidence: exact asset names, roles, endpoints, and observed behavior.
 - Anchor every major claim to an artifact in `artifacts.json` or mark it as an explicit assumption.
 - Put the exact practical impact in the first sentence.
+- Put the secret gist URL in the opening summary or intro when a gist-backed proof pack exists.
 - Keep sentences direct. Prefer one claim per sentence.
 - Use short paragraphs. Break long explanations into steps or evidence bullets.
 - Vary the opening sentence so it reflects the actual bug, not a canned intro.
@@ -21,6 +22,7 @@ Write after discovering the live form. Make the report read like a specific anal
 - Treat attachments as supplemental evidence, not as the main explanation.
 - If the report still makes sense only because the attachment exists, the body is not finished yet.
 - If a proof pack or secret gist exists, describe it as supplemental storage for the long PoC, logs, or helper files, not as the place where the triager first learns the exploit.
+- Mention the gist early enough that a triager can open it immediately, but never make the gist carry the first explanation of the bug.
 - Do not add unsolicited post-submit comments that restate the report with more code unless the reviewer asked for that delta.
 
 ## Good Patterns
@@ -59,23 +61,25 @@ Write after discovering the live form. Make the report read like a specific anal
 Before finalizing `report.md`, check:
 1. Does the first paragraph mention the exact asset and bug class?
 2. Does sentence 1 state the actual observed impact in plain English?
-3. Does every major claim map to an artifact or `poc.md`?
-4. Does the body explicitly name the vulnerable function, endpoint, or component?
-5. Is the broken assumption explained directly below the decisive snippet or request?
-6. Is the exploit function or replay path shown without dumping the whole file?
-7. Does the body include the exact run command or deterministic replay sequence plus the success signal?
-8. Does `Output from POC` prove the impact before the full PoC body?
-9. Would the report still be fully understandable if every attachment or gist link were removed? If no, move the missing explanation into the body.
-10. Are reproduction steps specific enough to replay without guessing?
-11. Did generic or speculative phrases survive from a prior report or template?
-12. Was the text rewritten for the actual field label and length?
-13. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
-14. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
-15. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
+3. Does the opening summary or intro include the secret gist URL when a proof pack exists?
+4. Does every major claim map to an artifact or `poc.md`?
+5. Does the body explicitly name the vulnerable function, endpoint, or component?
+6. Is the broken assumption explained directly below the decisive snippet or request?
+7. Is the exploit function or replay path shown without dumping the whole file?
+8. Does the body include the exact run command or deterministic replay sequence plus the success signal?
+9. Does `Output from POC` prove the impact before the full PoC body?
+10. Would the report still be fully understandable if every attachment or gist link were removed? If no, move the missing explanation into the body.
+11. Are reproduction steps specific enough to replay without guessing?
+12. Did generic or speculative phrases survive from a prior report or template?
+13. Was the text rewritten for the actual field label and length?
+14. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
+15. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
+16. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
 
 ## Tone
 
 - Stay calm and factual.
+- Sound deliberate and respectful so the report creates immediate reviewer confidence.
 - Do not pad severity with dramatic language.
 - Do not hide constraints that reduce impact.
 - Do not claim certainty where only partial proof exists.

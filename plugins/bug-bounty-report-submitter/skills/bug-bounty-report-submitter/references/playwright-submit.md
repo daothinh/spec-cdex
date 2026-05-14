@@ -13,12 +13,12 @@ Use Playwright MCP to inspect the rendered form and submit without guessing fiel
 7. Fill metadata fields first with `browser_fill_form` or `browser_select_option`.
 8. Snapshot again if asset, severity, or classification choices reveal new prompts. Update `form-schema.json` and `submission.json` when they do.
 9. Fill long-form fields with `browser_type` when editors have live validation or markdown quirks.
-10. Ensure `report-appendix.md`, `proof-pack/`, and the secret gist already exist before the final fill pass. The gist URL is mandatory and must appear in the report body plus the intended reference field or inline note.
+10. Ensure `report-appendix.md`, `proof-pack/`, and the secret gist already exist before the final fill pass. The gist URL is mandatory and must appear in the report body, starting in the summary or intro, plus the intended reference field or inline note.
 11. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form` before any final submit attempt. Treat a failing validator as a hard blocker, not a warning.
 12. Use `browser_file_upload` only after confirming the platform actually needs an attachment. If a file is required, prefer `report-appendix.md` first and upload raw source files only as a last resort.
 13. Save draft or preview if the platform supports it.
 14. Take a final `browser_snapshot` and verify the visible content matches `submission.json`. Confirm the title or subject-like field still carries target, vuln type, location, and impact without ambiguous truncation.
-15. Verify the intended URL field or inline note is visibly populated with the expected gist URL before submit.
+15. Verify the intended URL field or inline note is visibly populated with the expected gist URL before submit, and confirm the visible summary or intro also carries that gist link.
 16. Submit with `browser_click`, then capture the confirmation screen and report ID.
 
 ## Practical Rules

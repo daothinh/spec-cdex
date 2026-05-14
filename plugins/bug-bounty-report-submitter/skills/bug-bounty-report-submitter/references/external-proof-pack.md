@@ -7,6 +7,11 @@ This is the pattern visible in strong Cantina-style submissions:
 - show the exact bug location, exploit path, run command or replay sequence, and decisive output inline
 - store the longer helper files, raw logs, or multi-file PoC in a stable secret link or markdown appendix
 
+The secret gist itself should stay tight. Publish only:
+1. all PoC code files needed for re-check
+2. the full report body
+3. output logs
+
 ## When To Create It
 
 - every report needs a durable place for the full PoC, raw logs, and helper files
@@ -15,15 +20,25 @@ This is the pattern visible in strong Cantina-style submissions:
 - the PoC needs multiple files or long logs
 - you need a stable replay pack for reviewer follow-up
 
-## Minimum Contents
+## Local Proof-Pack Contents
 
-The proof pack should preserve:
+The local `proof-pack/` should preserve:
 - `poc.md`
 - `report-appendix.md` when present
 - decisive logs or output files
 - helper PoC files already copied under `evidence/`
 - `artifacts.json`
 - replay metadata: run command, success signal, and file manifest
+
+## Secret Gist Contents
+
+Publish only the reviewer-critical subset, in this order:
+1. PoC replay files from `evidence/` that the rerun actually needs
+2. `report.md` as the full report body. If it is missing, fall back to `report-appendix.md`
+3. output logs from `evidence/`
+
+Do not push manifests, index files, environment notes, severity notes, or generic evidence inventory into the gist unless the workflow is changed explicitly.
+If the rerun needs helper configs, fixtures, ABI files, or support scripts, `poc.md` must name those files explicitly so the gist builder can include them in the first group.
 
 ## Build It
 

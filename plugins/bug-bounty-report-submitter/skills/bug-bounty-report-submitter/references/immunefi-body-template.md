@@ -36,6 +36,7 @@ The content order matters. The literal heading words do not.
 - Name the affected asset and the practical bug immediately.
 - State the highest observed impact in plain English.
 - Mention any prerequisite only if it materially lowers or changes severity.
+- Include the secret gist URL in this opening block when a gist-backed proof pack exists so the triager sees the full PoC pack, logs, and report immediately.
 
 ### Vulnerability Details
 
@@ -110,6 +111,7 @@ Do not paste this verbatim into a live program. Rewrite the headings or collapse
 ````md
 ## Brief/Intro
 [Affected asset] contains [exact bug]. An attacker who controls [role or prerequisite] can [observed impact]. [Mention decisive artifact or PoC output if helpful.]
+[Secret gist: https://gist.github.com/...]
 
 ## Vulnerability Details
 [Explain the vulnerable workflow and the invariant/check/accounting assumption that should hold.]

@@ -65,6 +65,7 @@ Keep the opening to 2-4 sentences:
 - mention the decisive proof when the body length allows it
 
 After the summary, follow the shared long-form logic from `../../bug-bounty-report-submitter/references/immunefi-body-template.md` even when the mail client is plain text.
+The summary paragraph must include the secret gist URL when a gist-backed proof pack exists.
 
 ## Vulnerability Details In Email
 
@@ -124,6 +125,7 @@ Attachment discipline:
 - do not attach raw source files, exploit scripts, or archives by default
 - if an attachment is required, prefer `report-appendix.md` or a plain-text appendix that mirrors the same self-contained report structure
 - if the full runnable PoC still needs multiple files or long logs, create `proof-pack/` and reference a secret gist naturally in the body while keeping the core replay and decisive output inline
+- the opening summary paragraph should already contain that gist URL so the recipient can open the canonical proof pack immediately
 - screenshots, HAR, video, and logs remain supplemental only
 
 If a coded PoC is impossible:

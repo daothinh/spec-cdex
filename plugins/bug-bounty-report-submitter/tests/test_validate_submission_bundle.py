@@ -172,6 +172,49 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("primary report draft must include the gist URL", result.stderr)
 
+    def test_blocks_when_opening_summary_omits_gist_url(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bundle_dir = build_bundle(Path(temp_dir) / "bundle")
+            (bundle_dir / "submission.json").write_text(
+                json.dumps(
+                    {
+                        "title": "Finding",
+                        "details": "Summary with gist https://gist.github.com/example/proof",
+                        "external_proof": {
+                            "required": True,
+                            "type": "secret-gist",
+                            "url": "https://gist.github.com/example/proof",
+                            "source": "external-evidence.json",
+                            "target_field": "Reference URL",
+                            "inline_note_required": True,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "external-evidence.json").write_text(
+                json.dumps(
+                    {
+                        "type": "secret-gist",
+                        "submission_requirement": "include-secret-gist-reference",
+                        "requires_url_field": True,
+                        "gist": {"published": True, "url": "https://gist.github.com/example/proof", "visibility": "secret"},
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "report.md").write_text(
+                "# Heading\n\nOpening summary without link.\n\nEvidence later: https://gist.github.com/example/proof\n",
+                encoding="utf-8",
+            )
+
+            result = run_validator(bundle_dir, "form")
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("opening summary/intro must include the gist URL", result.stderr)
+
     def test_blocks_when_gist_url_only_exists_in_external_proof_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = build_bundle(Path(temp_dir) / "bundle")

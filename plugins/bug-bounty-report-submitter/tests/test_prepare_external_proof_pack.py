@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -15,6 +16,10 @@ SCRIPT_PATH = (
     / "scripts"
     / "prepare_external_proof_pack.py"
 )
+SPEC = importlib.util.spec_from_file_location("prepare_external_proof_pack", SCRIPT_PATH)
+assert SPEC and SPEC.loader
+MODULE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MODULE)
 
 
 class PrepareExternalProofPackTests(unittest.TestCase):
@@ -121,6 +126,91 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             self.assertIn("evidence__RemoveLiquidityReentrancyPoC.t.sol", filenames)
             self.assertIn("evidence__test-output.log", filenames)
             self.assertEqual(manifest["gist"]["url"], "https://gist.github.com/example/proof-pack")
+
+    def test_select_gist_files_prioritizes_poc_code_then_report_then_logs(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_dir = Path(temp_dir)
+            for name in (
+                "evidence__Exploit.sol",
+                "evidence__helper.py",
+                "evidence__config.json",
+                "poc.md",
+                "report.md",
+                "report-appendix.md",
+                "evidence__run-output.log",
+                "evidence__notes.txt",
+                "artifacts.json",
+                "external-proof-pack.md",
+                "external-proof-pack.json",
+            ):
+                (output_dir / name).write_text(name + "\n", encoding="utf-8")
+            (output_dir / "poc.md").write_text(
+                "\n".join(
+                    [
+                        "Run `evidence/Exploit.sol` with helper `helper.py` and config `config.json`.",
+                        "Logs are written to `run-output.log`.",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (output_dir / "report.md").write_text("Full report body.\n", encoding="utf-8")
+
+            pack_files = [
+                {
+                    "pack_filename": "report.md",
+                    "source_relative_path": "report.md",
+                    "category": "report-draft",
+                },
+                {
+                    "pack_filename": "report-appendix.md",
+                    "source_relative_path": "report-appendix.md",
+                    "category": "report-appendix",
+                },
+                {
+                    "pack_filename": "evidence__Exploit.sol",
+                    "source_relative_path": "evidence/Exploit.sol",
+                    "category": "code",
+                },
+                {
+                    "pack_filename": "evidence__helper.py",
+                    "source_relative_path": "evidence/helper.py",
+                    "category": "script",
+                },
+                {
+                    "pack_filename": "evidence__config.json",
+                    "source_relative_path": "evidence/config.json",
+                    "category": "json",
+                },
+                {
+                    "pack_filename": "evidence__run-output.log",
+                    "source_relative_path": "evidence/run-output.log",
+                    "category": "text",
+                },
+                {
+                    "pack_filename": "evidence__notes.txt",
+                    "source_relative_path": "evidence/notes.txt",
+                    "category": "text",
+                },
+                {
+                    "pack_filename": "artifacts.json",
+                    "source_relative_path": "artifacts.json",
+                    "category": "artifacts-manifest",
+                },
+            ]
+
+            selected = MODULE.select_gist_files(output_dir=output_dir, pack_files=pack_files)
+
+            self.assertEqual(
+                [Path(path).name for path in selected],
+                [
+                    "evidence__Exploit.sol",
+                    "evidence__helper.py",
+                    "evidence__config.json",
+                    "report.md",
+                    "evidence__run-output.log",
+                ],
+            )
 
     def test_fails_without_gist_reference(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
