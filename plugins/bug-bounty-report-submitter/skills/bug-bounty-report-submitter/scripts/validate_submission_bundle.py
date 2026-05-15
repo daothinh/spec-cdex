@@ -30,6 +30,7 @@ PRIMARY_DRAFT_BY_CHANNEL = {
 
 URL_PATTERN = re.compile(r"^https?://\S+$", re.IGNORECASE)
 GIST_URL_PATTERN = re.compile(r"^https?://gist\.github\.com/\S+$", re.IGNORECASE)
+ASCIINEMA_URL_PATTERN = re.compile(r"^https?://asciinema\.org/a/\S+$", re.IGNORECASE)
 COMMAND_PREFIXES = (
     "$ ",
     "forge ",
@@ -143,10 +144,14 @@ def validate_external_proof(
 ) -> None:
     external_proof = payload.get("external_proof")
     gist = external_evidence.get("gist") or {}
+    asciinema = external_evidence.get("asciinema") or {}
     proof_type = str(external_evidence.get("type") or "").strip()
     submission_requirement = str(external_evidence.get("submission_requirement") or "").strip()
+    recording_requirement = str(external_evidence.get("recording_requirement") or "").strip()
     gist_url = str(gist.get("url") or "").strip()
     gist_published = bool(gist.get("published"))
+    asciinema_url = str(asciinema.get("server_url") or "").strip()
+    asciinema_required = asciinema.get("required")
 
     if not external_proof:
         errors.append("external-evidence.json exists but payload is missing external_proof contract")
@@ -196,17 +201,43 @@ def validate_external_proof(
         errors.append("payload external_proof.required must be true")
     if submission_requirement != "include-secret-gist-reference":
         errors.append("external-evidence.json submission_requirement must be include-secret-gist-reference")
+    if recording_requirement != "include-asciinema-reference":
+        errors.append("external-evidence.json recording_requirement must be include-asciinema-reference")
     if not external_evidence.get("requires_url_field"):
         errors.append("external-evidence.json requires_url_field must be true")
+    if asciinema_required is not True:
+        errors.append("external-evidence.json asciinema.required must be true")
+    if not asciinema_url:
+        errors.append("external-evidence.json asciinema.server_url is required")
+    elif not ASCIINEMA_URL_PATTERN.match(asciinema_url):
+        errors.append("external-evidence.json asciinema.server_url must be an asciinema.org URL")
+    if not str(asciinema.get("local_cast_path") or "").strip():
+        errors.append("external-evidence.json asciinema.local_cast_path is required")
+    if not str(asciinema.get("metadata_path") or "").strip():
+        errors.append("external-evidence.json asciinema.metadata_path is required")
 
     if gist_url:
         if gist_url not in primary_draft_text:
             errors.append("primary report draft must include the gist URL")
+        if markdown_link(gist_url) not in primary_draft_text:
+            errors.append("primary report draft must use markdown link format for the gist URL")
         opening_paragraph = extract_opening_paragraph(primary_draft_text)
         if opening_paragraph and gist_url not in opening_paragraph:
             errors.append("opening summary/intro must include the gist URL")
         if not payload_contains_text_outside_external_proof(payload, gist_url):
             errors.append("submission payload must include the gist URL in a report field")
+    if asciinema_url:
+        if asciinema_url not in primary_draft_text:
+            errors.append("primary report draft must include the asciinema URL")
+        if markdown_link(asciinema_url) not in primary_draft_text:
+            errors.append("primary report draft must use markdown link format for the asciinema URL")
+        opening_paragraph = extract_opening_paragraph(primary_draft_text)
+        if opening_paragraph and asciinema_url not in opening_paragraph:
+            errors.append("opening summary/intro must include the asciinema URL")
+        if not payload_contains_text_outside_external_proof(payload, asciinema_url):
+            errors.append("submission payload must include the asciinema URL in a report field")
+    if gist_url and asciinema_url and not asciinema_appears_below_gist(primary_draft_text, gist_url, asciinema_url):
+        errors.append("primary report draft must place the asciinema URL on the next non-empty line below the gist URL")
 
 
 def emit_and_exit(
@@ -303,6 +334,22 @@ def normalize_command(line: str) -> str:
     if stripped.startswith("#"):
         return ""
     return stripped if any(stripped.startswith(prefix.strip()) for prefix in COMMAND_PREFIXES) else ""
+
+
+def markdown_link(url: str) -> str:
+    return f"[{url}]({url})"
+
+
+def asciinema_appears_below_gist(text: str, gist_url: str, asciinema_url: str) -> bool:
+    lines = [line.rstrip() for line in text.splitlines()]
+    gist_index = next((index for index, line in enumerate(lines) if gist_url in line), None)
+    if gist_index is None:
+        return False
+    for line in lines[gist_index + 1 :]:
+        if not line.strip():
+            continue
+        return asciinema_url in line
+    return False
 
 
 def extract_opening_paragraph(text: str) -> str:

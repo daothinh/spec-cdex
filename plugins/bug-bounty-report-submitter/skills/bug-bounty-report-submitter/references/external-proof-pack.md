@@ -1,6 +1,7 @@
 # External Proof Pack
 
 Use this for every report bundle. The gist-backed proof pack is mandatory because live form and email fields should not be the only place that carries the detailed runnable PoC, helper files, or captured logs.
+The last clean replay must also be recorded with `asciinema`, saved locally, and uploaded before the report is considered ready.
 
 This is the pattern visible in strong Cantina-style submissions:
 - keep the main body self-contained
@@ -43,8 +44,22 @@ If the rerun needs helper configs, fixtures, ABI files, or support scripts, `poc
 ## Build It
 
 1. Finish `artifacts.json` and `evidence/` first.
-2. Write the inline report body first.
-3. If the channel is still too small, run:
+2. Record the final clean replay first:
+
+```powershell
+asciinema --version
+wsl bash -lc 'command -v asciinema && asciinema --version'
+python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/record_asciinema_replay.py `
+  --finding-dir audit-targets/<slug>/findings/<finding-id> `
+  --workdir <repo-or-target-dir> `
+  --run-command "<exact replay command>" `
+  --success-signal "<short decisive output>"
+```
+
+If both checks fail, stop.
+
+3. Write the inline report body first.
+4. If the channel is still too small, run:
 
 ```bash
 python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py \
@@ -53,7 +68,7 @@ python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/sc
   --success-signal "<short decisive output>"
 ```
 
-4. Publish a secret gist or provide an existing gist URL:
+5. Publish a secret gist or provide an existing gist URL:
 
 ```bash
 python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py \
@@ -73,11 +88,11 @@ python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/sc
   --gist-url "https://gist.github.com/..."
 ```
 
-5. This creates:
+6. This creates:
 - `proof-pack/`
 - `external-evidence.json`
 - a markdown index and manifest for the proof pack
-6. Add the gist URL to the primary report body, then add an `external_proof` object to `submission.json` or `mail-envelope.json`, then run:
+7. Add the gist URL and the `asciinema` URL to the primary report body, then add an `external_proof` object to `submission.json` or `mail-envelope.json`, then run:
 
 ```bash
 python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py \
@@ -93,7 +108,8 @@ The script uses `gh gist create`. GitHub secret gists are the default; do not ad
 
 Good:
 - `Full runnable PoC, raw test output, and helper files are preserved in the linked secret gist. The inline report below includes the vulnerable function, replay command, and decisive output.`
-- `Detailed PoC, replay logs, and helper files are in the secret gist: https://gist.github.com/...`
+- `[https://gist.github.com/...](https://gist.github.com/...)`
+- `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
 
 Bad:
 - `See gist for the PoC.`
@@ -105,5 +121,7 @@ Bad:
 - The body must still contain the minimal run command or deterministic replay sequence.
 - The body must still contain the decisive PoC output.
 - The body must include the gist URL inline.
+- The body must include the `asciinema` URL inline on the next non-empty line below the gist URL.
+- Both URLs must use markdown link format with visible text equal to the URL.
 - The proof pack is for long helper files, raw logs, and multi-file replay support, not for hiding the main claim.
 - Missing the gist reference in either the payload or the report body is a blocker and the report must not be submitted.

@@ -65,7 +65,7 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             (bundle_dir / "artifacts.json").write_text(
                 json.dumps(
                     {
-                        "count": 2,
+                        "count": 4,
                         "artifacts": [
                             {
                                 "id": "ART-001",
@@ -79,6 +79,18 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                                 "kind": "text",
                                 "description": "Captured Forge output",
                             },
+                            {
+                                "id": "ART-003",
+                                "relative_bundle_path": "evidence/asciinema/reverify-session.cast",
+                                "kind": "terminal-cast",
+                                "description": "Asciinema terminal replay recording",
+                            },
+                            {
+                                "id": "ART-004",
+                                "relative_bundle_path": "evidence/asciinema/asciinema-session.json",
+                                "kind": "asciinema-session",
+                                "description": "Asciinema replay metadata with uploaded session URL",
+                            },
                         ],
                     }
                 )
@@ -87,6 +99,20 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             )
             (evidence_dir / "RemoveLiquidityReentrancyPoC.t.sol").write_text("contract PoC {}\n", encoding="utf-8")
             (evidence_dir / "test-output.log").write_text("[PASS] replay\n", encoding="utf-8")
+            asciinema_dir = evidence_dir / "asciinema"
+            asciinema_dir.mkdir()
+            (asciinema_dir / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
+            (asciinema_dir / "asciinema-session.json").write_text(
+                json.dumps(
+                    {
+                        "tool": "asciinema",
+                        "local_cast_path": "reverify-session.cast",
+                        "server_url": "https://asciinema.org/a/demo123",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
 
             result = subprocess.run(
                 [
@@ -118,14 +144,19 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             self.assertIn("Reference URL", external_evidence["recommended_field_labels"])
             self.assertTrue(external_evidence["requires_url_field"])
             self.assertEqual(external_evidence["submission_requirement"], "include-secret-gist-reference")
+            self.assertEqual(external_evidence["recording_requirement"], "include-asciinema-reference")
             self.assertIn("exact vulnerable location", external_evidence["suggested_inline_note"])
             self.assertEqual(external_evidence["gist"]["url"], "https://gist.github.com/example/proof-pack")
+            self.assertEqual(external_evidence["asciinema"]["server_url"], "https://asciinema.org/a/demo123")
+            self.assertIn("[https://gist.github.com/example/proof-pack](https://gist.github.com/example/proof-pack)", external_evidence["suggested_reference_block"])
+            self.assertIn("[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)", external_evidence["suggested_reference_block"])
 
             manifest = json.loads((proof_pack_dir / "external-proof-pack.json").read_text(encoding="utf-8"))
             filenames = {item["pack_filename"] for item in manifest["files"]}
             self.assertIn("evidence__RemoveLiquidityReentrancyPoC.t.sol", filenames)
             self.assertIn("evidence__test-output.log", filenames)
             self.assertEqual(manifest["gist"]["url"], "https://gist.github.com/example/proof-pack")
+            self.assertEqual(manifest["asciinema"]["server_url"], "https://asciinema.org/a/demo123")
 
     def test_select_gist_files_prioritizes_poc_code_then_report_then_logs(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -215,7 +246,7 @@ class PrepareExternalProofPackTests(unittest.TestCase):
     def test_fails_without_gist_reference(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = Path(temp_dir) / "bundle"
-            bundle_dir.mkdir()
+            (bundle_dir / "evidence" / "asciinema").mkdir(parents=True)
             (bundle_dir / "poc.md").write_text(
                 "\n".join(
                     [
@@ -244,6 +275,18 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            (bundle_dir / "evidence" / "asciinema" / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "asciinema" / "asciinema-session.json").write_text(
+                json.dumps(
+                    {
+                        "tool": "asciinema",
+                        "local_cast_path": "reverify-session.cast",
+                        "server_url": "https://asciinema.org/a/demo123",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
 
             result = subprocess.run(
                 [sys.executable, str(SCRIPT_PATH), "--bundle-dir", str(bundle_dir)],
@@ -257,8 +300,20 @@ class PrepareExternalProofPackTests(unittest.TestCase):
     def test_fails_without_replay_details(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = Path(temp_dir) / "bundle"
-            bundle_dir.mkdir()
+            (bundle_dir / "evidence" / "asciinema").mkdir(parents=True)
             (bundle_dir / "poc.md").write_text("See attached PoC file.\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "asciinema" / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "asciinema" / "asciinema-session.json").write_text(
+                json.dumps(
+                    {
+                        "tool": "asciinema",
+                        "local_cast_path": "reverify-session.cast",
+                        "server_url": "https://asciinema.org/a/demo123",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
 
             result = subprocess.run(
                 [
@@ -275,6 +330,53 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             )
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("no runnable replay material found", result.stderr)
+
+    def test_fails_without_asciinema_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bundle_dir = Path(temp_dir) / "bundle"
+            (bundle_dir / "evidence").mkdir(parents=True)
+            (bundle_dir / "poc.md").write_text(
+                "\n".join(
+                    [
+                        "## Proof of Concept",
+                        "",
+                        "```bash",
+                        "python exploit.py",
+                        "```",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "report.md").write_text(
+                "\n".join(
+                    [
+                        "## Output from POC",
+                        "",
+                        "```text",
+                        "[PASS] replay worked",
+                        "```",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "--bundle-dir",
+                    str(bundle_dir),
+                    "--gist-url",
+                    "https://gist.github.com/example/proof-pack",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing asciinema replay metadata", result.stderr)
 
 
 if __name__ == "__main__":

@@ -43,6 +43,7 @@ COMMAND_PREFIXES = (
     "git clone ",
 )
 OUTPUT_MARKERS = ("[PASS]", "Logs:", "Suite result:", "status code", "balance", "delta", "reserve", "returned", "assert")
+ASCIINEMA_URL_PATTERN = re.compile(r"^https?://asciinema\.org/a/\S+$", re.IGNORECASE)
 
 
 def parse_args() -> argparse.Namespace:
@@ -88,6 +89,7 @@ def main() -> int:
     title = args.title or f"{bundle_dir.parent.name}/{bundle_dir.name} runnable proof pack"
     artifact_map = load_artifact_map(bundle_dir / "artifacts.json")
     pack_files = copy_bundle_files(bundle_dir, output_dir, artifact_map)
+    asciinema_session = load_asciinema_session(bundle_dir)
 
     poc_text = read_text_if_exists(bundle_dir / "poc.md")
     run_commands = unique(args.run_command + infer_commands([poc_text, read_text_if_exists(bundle_dir / "report-appendix.md"), read_text_if_exists(bundle_dir / "report.md")]))
@@ -114,6 +116,12 @@ def main() -> int:
         "run_commands": run_commands,
         "replay_steps": replay_steps,
         "success_signals": success_signals,
+        "asciinema": {
+            "metadata_path": relative_or_absolute(asciinema_session["metadata_path"], bundle_dir),
+            "local_cast_path": relative_or_absolute(asciinema_session["cast_path"], bundle_dir),
+            "server_url": asciinema_session["server_url"],
+            "link_markdown": markdown_link(asciinema_session["server_url"]),
+        },
         "gist": {"published": False, "url": None, "visibility": None},
         "files": pack_files,
     }
@@ -123,6 +131,7 @@ def main() -> int:
             title=title,
             summary=args.summary,
             gist_url="",
+            asciinema_url=asciinema_session["server_url"],
             run_commands=run_commands,
             replay_steps=replay_steps,
             success_signals=success_signals,
@@ -148,6 +157,7 @@ def main() -> int:
             title=title,
             summary=args.summary,
             gist_url=gist_url,
+            asciinema_url=asciinema_session["server_url"],
             run_commands=run_commands,
             replay_steps=replay_steps,
             success_signals=success_signals,
@@ -168,6 +178,7 @@ def main() -> int:
         "success_signals": success_signals,
         "suggested_reference_text": (
             "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist. "
+            "The recorded terminal replay is preserved in the linked asciinema session. "
             "The inline body still contains the vulnerable location, replay command or sequence, and decisive output."
         ),
         "recommended_field_labels": [
@@ -178,10 +189,25 @@ def main() -> int:
         ],
         "suggested_inline_note": (
             "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist. "
+            "The recorded terminal replay is preserved in the linked asciinema session. "
             "This report body still contains the exact vulnerable location, replay command or sequence, and decisive output."
         ),
         "requires_url_field": True,
         "submission_requirement": "include-secret-gist-reference",
+        "recording_requirement": "include-asciinema-reference",
+        "asciinema": {
+            "required": True,
+            "metadata_path": relative_or_absolute(asciinema_session["metadata_path"], bundle_dir),
+            "local_cast_path": relative_or_absolute(asciinema_session["cast_path"], bundle_dir),
+            "server_url": asciinema_session["server_url"],
+            "link_markdown": markdown_link(asciinema_session["server_url"]),
+        },
+        "suggested_reference_block": "\n".join(
+            [
+                markdown_link(gist_url),
+                markdown_link(asciinema_session["server_url"]),
+            ]
+        ),
         "gist": {
             "published": True,
             "url": gist_url,
@@ -199,6 +225,7 @@ def main() -> int:
                 "index_markdown": index_path.as_posix(),
                 "external_evidence_json": external_evidence_path.as_posix(),
                 "gist_url": gist_url,
+                "asciinema_url": asciinema_session["server_url"],
                 "count": len(pack_files),
             },
             indent=2,
@@ -220,6 +247,48 @@ def load_artifact_map(path: Path) -> dict[str, dict[str, Any]]:
         if relative_bundle_path:
             mapping[relative_bundle_path] = item
     return mapping
+
+
+def load_asciinema_session(bundle_dir: Path) -> dict[str, Any]:
+    evidence_dir = bundle_dir / "evidence"
+    if not evidence_dir.is_dir():
+        raise SystemExit("error: missing evidence/ directory; run prepare_report_artifacts.py before preparing the proof pack")
+
+    candidates = sorted(evidence_dir.rglob("asciinema-session.json"))
+    if not candidates:
+        raise SystemExit(
+            "error: missing asciinema replay metadata in evidence/. Run record_asciinema_replay.py during final reverify first."
+        )
+
+    for metadata_path in candidates:
+        try:
+            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(payload, dict) or payload.get("tool") != "asciinema":
+            continue
+
+        relative_cast = str(payload.get("local_cast_path") or payload.get("cast_filename") or "").strip()
+        if not relative_cast:
+            raise SystemExit("error: asciinema-session.json is missing local_cast_path")
+        cast_path = (metadata_path.parent / relative_cast).resolve()
+        if not cast_path.is_file():
+            raise SystemExit(f"error: asciinema cast file referenced by {metadata_path.name} does not exist: {cast_path}")
+
+        server_url = str(payload.get("server_url") or "").strip()
+        if not server_url:
+            raise SystemExit("error: asciinema-session.json is missing server_url")
+        if not ASCIINEMA_URL_PATTERN.match(server_url):
+            raise SystemExit("error: asciinema-session.json server_url must be an asciinema.org URL")
+
+        return {
+            "metadata_path": metadata_path.resolve(),
+            "cast_path": cast_path,
+            "server_url": server_url,
+            "payload": payload,
+        }
+
+    raise SystemExit("error: unable to load a valid asciinema-session.json from evidence/")
 
 
 def copy_bundle_files(bundle_dir: Path, output_dir: Path, artifact_map: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
@@ -527,14 +596,18 @@ def render_index(
     title: str,
     summary: str,
     gist_url: str,
+    asciinema_url: str,
     run_commands: list[str],
     replay_steps: list[str],
     success_signals: list[str],
     files: list[dict[str, Any]],
 ) -> str:
     lines = [f"# {title}", "", summary, ""]
+    lines.extend(["## Reference Links", ""])
     if gist_url:
-        lines.extend(["## Secret Gist", "", gist_url, ""])
+        lines.append(markdown_link(gist_url))
+    lines.append(markdown_link(asciinema_url))
+    lines.append("")
     if run_commands:
         lines.extend(["## Replay Commands", ""])
         lines.extend(f"- `{command}`" for command in run_commands)
@@ -552,7 +625,14 @@ def render_index(
             "",
             "## Suggested Reference Text",
             "",
-            "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist or proof pack. "
+            "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist.",
+        ]
+    )
+    if gist_url:
+        lines.append(markdown_link(gist_url))
+    lines.extend(
+        [
+            markdown_link(asciinema_url),
             "The inline report still contains the vulnerable location, replay command or sequence, and decisive output.",
             "",
         ]
@@ -563,6 +643,8 @@ def render_index(
 def infer_category(suffix: str) -> str:
     if suffix in {".log", ".txt"}:
         return "text"
+    if suffix in {".cast"}:
+        return "terminal-cast"
     if suffix in {".png", ".jpg", ".jpeg", ".webp"}:
         return "image"
     if suffix in {".json"}:
@@ -576,6 +658,10 @@ def infer_category(suffix: str) -> str:
 
 def flatten_name(path: Path) -> str:
     return "__".join(path.parts)
+
+
+def markdown_link(url: str) -> str:
+    return f"[{url}]({url})"
 
 
 def read_text_if_exists(path: Path) -> str:

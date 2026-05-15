@@ -9,6 +9,8 @@ Write after discovering the live form. Make the report read like a specific anal
 - Anchor every major claim to an artifact in `artifacts.json` or mark it as an explicit assumption.
 - Put the exact practical impact in the first sentence.
 - Put the secret gist URL in the opening summary or intro when a gist-backed proof pack exists.
+- Put the `asciinema` URL on the next non-empty line below the gist URL.
+- Format both URLs as markdown links whose visible text matches the URL.
 - Keep sentences direct. Prefer one claim per sentence.
 - Use short paragraphs. Break long explanations into steps or evidence bullets.
 - Vary the opening sentence so it reflects the actual bug, not a canned intro.
@@ -52,6 +54,7 @@ Write after discovering the live form. Make the report read like a specific anal
 ## Evidence Mentions
 
 - Mention proof naturally: `The attached video shows...`, `The included HAR captures...`
+- Mention replay links naturally: `[https://gist.github.com/...](https://gist.github.com/...)` then `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
 - If a separate evidence field exists, keep the summary concise and move proof inventory there.
 - If the PoC is decisive, say so plainly and summarize the decisive output inline before mentioning any supplemental artifact.
 - Do not fake certainty by citing proof that does not exist in `artifacts.json`.
@@ -62,19 +65,20 @@ Before finalizing `report.md`, check:
 1. Does the first paragraph mention the exact asset and bug class?
 2. Does sentence 1 state the actual observed impact in plain English?
 3. Does the opening summary or intro include the secret gist URL when a proof pack exists?
-4. Does every major claim map to an artifact or `poc.md`?
-5. Does the body explicitly name the vulnerable function, endpoint, or component?
-6. Is the broken assumption explained directly below the decisive snippet or request?
-7. Is the exploit function or replay path shown without dumping the whole file?
-8. Does the body include the exact run command or deterministic replay sequence plus the success signal?
-9. Does `Output from POC` prove the impact before the full PoC body?
-10. Would the report still be fully understandable if every attachment or gist link were removed? If no, move the missing explanation into the body.
-11. Are reproduction steps specific enough to replay without guessing?
-12. Did generic or speculative phrases survive from a prior report or template?
-13. Was the text rewritten for the actual field label and length?
-14. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
-15. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
-16. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
+4. Is the `asciinema` URL on the next non-empty line below the gist URL?
+5. Does every major claim map to an artifact or `poc.md`?
+6. Does the body explicitly name the vulnerable function, endpoint, or component?
+7. Is the broken assumption explained directly below the decisive snippet or request?
+8. Is the exploit function or replay path shown without dumping the whole file?
+9. Does the body include the exact run command or deterministic replay sequence plus the success signal?
+10. Does `Output from POC` prove the impact before the full PoC body?
+11. Would the report still be fully understandable if every attachment or gist link were removed? If no, move the missing explanation into the body.
+12. Are reproduction steps specific enough to replay without guessing?
+13. Did generic or speculative phrases survive from a prior report or template?
+14. Was the text rewritten for the actual field label and length?
+15. Would the report still make sense if the program name were removed? If yes, add more target-specific detail.
+16. Could the headings be copied into a different report unchanged? If yes, rename or remove them.
+17. Is any planned follow-up comment adding new reviewer-needed evidence, or only reformatting the same proof? If it is only reformatting, delete it.
 
 ## Tone
 

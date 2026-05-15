@@ -137,6 +137,13 @@ def build_entry(*, index: int, rel_source: Path, source_path: Path, bundle_path:
 
 def infer_kind(rel_source: Path) -> str:
     parts = rel_source.parts
+    if parts and parts[0] == "asciinema":
+        if rel_source.name == "asciinema-session.json":
+            return "asciinema-session"
+        if rel_source.suffix.lower() == ".cast":
+            return "terminal-cast"
+        return "asciinema-artifact"
+
     if parts and parts[0] == "caido":
         if CAIDO_REQUEST_JSON_RE.match(rel_source.name):
             return "caido-request-metadata"
@@ -163,6 +170,12 @@ def infer_kind(rel_source: Path) -> str:
 
 
 def default_description(kind: str, rel_source: Path) -> str:
+    if kind == "asciinema-session":
+        return "Asciinema replay metadata with uploaded session URL"
+    if kind == "terminal-cast":
+        return "Asciinema terminal replay recording"
+    if kind == "asciinema-artifact":
+        return f"Additional asciinema artifact at {rel_source.as_posix()}"
     if kind == "caido-curl":
         request_id = request_id_from_name(rel_source.name)
         return f"Exported Caido curl PoC for request {request_id}" if request_id else "Exported Caido curl PoC"

@@ -12,6 +12,9 @@ Use after validation and before any submit action. Write for a tired triager: im
 - Do not report a coded PoC as "runnable" unless you can point to the exact run command or deterministic replay sequence and the success signal it produces.
 - The report body must stand on its own. The triager should not need an attachment to understand the core bug.
 - The opening summary or intro must include the secret gist URL when a gist-backed proof pack exists.
+- The opening summary or intro must include the `asciinema` URL when the final replay was recorded.
+- Put the `asciinema` URL on the next non-empty line below the gist URL.
+- Format both URLs as markdown links whose visible text exactly matches the URL.
 - Do not confuse an internal side effect with impact. A dangerous function call, queued payment, initiated HTLC, emitted event, outbound request, or partial state transition is not enough unless it produces an attacker-observable consequence.
 - For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove settlement, claimability, cash-out, balance delta, or a clearly equivalent end-state. If the attacker does not control the preimage, signature, relayer, keeper, or liquidity dependency required to realize value, downgrade or block the report.
 - For signature-, proof-, or preimage-based findings, name the exact signature, proof, or preimage gate the attacker satisfies. If you cannot show how the attacker obtains the required signature, witness, preimage, or approval, keep that claim out of the title, opening paragraph, and severity rationale.
@@ -58,7 +61,8 @@ Channel adaptation:
 
 Good pattern:
 - `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Attached HAR and response body reproduce this with two normal accounts.`
-- `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Full PoC pack, raw logs, and report copy: https://gist.github.com/...`
+- `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Full PoC pack, raw logs, and report copy: [https://gist.github.com/...](https://gist.github.com/...)`
+- `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
 
 ## Code-First Body Detail
 
@@ -104,6 +108,7 @@ Good pattern:
 - Do not write `see attachment for the PoC` as a substitute for the inline exploit walkthrough.
 - If the platform requires an attachment or field limits make inline detail impossible, attach a markdown appendix such as `report-appendix.md` that mirrors the same self-contained structure.
 - If field limits still make the runnable proof incomplete, build `proof-pack/` and optionally publish it as a secret gist. The inline body must still include the exact bug location, replay command or sequence, and decisive output.
+- If the final replay exists, the inline body must also include the uploaded `asciinema` URL directly below the gist URL.
 - Upload screenshots, HAR files, videos, and logs only as supporting evidence for claims already made inline.
 - If an attachment is optional and adds no decisive evidence, do not upload it.
 
@@ -183,6 +188,7 @@ Good pattern:
 - POC output shows the impact before the full PoC body.
 - If field limits or attachment policy required `proof-pack/`, the report or evidence field points to that pack and says what extra files it preserves.
 - The opening summary or intro includes the gist URL, and that gist is described as carrying the full runnable PoC, raw logs, and report copy.
+- The opening summary or intro includes the `asciinema` URL on the next non-empty line below the gist URL.
 - The proof does not stop at an internal side effect when the title or severity claims real exploit impact.
 - Financial-impact claims prove claimability, settlement, or asset movement rather than only initiation.
 - Domain-logic or cryptographic assumptions are explained explicitly instead of being hand-waved inside prose like `the attacker can then claim the funds`.

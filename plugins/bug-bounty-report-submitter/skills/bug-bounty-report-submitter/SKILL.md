@@ -6,7 +6,7 @@ description: >
   and attachment flow.
 metadata:
   author: workers.io
-  version: "0.3.0"
+  version: "0.5.0"
 ---
 
 # Bug Bounty Report Submitter
@@ -19,6 +19,7 @@ Load these on demand:
 - [references/immunefi-body-template.md](references/immunefi-body-template.md) for the evidence-first local drafting scaffold and content order
 - [references/writing-style.md](references/writing-style.md) for natural prose rules and anti-template cleanup
 - [references/external-proof-pack.md](references/external-proof-pack.md) for secret-gist and field-limit handling without offloading the core claim
+- [references/asciinema-proof.md](references/asciinema-proof.md) for the mandatory final replay recording flow and link placement
 - [references/playwright-submit.md](references/playwright-submit.md) for the browser automation sequence
 - `plugins/bounty-hunting-programs/skills/bounty-program-triage/SKILL.md` if target scope or program constraints are still unclear
 
@@ -26,6 +27,7 @@ Optional helper:
 
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>`
+- `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/record_asciinema_replay.py --finding-dir <finding-dir> --workdir <target-dir> --run-command "<cmd>" --success-signal "<signal>"`
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>" --publish-gist`
 - `python plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form`
 
@@ -38,6 +40,7 @@ Optional helper:
 - Have the submission URL and any login requirements.
 - Have a runnable PoC or an exact replayable actor timeline, request sequence, or transaction path for the bug.
 - Have decisive PoC output, logs, assertions, tx results, or balance deltas proving the replay worked from a clean state.
+- Have a final clean replay recorded with `asciinema`. Native PATH is preferred. WSL is only fallback. If both checks fail, stop immediately.
 - For Web3, blockchain, or exchange findings, know the chain, contract or account identifiers, and any tx hash, block number, order ID, or session identifier that makes the proof concrete.
 - Have `manual-review.md` in the finding bundle. This is the mandatory 20-minute checkpoint before submission. It should record who reviewed the claim, what mechanism or business logic was read manually, which cryptographic or domain-logic blockers were checked, and why the finding still survives.
 - Do not begin submission work when the proof stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. For financial or payment findings, the bundle must prove value realization, recipient-controlled settlement, claimed funds, balance delta, or a clearly equivalent end-state.
@@ -63,6 +66,8 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `submission.json` - field-to-value map for the form
 - `submission.json.external_proof` - required proof-reference contract when `external-evidence.json` exists
 - `external-evidence.json` - required secret-gist pointer for the detailed PoC, helper files, and raw logs
+- `evidence/asciinema/asciinema-session.json` - mandatory replay-recording metadata with the uploaded `asciinema` URL
+- `evidence/asciinema/reverify-session.cast` - mandatory local terminal replay recording
 - `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
 - `asset-delta.md` - optional observed fund movement or market-state change summary
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
@@ -79,6 +84,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
    - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
+   - Run `record_asciinema_replay.py` during the last clean reverify rerun so `artifacts/asciinema/` is present before `prepare_report_artifacts.py` copies the recording into `evidence/asciinema/`.
    - Treat `poc.md` as incomplete until it includes an exact run command or deterministic replay sequence plus a success signal that can be observed again.
 4. Stop unless `manual-review.md` survives a sanity read. If it documents unresolved blockers, impossible cryptographic assumptions, or a failure to prove end-state impact, do not draft.
 5. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
@@ -91,7 +97,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
      - `inline_note_required`
 6. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
 7. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. The final tone should feel careful, serious, and reviewer-friendly rather than automated or promotional. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-8. Build `report-appendix.md` and `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md) for every report bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, the full report, and raw logs that the main form cannot hold comfortably. The inline body must still name the exact bug, exploit path, run command, decisive output, and the gist URL, and that gist URL must appear in the opening summary or intro paragraph.
+8. Build `report-appendix.md` and `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md) for every report bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, the full report, and raw logs that the main form cannot hold comfortably. The final clean replay must also have an uploaded `asciinema` URL from [references/asciinema-proof.md](references/asciinema-proof.md). The inline body must still name the exact bug, exploit path, run command, decisive output, then place `[gist-url](gist-url)` and `[asciinema-url](asciinema-url)` in that order with the `asciinema` link on the next non-empty line.
 9. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form` after bundle prep and again immediately before submit. Treat any failure as a hard blocker.
 10. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the validator passes and the visible form matches `submission.json`, including the required gist reference.
 11. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
@@ -103,13 +109,14 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - Use the title guidance from [references/report-writing-rules.md](references/report-writing-rules.md) when the form has a title-like field.
 - Keep the title technical and professional. Use target, exact vuln names, concrete locations, and the highest observed impact.
 - First sentence must state the practical impact in plain English, not background or jargon.
-- The opening summary or intro must include the secret gist URL so the triager can immediately open the full PoC pack, logs, and report if needed.
+- The opening summary or intro must include the secret gist URL and the `asciinema` URL so the triager can immediately open the full PoC pack and recorded replay if needed.
 - Keep the logic order `summary -> exact bug location -> root cause -> exploit path -> observed impact -> decisive PoC output -> minimal replay`, but do not force those exact phrases as literal headings in the submitted text.
 - Prefer short paragraphs and numbered reproduction steps.
 - For smart contract or code-heavy bugs, make `Vulnerability Details` code-first: show the vulnerable function or exact snippet immediately, then explain why that code path fails.
 - When the bug is code-driven, include file path plus repo or GitHub line reference whenever it exists.
 - The detail body must answer three questions without making the triager open a full attachment first: where the bug is, why the code or path is wrong, and how to replay the exploit.
 - If a coded PoC exists, the body must show an exact run command or deterministic replay sequence plus the shortest decisive success signal before it points to any appendix, attachment, or gist.
+- Format both external URLs as markdown links whose visible text exactly matches the URL.
 - Treat headings such as `Brief/Intro`, `Vulnerability Details`, `Impact Details`, `Output from POC`, and `Proof of Concept` as local drafting aids only. In the final submission, prefer the platform's labels or tighter target-specific headings such as the exact function, endpoint, or failure mode.
 - Show the exploit function, test case, or request sequence that triggers the bug. Do not paste the whole file unless the program explicitly requires it.
 - The report body is the primary source of truth. Do not offload core bug details, exploit reasoning, or replay steps to attachments.

@@ -111,6 +111,18 @@ Examples:
 
 Logs such as `pay_invoice_called`, `invoice_saved`, or `event_emitted` are useful diagnostics, but they are not sufficient proof on their own.
 
+## Recorded Replay
+
+Before a finding becomes `TRUE POSITIVE` or `report-ready`, the last clean rerun must be recorded with `asciinema`.
+
+Minimum bar:
+
+- check system `asciinema` first and stop if neither native PATH nor WSL fallback is available
+- save the local `.cast` file under `artifacts/asciinema/`
+- upload the recording to `asciinema` and save the returned `https://asciinema.org/a/...` URL
+- carry both the local cast and uploaded URL into the report bundle
+- place the `asciinema` URL directly under the gist URL in the report link block
+
 ## Manual 20-Minute Gate
 
 Before any finding becomes `report-ready` or enters submission packaging, a human must complete `manual-review.md`.

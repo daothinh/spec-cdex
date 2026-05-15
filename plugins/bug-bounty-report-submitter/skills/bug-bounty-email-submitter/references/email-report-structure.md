@@ -66,6 +66,7 @@ Keep the opening to 2-4 sentences:
 
 After the summary, follow the shared long-form logic from `../../bug-bounty-report-submitter/references/immunefi-body-template.md` even when the mail client is plain text.
 The summary paragraph must include the secret gist URL when a gist-backed proof pack exists.
+Put the `asciinema` URL on the next non-empty line below the gist URL.
 
 ## Vulnerability Details In Email
 
@@ -112,6 +113,8 @@ Mention proof naturally in prose:
 - `Attached HAR shows the cross-tenant response.`
 - `The attached video demonstrates the full replay on a fresh account.`
 - `The included poc.md contains the exact request sequence.`
+- `[https://gist.github.com/...](https://gist.github.com/...)`
+- `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
 
 Attach only files that support a claim already explained in the body.
 
@@ -125,7 +128,7 @@ Attachment discipline:
 - do not attach raw source files, exploit scripts, or archives by default
 - if an attachment is required, prefer `report-appendix.md` or a plain-text appendix that mirrors the same self-contained report structure
 - if the full runnable PoC still needs multiple files or long logs, create `proof-pack/` and reference a secret gist naturally in the body while keeping the core replay and decisive output inline
-- the opening summary paragraph should already contain that gist URL so the recipient can open the canonical proof pack immediately
+- the opening summary paragraph should already contain that gist URL, and the next non-empty line should contain the `asciinema` URL, so the recipient can open the canonical proof pack and recorded replay immediately
 - screenshots, HAR, video, and logs remain supplemental only
 
 If a coded PoC is impossible:

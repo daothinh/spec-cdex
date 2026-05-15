@@ -1,84 +1,74 @@
 This file is a launcher cheat sheet.
 
-Do not duplicate the full workflow contract here.
-The source of truth is:
+Do not restate the full workflow contracts here.
+Source of truth:
 - `.codex/agents/security-bootstrap-pipeline.toml`
 - `.codex/agents/security-hunting-pipeline.toml`
 - `.codex/agents/security-finding-reverify.toml`
 - `.codex/agents/security-report-submission-pipeline.toml`
 
 Use these prompts only to start each stage cleanly.
+Prefer terse outputs. Surface decisive files only. Skip long artifact inventories unless they are directly needed.
 
 
-Prompt 1: Bootstrap
+Prompt 1: Bootstrap Outcome + Next Best Attack
 =========================================
 Use the custom agent `security-bootstrap-pipeline` for this run if it is available in `.codex/agents/security-bootstrap-pipeline.toml`.
 
-Target:
+Input:
 - Program URL or local path: `<url-or-path>`
 - Target type if known: `<web|android|smart-contract|native|unknown>`
 - Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
-- Extra artifacts: `<burp file / caido project hints / apk / contract addresses / docs / audit pdf>`
+- Extra artifacts: `<burp / caido / apk / contract addresses / docs / audit pdf>`
 
-Goal:
+Focus:
 - Bootstrap the target into `audit-targets/<slug>/`
-- Triage trust boundaries and choose the primary lane
-- Assess the local toolchain for the chosen lane and attempt setup immediately when prerequisites are missing
-- If a web/API lane exists, prepare both breadth-first and authenticated-replay handoff when justified
-- Prepare a clean handoff for hunting
+- Choose the primary lane
+- Make the lane ready now, or say exactly what blocks it
+- End with the next best attack path for hunting
 
-Return:
-- active `AGENTS.md` path and governing heading
-- whether `security-bootstrap-pipeline` is available and in use
-- normalized target slug and working directory
-- trust-boundary summary
-- environment readiness summary, setup actions attempted, and remaining blockers
-- chosen primary lane and follow-on lanes
+Return only:
+- normalized slug and working directory
+- chosen primary lane
+- follow-on lanes only if they matter
+- trust-boundary summary in 3-5 lines
+- readiness status: `ready`, `partial`, or `blocked`
+- setup attempted and remaining blockers
 - first 3 prioritized bug classes
-- created bootstrap artifacts with repo-relative paths
-- protocol archetype and readiness mode for web3-heavy targets
-- important creds, tokens, or test accounts found
-- next best attack path for hunting
-- blockers or manual follow-up
+- decisive bootstrap artifacts only, max 5 repo-relative paths
+- next best attack path
 
 
-Prompt 2: Hunt + Reverify
+Prompt 2: TRUE POSITIVE + Severity + Exploit Flow
 ==================================================
 Use the custom agent `security-hunting-pipeline` for this step if it is available in `.codex/agents/security-hunting-pipeline.toml`.
 
-Target:
+Input:
 - Bootstrap target: `audit-targets/<slug>/`
 - Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
-- Extra artifacts: `<burp file / apk / contract addresses / docs / audit pdf>`
+- Extra artifacts: `<burp / apk / contract addresses / docs / audit pdf>`
 
-Goal:
-- Resume from bootstrap
-- Load and respect `prep/environment-readiness.md` before testing
-- Load and respect `prep/domain-logic.md` before deep testing when the target is business-logic, cryptography, payment, Lightning, wallet, exchange, or Web3 heavy
-- Hunt the highest-value lane first
-- If the active lane is web/API with live hosts in scope, route broad dynamic testing through `kage`
-- If the active lane also has authenticated traffic or a useful request corpus, route replay-heavy testing through `caido`
-- Build runnable PoCs that prove end-to-end state impact, not just internal logs or function calls
-- Reverify strong findings through the separate validation / devil's-advocate step
-- Leave clean finding bundles for submission
+Focus:
+- Resume from bootstrap and hunt the highest-value lane first
+- Reverify before calling anything real
+- Only surface findings that end as `TRUE POSITIVE`
+- If nothing reaches `TRUE POSITIVE`, say so and give the next best attack path
 
 Return:
-- outcome summary
-- strongest evidence
-- reverified findings with verdict
-- severity triage for each `TRUE POSITIVE`
-- unverified hypotheses
-- saved finding bundle paths
-- saved Kage artifact paths used for evidence, if any
-- saved Caido artifact paths, request IDs, session IDs, and curl exports used for evidence, if any
-- whether submission is ready
-- blockers before submission packaging
-- manual follow-up, including any unresolved domain-logic or cryptographic blockers
-- next best attack path if no issue was confirmed
-- artifacts or test accounts created for cleanup
+- one-line outcome: `<n> TRUE POSITIVE` or `no TRUE POSITIVE`
+- for each `TRUE POSITIVE`:
+  - `finding-id`
+  - severity, plus CVSS/CWE if already established
+  - real observed impact only
+  - exploit preconditions
+  - exploit flow as short ordered steps
+  - decisive replay signal or proof
+  - finding bundle path
+- blockers before submission, only if a `TRUE POSITIVE` exists
+- next best attack path, only if no `TRUE POSITIVE` exists
 
 
-Prompt 3: Submission
+Prompt 3: Submission Success or Exact Blocker
 ================================================
 Use the custom agent `security-report-submission-pipeline` for this step if it is available in `.codex/agents/security-report-submission-pipeline.toml`.
 
@@ -88,19 +78,19 @@ Inputs:
 - Report bundle target: `bug-bounty-reports/<slug>/<finding-id>/`
 - Constraints: `<field limits / attachment rules / no upload unless required>`
 
-Goal:
-- Inspect the live form or mailbox first
-- Build the report bundle only from verified artifacts
-- Stop unless the finding bundle includes a completed `manual-review.md` clearing the 20-minute checkpoint
-- Normalize local evidence into `artifacts.json` and `evidence/` before drafting
-- Submit if possible, or stop with a clean blocker record
+Focus:
+- Build the report bundle from one verified finding
+- Submit if possible
+- Only report success or the exact blocker
+- Do not re-summarize the full report body
 
-Return:
+Return only:
+- status: `submitted` or `blocked`
+- channel: `form` or `email`
 - report title or email subject
-- calculated severity, CVSS, and CWE
-- submission URL or recipient email
-- confirmation ID or explicit blocker reason
+- severity, plus CVSS/CWE if applicable
+- confirmation ID, or the exact blocker / validator error
+- decisive missing prerequisite, if blocked
 - saved report bundle path
-- saved `artifacts.json` and `evidence/` paths
-- saved `form-schema.json` and `submission.json` paths for forms, or `mail-ui-schema.json` and `mail-envelope.json` paths for email
-- manual follow-up still needed
+- saved `submission.json` or `mail-envelope.json` path
+- manual follow-up only if still required
