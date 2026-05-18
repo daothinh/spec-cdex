@@ -432,7 +432,11 @@ def read_text_if_exists(path: Path) -> str:
 def read_first_text_artifact(evidence_dir: Path) -> str:
     if not evidence_dir.is_dir():
         return ""
-    for candidate in sorted(path for path in evidence_dir.rglob("*") if path.is_file() and path.suffix.lower() in {".log", ".txt"}):
+    for candidate in sorted(
+        path
+        for path in evidence_dir.rglob("*")
+        if path.is_file() and path.suffix.lower() in {".cast", ".log", ".txt"}
+    ):
         return candidate.read_text(encoding="utf-8", errors="ignore")
     return ""
 

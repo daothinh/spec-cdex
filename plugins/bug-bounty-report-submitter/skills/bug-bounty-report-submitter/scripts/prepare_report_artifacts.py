@@ -158,6 +158,10 @@ def infer_kind(rel_source: Path) -> str:
     suffix = rel_source.suffix.lower()
     if suffix in {".png", ".jpg", ".jpeg", ".webp"}:
         return "image"
+    if suffix in {".cast"}:
+        return "asciinema-cast"
+    if suffix in {".mp4", ".mov", ".webm"}:
+        return "video"
     if suffix in {".har"}:
         return "har"
     if suffix in {".json"}:

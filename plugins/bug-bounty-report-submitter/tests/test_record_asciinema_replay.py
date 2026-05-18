@@ -44,6 +44,11 @@ class RecordAsciinemaReplayTests(unittest.TestCase):
                 if args[:2] == ["asciinema", "--version"]:
                     return subprocess.CompletedProcess(args, 0, "asciinema 2.4.0\n", "")
                 if args[:2] == ["asciinema", "rec"]:
+                    recorded_command = args[args.index("-c") + 1]
+                    self.assertIn('echo " > Proof of Concept"', recorded_command)
+                    self.assertIn('echo " > crafted by dxoth1nh"', recorded_command)
+                    self.assertIn("sleep 2", recorded_command)
+                    self.assertTrue(recorded_command.endswith("python exploit.py"))
                     cast_path.parent.mkdir(parents=True, exist_ok=True)
                     cast_path.write_text("{}\n", encoding="utf-8")
                     return subprocess.CompletedProcess(args, 0, "", "")
@@ -70,6 +75,8 @@ class RecordAsciinemaReplayTests(unittest.TestCase):
             self.assertEqual(metadata["tool"], "asciinema")
             self.assertEqual(metadata["local_cast_path"], "reverify-session.cast")
             self.assertEqual(metadata["server_url"], "https://asciinema.org/a/demo123")
+            self.assertIn('echo " > Proof of Concept"', metadata["recorded_command"])
+            self.assertTrue(metadata["recorded_command"].endswith("python exploit.py"))
             self.assertEqual(
                 metadata["link_markdown"],
                 "[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
@@ -101,6 +108,10 @@ class RecordAsciinemaReplayTests(unittest.TestCase):
                 if "asciinema --version" in command:
                     return subprocess.CompletedProcess(args, 0, "asciinema 2.4.0\n", "")
                 if "asciinema rec" in command:
+                    self.assertIn('echo " > Proof of Concept"', command)
+                    self.assertIn('echo " > crafted by dxoth1nh"', command)
+                    self.assertIn("sleep 2", command)
+                    self.assertIn("python exploit.py", command)
                     cast_path.parent.mkdir(parents=True, exist_ok=True)
                     cast_path.write_text("{}\n", encoding="utf-8")
                     return subprocess.CompletedProcess(args, 0, "", "")

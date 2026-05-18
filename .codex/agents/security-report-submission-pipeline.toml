@@ -76,6 +76,9 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>` so local evidence survives independently of source tool state
    - when the finding bundle contains `artifacts/caido/`, preserve exported request metadata, curl PoCs, and response snapshots as first-class evidence in `artifacts.json`
    - stop if `evidence/asciinema/asciinema-session.json` is missing after artifact normalization
+   - when the finding bundle contains `asciinema` `.cast` files, preserve them as first-class evidence entries; they remain supporting proof, not replacements for inline replay steps or decisive PoC output
+   - stop if `evidence/asciinema/asciinema-session.json` is missing after artifact normalization
+   - when the finding bundle contains `asciinema` `.cast` files, preserve them as first-class evidence entries; they remain supporting proof, not replacements for inline replay steps or decisive PoC output
 10. For web3-heavy findings, also write:
    - `web3-facts.json`
    - `asset-delta.md`

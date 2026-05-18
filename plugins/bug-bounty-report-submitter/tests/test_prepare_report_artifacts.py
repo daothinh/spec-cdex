@@ -69,6 +69,35 @@ class PrepareReportArtifactsTests(unittest.TestCase):
             self.assertEqual(request_entry["details"]["host"], "api.example.local")
             self.assertEqual(request_entry["details"]["path"], "/v1/users/999")
 
+    def test_classifies_asciinema_casts_as_terminal_recordings(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            finding_dir = root / "finding"
+            terminal_dir = finding_dir / "artifacts" / "terminal"
+            terminal_dir.mkdir(parents=True)
+
+            (terminal_dir / "poc-replay.cast").write_text(
+                '{"version": 2, "stdout": ["echo \\"[sign-code] author: dxoth1nh\\""]}\n',
+                encoding="utf-8",
+            )
+
+            bundle_dir = root / "bundle"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT_PATH), "--finding-dir", str(finding_dir), "--bundle-dir", str(bundle_dir)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+            manifest = json.loads((bundle_dir / "artifacts.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["count"], 1)
+            self.assertTrue((bundle_dir / "evidence" / "terminal" / "poc-replay.cast").exists())
+
+            cast_entry = manifest["artifacts"][0]
+            self.assertEqual(cast_entry["kind"], "asciinema-cast")
+            self.assertEqual(cast_entry["relative_bundle_path"], "evidence/terminal/poc-replay.cast")
+
 
 if __name__ == "__main__":
     unittest.main()

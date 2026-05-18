@@ -17,6 +17,37 @@ below. Workspace paths are relative to `$PWD`, which is bind-mounted to
 - Default request timeout is 10–15s. Rate-limit/WAF behaviour: rotate
   fingerprint via `--impersonate`, or slow down.
 
+## Terminal PoC recording (asciinema)
+
+Use this when the decisive proof is a terminal replay.
+
+1. Start `asciinema` before typing the official PoC flow.
+2. Inside the recording, the first visible output must be this exact intro block:
+
+```bash
+clear
+echo " > Proof of Concept"
+echo " > crafted by dxoth1nh"
+echo ""
+sleep 2
+```
+
+3. After `sleep 2`, the very next real command must be the first PoC command. Do not insert unrelated setup, edits, or filler after the intro block.
+5. Keep the recording continuous until the final success signal or decisive failure output is visible.
+6. Save the `.cast` under the finding or report evidence tree and reference it from `poc.md`.
+
+Example:
+
+```bash
+asciinema rec artifacts/poc-replay.cast
+clear
+echo " > Proof of Concept"
+echo " > crafted by dxoth1nh"
+echo ""
+sleep 2
+python3 exploit.py
+```
+
 ---
 
 ## Authentication bypass

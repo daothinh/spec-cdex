@@ -13,6 +13,15 @@ from typing import Any
 
 
 ASCIINEMA_URL_PATTERN = re.compile(r"https?://asciinema\.org/a/\S+", re.IGNORECASE)
+INTRO_BLOCK = "\n".join(
+    [
+        "clear",
+        'echo " > Proof of Concept"',
+        'echo " > crafted by dxoth1nh"',
+        'echo ""',
+        "sleep 2",
+    ]
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -86,8 +95,15 @@ def record_asciinema_replay(
 
     title = (title or f"{finding_dir.parent.name}/{finding_dir.name} final reverify replay").strip()
     backend = resolve_asciinema_backend()
+    recorded_command = build_recorded_command(run_command)
 
-    record_result = record_cast(backend=backend, workdir=workdir, cast_path=cast_path, title=title, run_command=run_command)
+    record_result = record_cast(
+        backend=backend,
+        workdir=workdir,
+        cast_path=cast_path,
+        title=title,
+        run_command=recorded_command,
+    )
     if record_result.returncode != 0:
         stderr = record_result.stderr.strip() or record_result.stdout.strip() or "unknown asciinema record failure"
         raise SystemExit(f"error: failed to record asciinema replay: {stderr}")
@@ -107,6 +123,7 @@ def record_asciinema_replay(
         "recorded_at": datetime.now(timezone.utc).isoformat(),
         "title": title,
         "run_command": run_command,
+        "recorded_command": recorded_command,
         "success_signals": unique(success_signals),
         "workdir": workdir.as_posix(),
         "cast_filename": cast_path.name,
@@ -169,6 +186,13 @@ def record_cast(
         f"-c {shlex.quote(run_command)} {shlex.quote(to_wsl_path(cast_path))}"
     )
     return run_wsl(record_command)
+
+
+def build_recorded_command(run_command: str) -> str:
+    replay_command = run_command.strip()
+    if not replay_command:
+        raise SystemExit("error: run_command must not be empty")
+    return f"{INTRO_BLOCK}\n{replay_command}"
 
 
 def upload_cast(*, backend: dict[str, str], cast_path: Path, output_dir: Path) -> subprocess.CompletedProcess[str]:

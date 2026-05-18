@@ -279,6 +279,62 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("gist.github.com URL", result.stderr)
 
+    def test_accepts_success_signal_from_asciinema_cast_when_log_is_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            bundle_dir = build_bundle(Path(temp_dir) / "bundle")
+            (bundle_dir / "report.md").write_text(
+                "\n".join(
+                    [
+                        "Opening summary with replay links.",
+                        "[https://gist.github.com/example/proof](https://gist.github.com/example/proof)",
+                        "[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "evidence" / "run.log").unlink()
+            (bundle_dir / "evidence" / "poc-replay.cast").write_text(
+                "\n".join(
+                    [
+                        '{"version": 2}',
+                        '[sign-code] author: dxoth1nh',
+                        '[PASS] replay completed',
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "submission.json").write_text(
+                json.dumps(
+                    {
+                        "title": "Finding",
+                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "external_proof": {
+                            "required": True,
+                            "type": "secret-gist",
+                            "url": "https://gist.github.com/example/proof",
+                            "source": "external-evidence.json",
+                            "target_field": "Reference URL",
+                            "inline_note_required": True,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            (bundle_dir / "external-evidence.json").write_text(
+                json.dumps(external_evidence_fixture())
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = run_validator(bundle_dir, "form")
+
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertTrue(payload["ok"])
+
     def test_blocks_when_asciinema_url_is_not_below_gist_url(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = build_bundle(Path(temp_dir) / "bundle")

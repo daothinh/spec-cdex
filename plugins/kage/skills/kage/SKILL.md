@@ -32,6 +32,7 @@ they are optional references rather than a hard dependency.
 - Prefer direct script and tool execution over subagent orchestration.
 - Keep every artifact under `results/<target>/` so the engagement is reproducible.
 - Apply [`references/judging.md`](references/judging.md) before writing or keeping a PoC.
+- When a terminal replay is the decisive PoC artifact, capture it with `asciinema` and keep the `.cast` with the rest of the evidence.
 - Change one variable at a time. If a path stalls after 2–3 real attempts, pivot and record the ruled-out path.
 
 ## Shell setup
@@ -193,6 +194,8 @@ Actions:
 Requirements:
 - A finding is not real until it reproduces cleanly.
 - A PoC must include target, payload construction, request flow, and output.
+- If the decisive PoC is terminal-driven, the cast must open with the exact intro block `clear`, `echo " > Proof of Concept"`, `echo " > crafted by dxoth1nh"`, `echo ""`, `sleep 2`, and the very next real command after `sleep 2` must be the first PoC command.
+- Do not cut the recording after the sign-code. Keep it continuous until the final decisive output is visible.
 - If `tls.py` gets blocked, retry with a rotated impersonation or switch to `browser.py`.
 
 Exit:

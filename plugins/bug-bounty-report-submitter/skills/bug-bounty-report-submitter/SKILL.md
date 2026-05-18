@@ -72,7 +72,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `asset-delta.md` - optional observed fund movement or market-state change summary
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
 - `proof-pack/` - optional gist-ready runnable PoC pack with appendix, logs, helper files, and manifest
-- `evidence/` - screenshots, HAR, video, logs, payloads, PoC files
+- `evidence/` - screenshots, HAR, `asciinema` `.cast`, video, logs, payloads, PoC files
 - `confirmation.md` - final URL, report ID, screenshots, follow-up notes
 
 ## Workflow
@@ -85,6 +85,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
    - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
    - Run `record_asciinema_replay.py` during the last clean reverify rerun so `artifacts/asciinema/` is present before `prepare_report_artifacts.py` copies the recording into `evidence/asciinema/`.
+   - If the finding bundle includes `asciinema` terminal recordings, preserve the `.cast` files as first-class evidence entries. They stay supplemental; the body still needs inline replay steps and decisive PoC output.
    - Treat `poc.md` as incomplete until it includes an exact run command or deterministic replay sequence plus a success signal that can be observed again.
 4. Stop unless `manual-review.md` survives a sanity read. If it documents unresolved blockers, impossible cryptographic assumptions, or a failure to prove end-state impact, do not draft.
 5. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
@@ -139,7 +140,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - Do not attach raw source files, exploit scripts, full test suites, archives, or random code dumps by default.
 - If the platform requires a file upload or the field limit makes a fully honest report impossible inline, attach `report-appendix.md` with the same self-contained detail structure instead of a raw `.sol`, `.py`, `.js`, `.t.sol`, or archive file whenever the platform accepts markdown or plain text.
 - If the channel supports external reference URLs and the full runnable PoC needs multiple files or long logs, create `proof-pack/` and reference the resulting secret gist naturally in the summary/intro plus the evidence field or inline note. The body must still stand alone without that link.
-- Supporting artifacts such as screenshots, HAR, video, or logs may be uploaded only as evidence supplements. They must never be the only place where the triager can learn the core bug mechanics.
+- Supporting artifacts such as screenshots, HAR, `asciinema` `.cast`, video, or logs may be uploaded only as evidence supplements. They must never be the only place where the triager can learn the core bug mechanics.
 - Caido exports such as request metadata JSON, curl PoCs, or formatted responses count as supporting artifacts, not replacements for a self-contained body. Use them to anchor `artifacts.json`, not to offload the core claim.
 - Follow-up comments are off by default. Post one only when it adds missing, reviewer-relevant delta. Never paste a large code block into comments just to restate the body in a different format.
 - Never inflate severity with generic breach language.

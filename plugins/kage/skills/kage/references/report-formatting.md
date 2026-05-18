@@ -35,6 +35,7 @@ Write in business language, not security jargon:
 - Screenshots of each step
 - Raw HTTP requests and responses as TEXT (not just screenshots -- triagers need to copy-paste)
 - Video walkthrough for complex chains
+- For terminal-first PoCs, prefer an `asciinema` cast that opens with the exact intro block `clear`, `echo " > Proof of Concept"`, `echo " > crafted by dxoth1nh"`, `echo ""`, `sleep 2`, then runs the PoC end to end without cuts.
 
 ### Suggested Fix (Optional)
 Appreciated by triagers. Brief and actionable.

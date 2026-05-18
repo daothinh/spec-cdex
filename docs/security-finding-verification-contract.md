@@ -111,13 +111,26 @@ Examples:
 
 Logs such as `pay_invoice_called`, `invoice_saved`, or `event_emitted` are useful diagnostics, but they are not sufficient proof on their own.
 
-## Recorded Replay
+## Recorded Replay Standard
 
 Before a finding becomes `TRUE POSITIVE` or `report-ready`, the last clean rerun must be recorded with `asciinema`.
 
 Minimum bar:
 
 - check system `asciinema` first and stop if neither native PATH nor WSL fallback is available
+- start the cast before the official PoC flow begins
+- the first visible output inside the cast must be this exact intro block:
+
+```bash
+clear
+echo " > Proof of Concept"
+echo " > crafted by dxoth1nh"
+echo ""
+sleep 2
+```
+
+- the very next real command after `sleep 2` must be the first PoC command
+- keep the recording continuous from that first PoC command through the final decisive output
 - save the local `.cast` file under `artifacts/asciinema/`
 - upload the recording to `asciinema` and save the returned `https://asciinema.org/a/...` URL
 - carry both the local cast and uploaded URL into the report bundle

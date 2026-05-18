@@ -70,13 +70,14 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
 - `proof-pack/` - optional gist-ready runnable PoC pack with appendix, logs, helper files, and manifest
 - `confirmation.md` - sent time, recipient, provider confirmation, screenshot path, follow-up notes
-- `evidence/` - screenshots, HAR, video, logs, payloads, PoC files
+- `evidence/` - screenshots, HAR, `asciinema` `.cast`, video, logs, payloads, PoC files
 
 ## Workflow
 
 1. Confirm the recipient address, sender mailbox URL, and whether the program wants plain text, markdown-like formatting, or a strict disclosure template.
 2. Open the mailbox with Playwright MCP before drafting anything long-form. Snapshot the inbox, login flow, compose button, editor type, attachment control, draft affordance, and success indicator. Store the observed UI contract in `mail-ui-schema.json`.
 3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`. Run `record_asciinema_replay.py` during the last clean reverify rerun, then run `prepare_report_artifacts.py` so the email proof does not depend on source tool state.
+   - If the finding bundle includes `asciinema` terminal recordings, preserve the `.cast` files as first-class evidence entries. They stay supplemental; the email body still needs inline replay steps and decisive PoC output.
 4. When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before drafting the email body.
 5. Stop unless `manual-review.md` survives a sanity read. If it records unresolved blockers, impossible assumptions, or missing end-state proof, do not send.
@@ -114,7 +115,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - For code-driven findings, include the vulnerable function or a short decisive snippet in the body, then explain the failing check or accounting mistake in plain English.
 - Show the exploit function, test case, or request sequence that triggers the issue. Do not paste the whole file unless the program explicitly asks for it.
 - The email body is the primary disclosure artifact. Do not push the main explanation into an attached file.
-- Mention the decisive proof naturally: screenshots, HAR, video, replay script, or `poc.md`.
+- Mention the decisive proof naturally: screenshots, HAR, `asciinema` `.cast`, video, replay script, or `poc.md`.
 - Let `reverify.md` constrain the claim. Report what survived independent review, not the hunter's most aggressive wording.
 - When the exploit is code-heavy, summarize `Output from POC` in the body before attaching or pasting the full PoC.
 - If a coded PoC is impossible, say exactly why and replace it with a replayable actor timeline, transaction sequence, or state walkthrough.
