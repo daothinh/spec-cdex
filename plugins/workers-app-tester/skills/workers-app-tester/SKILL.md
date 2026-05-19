@@ -253,6 +253,7 @@ Do not clear the global proxy in a preconfigured lab unless you intentionally wa
 |--------|---------|
 | `scripts/ui.py` | Smart UI parser. Filters to interactive elements with spatial dedup. |
 | `scripts/mitm_watch.py` | Verify proxy/root/cert trust, patch `config.yaml`, and start/stop `mitmdump`. |
+| `scripts/mitm_config.py` | Shared host discovery and mitmproxy config helper used by `mitm_watch.py`. |
 | `scripts/capture.py` | mitmproxy addon. Logs to JSONL. Set `PRESERVE_AUTH=1` to keep auth headers. |
 | `scripts/traffic.py` | Traffic viewer. `--since-seconds`, `--show-headers`, `--show-body`. |
 | `scripts/analyze.py` | Security analyzer. Modes: `endpoints`, `idor`, `auth`, `exposure`, `headers`, `full`. |

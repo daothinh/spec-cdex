@@ -17,6 +17,7 @@ Test Android apps on a rooted device. Give a coding agent access to a phone — 
 |------|---------|
 | `scripts/ui.py` | Parse UI hierarchy into numbered interactive elements |
 | `scripts/mitm_watch.py` | Verify proxy/root/cert trust, patch `config.yaml`, and manage `mitmdump` |
+| `scripts/mitm_config.py` | Shared host discovery and mitmproxy config helpers used by `mitm_watch.py` |
 | `scripts/capture.py` | mitmproxy addon — logs HTTP flows to JSONL |
 | `scripts/traffic.py` | Summarize recent traffic by time window |
 | `scripts/analyze.py` | Security analyzer — IDORs, auth, exposure, headers |

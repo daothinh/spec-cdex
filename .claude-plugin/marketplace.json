@@ -53,7 +53,7 @@
     {
       "name": "caido",
       "source": "./plugins/caido",
-      "description": "Use the official Caido SDK to search HTTP history, replay and edit authenticated requests, manage findings and scope, and export local bug-bounty evidence"
+      "description": "Use the official Caido SDK from Codex to search HTTP history, replay and edit authenticated requests, manage scope and findings, and export local bug-bounty evidence."
     },
     {
       "name": "agentic-actions-auditor",
@@ -253,7 +253,7 @@
     {
       "name": "bug-bounty-report-submitter",
       "source": "./plugins/bug-bounty-report-submitter",
-      "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver target-specific evidence-backed reports with runnable PoCs, decisive output, minimal exploit excerpts, and secret-gist proof packs for field-limited submissions."
+      "description": "Inspect live bug bounty forms or webmail with Playwright MCP, then draft and deliver self-contained, target-specific evidence-backed reports with runnable PoCs, decisive output, mandatory asciinema replay links, and secret-gist proof packs when field limits would hide replay details."
     }
   ]
 }

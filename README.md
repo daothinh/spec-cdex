@@ -62,8 +62,8 @@ Claude and Codex support are included through repo-local metadata:
 - Claude marketplace catalog: `.claude-plugin/marketplace.json`
 - Codex marketplace catalog: `.agents/plugins/marketplace.json`
 - Per-plugin Codex manifests: `plugins/<name>/.codex-plugin/plugin.json`
-- The Claude marketplace currently exposes 49 plugins from the repo root
-- The Codex marketplace currently exposes 40 installable plugins from the repo root
+- The Claude marketplace currently exposes 50 plugins from the repo root
+- The Codex marketplace currently exposes 41 installable plugins from the repo root
 
 To use this repo as a repo-scoped Codex marketplace:
 
@@ -71,16 +71,17 @@ To use this repo as a repo-scoped Codex marketplace:
 2. Restart Codex after cloning the repo or after changing marketplace metadata.
 3. In Codex CLI, run `codex`, then `/plugins`, open the `workersio` marketplace, and install the plugins you want.
 
-Claude-source plugin ports are now managed from the root repo through:
+Root plugin ports are managed from the root repo through:
 
 - `plugins/catalog.json` — root inventory for existing plugins and vendored Claude-source ports
-- `scripts/sync-root-plugins.mjs` — copies `skills/plugins/<name>` into root `plugins/<name>` and generates manifests
+- `scripts/sync-root-plugins.mjs` — regenerates marketplaces and manifests; it can still copy `sourceKind: "skills"` entries from `skills/plugins/<name>` if vendored source trees are reintroduced
 - `scripts/validate-root-plugins.mjs` — validates manifest parity, marketplace drift, and `SKILL.md` relative links
 - `.codex-port/preserve-paths.json` inside any copied plugin — opt-in list of root-only files to restore after re-sync when a plugin gets Codex-specific adaptations
 
 Current port policy:
 
-- Codex marketplace publishes all low/medium-risk ports plus the repo's Codex-ready root plugins
+- `plugins/<name>/` is the source of truth for installable plugin bundles; each bundle composes one or more `SKILL.md` files under `skills/`
+- Codex marketplace publishes all available root plugins
 - 9 high-risk Claude workflows remain staged in root `plugins/` but blocked from the Codex marketplace until their hook/MCP/task-specific behavior is ported
 - Currently blocked from Codex marketplace: `fp-check`, `gh-cli`, `git-cleanup`, `modern-python`, `second-opinion`, `skill-improver`, `static-analysis`, `workflow-skill-design`, `zeroize-audit`
 

@@ -11,6 +11,11 @@ codexkit-distill/*
 .vscode/
 .ignore
 skills/
+!plugins/*/skills/
+!plugins/*/skills/**
+plugins/*/skills/**/node_modules/
+plugins/*/skills/**/__pycache__/
+plugins/*/skills/**/__pycache__/**
 !plugins/bug-bounty-report-submitter/skills/
 !plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/
 !plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/references/
@@ -18,6 +23,7 @@ skills/
 !plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/
 !plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py
 caido-skills/
+skills4caido/
 .agents/**
 .claude/
 !.agents/plugins/marketplace.json
