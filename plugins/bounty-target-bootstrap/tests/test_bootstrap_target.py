@@ -167,8 +167,19 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertIn("Protocol Archetype", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Environment Readiness", (target_root / "prep" / "bootstrap-summary.md").read_text(encoding="utf-8"))
             self.assertIn("Caido Plan", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("Command Surface", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("Project And Scope Bootstrap", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("create-scope", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("create-filter", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("create-session", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("export-evidence", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
+            self.assertIn("sync-finding", (target_root / "prep" / "caido-plan.md").read_text(encoding="utf-8"))
             self.assertIn("Preferred Mode", (target_root / "prep" / "kage-plan.md").read_text(encoding="utf-8"))
             self.assertIn("Use `caido`", (target_root / "prep" / "context-pack" / "web-handoff.md").read_text(encoding="utf-8"))
+            self.assertIn(
+                "Caido State To Carry Forward",
+                (target_root / "prep" / "context-pack" / "web-handoff.md").read_text(encoding="utf-8"),
+            )
             self.assertIn("Execution Mode", (target_root / "prep" / "web3-readiness.md").read_text(encoding="utf-8"))
             self.assertIn("preimage", (target_root / "prep" / "domain-logic.md").read_text(encoding="utf-8"))
             self.assertIn(
@@ -382,6 +393,11 @@ class BootstrapTargetTests(unittest.TestCase):
             self.assertTrue((workspace / stdout["environment_readiness_file"]).exists())
             self.assertTrue((workspace / stdout["kage_plan_file"]).exists())
             self.assertTrue((workspace / stdout["caido_plan_file"]).exists())
+            caido_plan = (workspace / stdout["caido_plan_file"]).read_text(encoding="utf-8")
+            self.assertIn("Command Surface", caido_plan)
+            self.assertIn("auth-status", caido_plan)
+            self.assertIn("export-curl", caido_plan)
+            self.assertIn("intercept-status", caido_plan)
 
     def test_rejects_unsupported_target_type(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

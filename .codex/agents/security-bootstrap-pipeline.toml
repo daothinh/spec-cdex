@@ -81,8 +81,11 @@ Accept:
    - Caido base URL and project context when known
    - whether the operator already has logged-in traffic or needs fresh capture first
    - auth prerequisites, test accounts, and role coverage
+   - required startup checks: `health`, `auth-status`, `projects`, and `recent`
+   - target scope, HTTPQL filter, and environment-variable setup needed before replay
    - candidate request IDs, HTTPQL presets, or endpoint families worth mutating
    - first request classes that should be exercised through `edit`
+   - replay session or collection naming guidance for multi-variant testing
    - whether evidence should later be exported with `export-evidence` into local finding bundles
 13. Stop only after the handoff is ready and the readiness artifact clearly states whether hunting can proceed now or what exact blockers remain.
 

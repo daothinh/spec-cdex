@@ -20,6 +20,9 @@ class SecurityPipelineContractTests(unittest.TestCase):
         self.assertIn("negative control", text)
         self.assertIn("prep/domain-logic.md", text)
         self.assertIn("end-to-end state impact", text)
+        self.assertIn("auth-status", text)
+        self.assertIn("create-automate-session", text)
+        self.assertIn("export-evidence", text)
 
     def test_reverify_pipeline_blocks_internal_side_effect_claims(self) -> None:
         text = read(".codex/agents/security-finding-reverify.toml")
@@ -47,6 +50,25 @@ class SecurityPipelineContractTests(unittest.TestCase):
         self.assertIn("primary report body includes that gist URL inline", text)
         self.assertIn("opening summary or intro includes that gist URL", text)
         self.assertIn("next non-empty line below the gist URL", text)
+
+    def test_caido_skill_is_ported_into_web_pipeline(self) -> None:
+        skill = read("plugins/caido/skills/caido-mode/SKILL.md")
+        web = read("plugins/bounty-hunting-programs/skills/bounty-program-web/SKILL.md")
+        bootstrap = read(".codex/agents/security-bootstrap-pipeline.toml")
+        for command in [
+            "create-scope",
+            "create-filter",
+            "create-env",
+            "create-session",
+            "create-automate-session",
+            "intercept-status",
+            "export-evidence",
+            "sync-finding",
+        ]:
+            self.assertIn(command, skill)
+        self.assertIn("prep/caido-plan.md", web)
+        self.assertIn("export-evidence --out <finding>/artifacts/caido", web)
+        self.assertIn("target scope, HTTPQL filter, and environment-variable setup", bootstrap)
 
     def test_report_rules_do_not_allow_initiation_to_be_reported_as_impact(self) -> None:
         text = read(

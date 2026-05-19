@@ -17,6 +17,19 @@ the bug bounty pipeline in this repo.
 | `skills/caido-mode/scripts/caido.ps1` | PowerShell wrapper |
 | `skills/caido-mode/tests/*.test.ts` | Pure local tests for output, request editing, and bundle parsing |
 
+## Ported Command Surface
+
+| Category | Commands |
+| --- | --- |
+| HTTP history | `search`, `recent`, `get`, `get-response`, `export-curl` |
+| Edit and replay | `edit`, `replay`, `send-raw` |
+| Sessions and collections | `create-session`, `rename-session`, `replay-sessions`, `delete-sessions`, `replay-collections`, `create-collection`, `rename-collection`, `delete-collection` |
+| Automate and fuzzing | `create-automate-session`, `fuzz` |
+| Scope, filters, envs | `scopes`, `create-scope`, `update-scope`, `delete-scope`, `filters`, `create-filter`, `update-filter`, `delete-filter`, `envs`, `create-env`, `select-env`, `env-set`, `delete-env` |
+| Findings and evidence | `findings`, `get-finding`, `create-finding`, `update-finding`, `export-evidence`, `sync-finding` |
+| Project, tasks, intercept | `projects`, `select-project`, `tasks`, `cancel-task`, `hosted-files`, `delete-hosted-file`, `intercept-status`, `intercept-enable`, `intercept-disable` |
+| Info and auth | `viewer`, `plugins`, `health`, `setup`, `auth-status` |
+
 ## Why This Exists
 
 `kage` is already strong for recon, scanners, and broad dynamic testing. What the
@@ -86,6 +99,8 @@ Use Caido alongside `kage`, not instead of it.
 
 - `kage`: recon, breadth, unauthenticated probing, scanner output
 - `caido`: authenticated request mutation, replay-heavy abuse, workflow interception, traffic-corpus mining
+- `bounty-target-bootstrap`: emits `prep/caido-plan.md` with project, scope, filter, environment, replay, and evidence handoff details for web/API targets
+- `security-hunting-pipeline`: consumes Caido request IDs, session IDs, curl exports, and `artifacts/caido/` evidence while keeping local bundles authoritative
 
 ## License
 

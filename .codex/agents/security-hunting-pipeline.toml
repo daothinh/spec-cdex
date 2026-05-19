@@ -75,8 +75,12 @@ If bootstrap data is incomplete, reconstruct only the missing context required t
    - reuse decisive Kage artifacts from `results/<target>/recon`, `vulns`, `testing`, `exploits`, `verification`, and `judging` inside each finding bundle instead of duplicating loose notes
    - if Docker or `kage` is unavailable, record the blocker and fallback path in `prep/tried-and-ruled-out.md` before switching to direct host-side tooling
 9. When the active lane is web/API and a useful authenticated request corpus exists, prefer `caido` as the stateful replay harness:
+   - run `health`, `auth-status`, `projects`, and `recent` before the first replay loop so readiness and project context are explicit
+   - create or verify scope, filter presets, and environments for target hosts, roles, tenants, object IDs, and workflow variables
    - use `search` and `recent` to identify request families worth mutating
    - use `edit` before reconstructing large authenticated requests manually
+   - use replay sessions and collections for multi-variant IDOR, tenant isolation, role, and workflow tests
+   - use `create-automate-session` and `fuzz` only after a stable seed request and payload marker are validated
    - use `export-curl` for PoC extraction and `export-evidence --out <bundle-artifacts-dir>` for local evidence retention
    - use `sync-finding` or `create-finding` only as operator convenience; local bundles remain the reporting source of truth
    - if Caido, its PAT, or the request corpus is unavailable, record the blocker and fallback path in `prep/tried-and-ruled-out.md` before switching to `kage`-only or direct tooling

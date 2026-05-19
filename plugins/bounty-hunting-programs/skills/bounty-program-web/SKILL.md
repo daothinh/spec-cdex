@@ -42,21 +42,30 @@ Load these references on demand:
    - `burpsuite-project-parser` if a Burp project is already available
    - `caido` when authenticated request replay or traffic-corpus mining will be faster than rebuilding requests manually
    - `agentic-actions-auditor` when CI, GitHub Actions, or agent-driven release flows touch the target
-4. Prioritize bug classes in this order:
+4. When Caido context exists, run the Caido-backed branch before hand-rebuilding requests:
+   - load `prep/caido-plan.md` if the target came from `bounty-target-bootstrap`
+   - run `health`, `auth-status`, `projects`, and `recent` to verify corpus readiness
+   - create or verify target-specific scopes, filters, and environments for roles, tenants, object IDs, and workflow variables
+   - use `search` to find authenticated seed requests, then `edit` and `replay` for boundary hypotheses
+   - organize promising seeds with replay sessions or collections when multiple variants are needed
+   - save decisive requests with `export-evidence --out <finding>/artifacts/caido`
+   - record request IDs, session IDs, filter names, exported curl paths, and evidence paths in `prep/asset-inventory.md`
+5. Prioritize bug classes in this order:
    - broken object-level authorization and tenant isolation
    - internal-only route exposure and admin flag bypasses
    - webhook trust, replay, and background job abuse
    - SSRF, file upload, archive extraction, and path traversal
    - deserialization, template injection, and dangerous helper execution
    - dangerous defaults in auth, storage, and debug configuration
-5. After the first confirmed issue, use `variant-analysis` to search for siblings.
-6. If the root cause can be codified, write a reusable rule with `semgrep-rule-creator` and generalize it with `semgrep-rule-variant-creator`.
+6. After the first confirmed issue, use `variant-analysis` to search for siblings.
+7. If the root cause can be codified, write a reusable rule with `semgrep-rule-creator` and generalize it with `semgrep-rule-variant-creator`.
 
 ## Lane-Specific Notes
 
 - If you already have a logged-in request in Caido, prefer `edit` over hand-rebuilding cookies, CSRF tokens, and auth headers.
 - Use `kage` for recon and breadth. Use `caido` for authenticated mutation, replay-heavy flows, and quick curl PoCs.
-- Save decisive Caido request IDs, replay session IDs, `export-curl` output paths, and `export-evidence` directories in the local finding bundle.
+- Save decisive Caido request IDs, replay session IDs, filter presets, `export-curl` output paths, and `export-evidence` directories in the local finding bundle.
+- Use `sync-finding` only for operator visibility. Local finding bundles remain authoritative for reverify and report submission.
 - For Next.js or other hybrid stacks, treat server actions, middleware, and internal fetch helpers as first-class attack surface.
 - For Python and Ruby stacks, scrutinize background jobs and serializer/model trust, not just controllers.
 - For Go and .NET, pay attention to middleware order and path normalization before assuming auth is correct.

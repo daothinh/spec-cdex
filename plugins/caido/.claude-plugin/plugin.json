@@ -1,7 +1,7 @@
 {
   "name": "caido",
-  "version": "0.1.0",
-  "description": "Use the official Caido SDK from Codex or Claude to search HTTP history, replay and edit authenticated requests, manage scope and findings, and export local bug-bounty evidence.",
+  "version": "0.2.0",
+  "description": "Use the official Caido SDK from Codex to search HTTP history, replay and edit authenticated requests, manage scope and findings, and export local bug-bounty evidence.",
   "author": {
     "name": "workers.io",
     "email": "chai+spec@workers.io",

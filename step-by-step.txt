@@ -36,6 +36,7 @@ Return only:
 - setup attempted and remaining blockers
 - first 3 prioritized bug classes
 - decisive bootstrap artifacts only, max 5 repo-relative paths
+  - include `prep/caido-plan.md` when web/API authenticated replay is relevant
 - next best attack path
 
 
@@ -46,10 +47,11 @@ Use the custom agent `security-hunting-pipeline` for this step if it is availabl
 Input:
 - Bootstrap target: `audit-targets/<slug>/`
 - Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
-- Extra artifacts: `<burp / apk / contract addresses / docs / audit pdf>`
+- Extra artifacts: `<burp / caido request IDs or HTTPQL filters / apk / contract addresses / docs / audit pdf>`
 
 Focus:
 - Resume from bootstrap and hunt the highest-value lane first
+- For web/API, load `prep/caido-plan.md` and use Caido request history when it is faster than rebuilding authenticated requests
 - Reverify before calling anything real
 - Only surface findings that end as `TRUE POSITIVE`
 - If nothing reaches `TRUE POSITIVE`, say so and give the next best attack path
@@ -64,6 +66,7 @@ Return:
   - exploit flow as short ordered steps
   - decisive replay signal or proof
   - finding bundle path
+  - Caido request IDs, replay session IDs, curl exports, or `artifacts/caido/` paths if used
 - blockers before submission, only if a `TRUE POSITIVE` exists
 - next best attack path, only if no `TRUE POSITIVE` exists
 

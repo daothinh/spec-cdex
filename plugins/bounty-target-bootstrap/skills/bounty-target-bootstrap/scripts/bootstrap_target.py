@@ -1657,6 +1657,7 @@ def render_context_web_handoff(target: dict[str, Any]) -> str:
         "",
         "Use `kage` for recon, breadth, and unauthenticated discovery.",
         "Use `caido` for authenticated request mutation, intercept-driven flows, and traffic-corpus mining.",
+        "Use `caido-mode` commands `search`, `recent`, `edit`, `export-curl`, `export-evidence`, and `sync-finding` when request history becomes evidence.",
         "",
         "## Candidate Breadth Surfaces",
     ]
@@ -1665,6 +1666,18 @@ def render_context_web_handoff(target: dict[str, Any]) -> str:
     lines.extend(render_list(unique_preserve_order([*target["api_urls"], *target["web_urls"]])))
     lines.extend(["", "## Auth Notes"])
     lines.extend(render_list(target["auth_notes"]))
+    lines.extend(["", "## Caido State To Carry Forward"])
+    lines.extend(
+        render_list(
+            [
+                "Project ID and project name",
+                "Scope ID or scope name",
+                "HTTPQL filter presets used during corpus mining",
+                "Seed request IDs and replay session IDs",
+                "Exported curl paths and `artifacts/caido/` evidence directories",
+            ]
+        )
+    )
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -2006,11 +2019,50 @@ def render_caido_plan(target: dict[str, Any], *, top_assets: list[str], trust_bo
         "# Caido Plan",
         "",
         "- Caido Base URL: http://localhost:8080",
+        "- Skill: `caido-mode`",
+        "- CLI Wrapper: `plugins/caido/skills/caido-mode/scripts/caido`",
         "- Project Context: create or select a project that matches this target before heavy replay work",
         f"- Logged-In Traffic Already Available: {'likely' if auth_prereqs else 'unknown'}",
+        "- Evidence Source Of Truth: local finding bundles, not the Caido UI",
         "",
-        "## Candidate Authenticated Surfaces",
+        "## Command Surface",
     ]
+    lines.extend(
+        render_list(
+            [
+                "`health`, `auth-status`, `viewer`, `projects`, `select-project` for readiness and project binding",
+                "`scopes`, `create-scope`, `filters`, `create-filter`, `envs`, `create-env`, `env-set` for target-specific setup",
+                "`recent`, `search`, `get`, `get-response` for request-corpus triage",
+                "`edit`, `replay`, `send-raw`, `export-curl` for auth-preserving mutation and PoC extraction",
+                "`create-session`, `rename-session`, `create-collection`, `create-automate-session`, `fuzz` for organized replay and fuzzing",
+                "`export-evidence`, `sync-finding`, `create-finding`, `update-finding` for local evidence and operator-facing Caido records",
+                "`intercept-status`, `intercept-enable`, `intercept-disable` for capture control",
+            ]
+        )
+    )
+    lines.extend(
+        [
+            "",
+            "## Project And Scope Bootstrap",
+        ]
+    )
+    lines.extend(
+        render_list(
+            [
+                "Run `health` and `auth-status` before any replay loop.",
+                "Run `projects` and select or create the target-matching Caido project manually when needed.",
+                "Create or verify a Caido scope that matches only in-scope web and API assets.",
+                "Create HTTPQL filter presets for target hosts, auth endpoints, API paths, and non-static responses.",
+                "Create an environment for role IDs, victim IDs, tenant IDs, and other replay variables when IDOR or multi-role testing is planned.",
+            ]
+        )
+    )
+    lines.extend(
+        [
+            "",
+            "## Candidate Authenticated Surfaces",
+        ]
+    )
     lines.extend(render_list(api_like[:8]))
     lines.extend(["", "## Auth Prerequisites"])
     lines.extend(render_list(auth_prereqs))
@@ -2034,12 +2086,25 @@ def render_caido_plan(target: dict[str, Any], *, top_assets: list[str], trust_bo
             ]
         )
     )
+    lines.extend(["", "## Replay Organization"])
+    lines.extend(
+        render_list(
+            [
+                "Create a replay session from every seed request that produces a plausible boundary signal.",
+                "Rename sessions with the bug class and endpoint family, for example `idor-user-profile`.",
+                "Group related sessions into collections such as `Auth Boundary Tests` or `Tenant Isolation`.",
+                "Use automate/fuzz only after a stable seed request and payload marker have been validated manually.",
+            ]
+        )
+    )
     lines.extend(["", "## Local Evidence Rules"])
     lines.extend(
         render_list(
             [
                 "export decisive requests with `export-evidence --out <finding>/artifacts/caido`",
+                "export a curl PoC with `export-curl` when it is useful in `poc.md`",
                 "record request IDs, replay session IDs, and curl export paths in `prep/asset-inventory.md`",
+                "store response snapshots and request metadata under `findings/<id>/artifacts/caido/`",
                 "use `sync-finding` only as operator convenience; local finding bundles stay authoritative",
             ]
         )
