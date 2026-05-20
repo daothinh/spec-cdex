@@ -46,6 +46,8 @@ OUTPUT_MARKERS = ("[PASS]", "Logs:", "Suite result:", "status code", "balance", 
 ASCIINEMA_URL_PATTERN = re.compile(r"^https?://asciinema\.org/a/\S+$", re.IGNORECASE)
 CODE_EXTENSIONS = {".py", ".js", ".ts", ".sh", ".ps1", ".sol", ".rs", ".go", ".c", ".cc", ".cpp", ".java"}
 TEST_PATH_PARTS = {"test", "tests", "__tests__"}
+GIST_REFERENCE_LABEL = "PoC and logs"
+ASCIINEMA_REFERENCE_LABEL = "PoC runtime"
 
 
 def parse_args() -> argparse.Namespace:
@@ -208,8 +210,8 @@ def main() -> int:
         },
         "suggested_reference_block": "\n".join(
             [
-                markdown_link(gist_url),
-                markdown_link(asciinema_session["server_url"]),
+                labeled_markdown_link(GIST_REFERENCE_LABEL, gist_url),
+                labeled_markdown_link(ASCIINEMA_REFERENCE_LABEL, asciinema_session["server_url"]),
             ]
         ),
         "gist": {
@@ -652,8 +654,8 @@ def render_index(
     lines = [f"# {title}", "", summary, ""]
     lines.extend(["## Reference Links", ""])
     if gist_url:
-        lines.append(markdown_link(gist_url))
-    lines.append(markdown_link(asciinema_url))
+        lines.append(labeled_markdown_link(GIST_REFERENCE_LABEL, gist_url))
+    lines.append(labeled_markdown_link(ASCIINEMA_REFERENCE_LABEL, asciinema_url))
     lines.append("")
     if run_commands:
         lines.extend(["## Replay Commands", ""])
@@ -677,10 +679,10 @@ def render_index(
         ]
     )
     if gist_url:
-        lines.append(markdown_link(gist_url))
+        lines.append(labeled_markdown_link(GIST_REFERENCE_LABEL, gist_url))
     lines.extend(
         [
-            markdown_link(asciinema_url),
+            labeled_markdown_link(ASCIINEMA_REFERENCE_LABEL, asciinema_url),
             "The inline report still contains the vulnerable location, replay command or sequence, and decisive output.",
             "",
         ]
@@ -712,6 +714,10 @@ def flatten_name(path: Path) -> str:
 
 def markdown_link(url: str) -> str:
     return f"[{url}]({url})"
+
+
+def labeled_markdown_link(label: str, url: str) -> str:
+    return f"{label}: {markdown_link(url)}"
 
 
 def read_text_if_exists(path: Path) -> str:

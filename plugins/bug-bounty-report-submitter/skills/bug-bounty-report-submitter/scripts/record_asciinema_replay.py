@@ -13,15 +13,13 @@ from typing import Any
 
 
 ASCIINEMA_URL_PATTERN = re.compile(r"https?://asciinema\.org/a/\S+", re.IGNORECASE)
-INTRO_BLOCK = "\n".join(
-    [
-        "clear",
-        'echo " > Proof of Concept"',
-        'echo " > crafted by dxoth1nh"',
-        'echo ""',
-        "sleep 2",
-    ]
-)
+INTRO_LINES = [
+    "clear",
+    'echo " > Proof of Concept"',
+    'echo " > crafted by dxoth1nh"',
+    'echo ""',
+    "sleep 2",
+]
 
 
 def parse_args() -> argparse.Namespace:
@@ -189,10 +187,18 @@ def record_cast(
 
 
 def build_recorded_command(run_command: str) -> str:
-    replay_command = run_command.strip()
-    if not replay_command:
+    replay_commands = normalize_replay_commands(run_command)
+    if not replay_commands:
         raise SystemExit("error: run_command must not be empty")
-    return f"{INTRO_BLOCK}\n{replay_command}"
+    script_lines = [*INTRO_LINES, "set -e"]
+    for command in replay_commands:
+        script_lines.append(f"printf '$ %s\\n' {shlex.quote(command)}")
+        script_lines.append(command)
+    return "\n".join(script_lines)
+
+
+def normalize_replay_commands(run_command: str) -> list[str]:
+    return [line.strip() for line in run_command.splitlines() if line.strip()]
 
 
 def upload_cast(*, backend: dict[str, str], cast_path: Path, output_dir: Path) -> subprocess.CompletedProcess[str]:

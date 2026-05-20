@@ -138,6 +138,15 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             self.assertTrue((proof_pack_dir / "evidence__logs__test-output.log").exists())
             self.assertTrue((proof_pack_dir / "external-proof-pack.md").exists())
             self.assertTrue((proof_pack_dir / "external-proof-pack.json").exists())
+            index_text = (proof_pack_dir / "external-proof-pack.md").read_text(encoding="utf-8")
+            self.assertIn(
+                "PoC and logs: [https://gist.github.com/example/proof-pack](https://gist.github.com/example/proof-pack)",
+                index_text,
+            )
+            self.assertIn(
+                "PoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                index_text,
+            )
 
             external_evidence = json.loads((bundle_dir / "external-evidence.json").read_text(encoding="utf-8"))
             self.assertEqual(external_evidence["type"], "secret-gist")
@@ -150,8 +159,14 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             self.assertIn("exact vulnerable location", external_evidence["suggested_inline_note"])
             self.assertEqual(external_evidence["gist"]["url"], "https://gist.github.com/example/proof-pack")
             self.assertEqual(external_evidence["asciinema"]["server_url"], "https://asciinema.org/a/demo123")
-            self.assertIn("[https://gist.github.com/example/proof-pack](https://gist.github.com/example/proof-pack)", external_evidence["suggested_reference_block"])
-            self.assertIn("[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)", external_evidence["suggested_reference_block"])
+            self.assertIn(
+                "PoC and logs: [https://gist.github.com/example/proof-pack](https://gist.github.com/example/proof-pack)",
+                external_evidence["suggested_reference_block"],
+            )
+            self.assertIn(
+                "PoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                external_evidence["suggested_reference_block"],
+            )
 
             manifest = json.loads((proof_pack_dir / "external-proof-pack.json").read_text(encoding="utf-8"))
             filenames = {item["pack_filename"] for item in manifest["files"]}

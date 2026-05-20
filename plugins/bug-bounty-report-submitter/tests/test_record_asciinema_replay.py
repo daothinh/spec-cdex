@@ -23,6 +23,13 @@ SPEC.loader.exec_module(MODULE)
 
 
 class RecordAsciinemaReplayTests(unittest.TestCase):
+    def test_build_recorded_command_echoes_each_replay_command_before_execution(self) -> None:
+        recorded_command = MODULE.build_recorded_command("python setup.py\npython exploit.py")
+
+        self.assertIn("printf '$ %s\\n' 'python setup.py'", recorded_command)
+        self.assertIn("printf '$ %s\\n' 'python exploit.py'", recorded_command)
+        self.assertTrue(recorded_command.endswith("python exploit.py"))
+
     def test_records_uploads_and_writes_metadata_with_native_asciinema(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -48,6 +55,8 @@ class RecordAsciinemaReplayTests(unittest.TestCase):
                     self.assertIn('echo " > Proof of Concept"', recorded_command)
                     self.assertIn('echo " > crafted by dxoth1nh"', recorded_command)
                     self.assertIn("sleep 2", recorded_command)
+                    self.assertIn("set -e", recorded_command)
+                    self.assertIn("printf '$ %s\\n' 'python exploit.py'", recorded_command)
                     self.assertTrue(recorded_command.endswith("python exploit.py"))
                     cast_path.parent.mkdir(parents=True, exist_ok=True)
                     cast_path.write_text("{}\n", encoding="utf-8")
@@ -111,6 +120,8 @@ class RecordAsciinemaReplayTests(unittest.TestCase):
                     self.assertIn('echo " > Proof of Concept"', command)
                     self.assertIn('echo " > crafted by dxoth1nh"', command)
                     self.assertIn("sleep 2", command)
+                    self.assertIn("set -e", command)
+                    self.assertIn("printf", command)
                     self.assertIn("python exploit.py", command)
                     cast_path.parent.mkdir(parents=True, exist_ok=True)
                     cast_path.write_text("{}\n", encoding="utf-8")

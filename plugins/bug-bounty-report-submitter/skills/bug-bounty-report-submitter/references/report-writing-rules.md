@@ -14,7 +14,8 @@ Use after validation and before any submit action. Write for a tired triager: im
 - The opening summary or intro must include the secret gist URL when a gist-backed proof pack exists.
 - The opening summary or intro must include the `asciinema` URL when the final replay was recorded.
 - Put the `asciinema` URL on the next non-empty line below the gist URL.
-- Format both URLs as markdown links whose visible text exactly matches the URL.
+- Format both URLs as markdown links, using `PoC and logs: [url](url)` then `PoC runtime: [url](url)`.
+- Keep the markdown link visible text exactly equal to the URL.
 - Do not confuse an internal side effect with impact. A dangerous function call, queued payment, initiated HTLC, emitted event, outbound request, or partial state transition is not enough unless it produces an attacker-observable consequence.
 - For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove settlement, claimability, cash-out, balance delta, or a clearly equivalent end-state. If the attacker does not control the preimage, signature, relayer, keeper, or liquidity dependency required to realize value, downgrade or block the report.
 - For signature-, proof-, or preimage-based findings, name the exact signature, proof, or preimage gate the attacker satisfies. If you cannot show how the attacker obtains the required signature, witness, preimage, or approval, keep that claim out of the title, opening paragraph, and severity rationale.
@@ -62,8 +63,9 @@ Channel adaptation:
 
 Good pattern:
 - `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Attached HAR and response body reproduce this with two normal accounts.`
-- `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID. Full PoC pack, raw logs, and report copy: [https://gist.github.com/...](https://gist.github.com/...)`
-- `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
+- `The GET /api/users/{id}/orders endpoint does not verify resource ownership. An authenticated user can read any other user's order history and shipping details by replacing the path ID.`
+- `PoC and logs: [https://gist.github.com/...](https://gist.github.com/...)`
+- `PoC runtime: [https://asciinema.org/a/...](https://asciinema.org/a/...)`
 
 ## Code-First Body Detail
 

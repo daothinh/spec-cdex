@@ -109,8 +109,8 @@ The script uses `gh gist create`. GitHub secret gists are the default; do not ad
 
 Good:
 - `Full runnable PoC, raw test output, and helper files are preserved in the linked secret gist. The inline report below includes the vulnerable function, replay command, and decisive output.`
-- `[https://gist.github.com/...](https://gist.github.com/...)`
-- `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
+- `PoC and logs: [https://gist.github.com/...](https://gist.github.com/...)`
+- `PoC runtime: [https://asciinema.org/a/...](https://asciinema.org/a/...)`
 
 Bad:
 - `See gist for the PoC.`
@@ -123,6 +123,7 @@ Bad:
 - The body must still contain the decisive PoC output.
 - The body must include the gist URL inline.
 - The body must include the `asciinema` URL inline on the next non-empty line below the gist URL.
+- Both reference lines must start with `PoC and logs:` then `PoC runtime:`.
 - Both URLs must use markdown link format with visible text equal to the URL.
 - The gist must include the standalone PoC code file.
 - The gist must include the decisive output-log file.

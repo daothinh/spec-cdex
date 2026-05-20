@@ -32,6 +32,7 @@ This writes:
 The script:
 - checks native `asciinema` first, then WSL as fallback
 - records the replay locally
+- prints each replay command before executing it, so the cast starts at the first PoC command instead of only showing the final output
 - uploads the cast to `asciinema`
 - saves the returned `https://asciinema.org/a/...` URL
 
@@ -48,12 +49,14 @@ After `prepare_report_artifacts.py`, the recording should exist under:
 Place the reference URLs in this order and format:
 
 ```md
-[https://gist.github.com/...](https://gist.github.com/...)
-[https://asciinema.org/a/...](https://asciinema.org/a/...)
+PoC and logs: [https://gist.github.com/...](https://gist.github.com/...)
+PoC runtime: [https://asciinema.org/a/...](https://asciinema.org/a/...)
 ```
 
 Rules:
-- use markdown link format
+- use one line per reference
+- keep the descriptive prefix before the URL
+- use markdown link format for the URL
 - visible text must equal the URL
 - place the `asciinema` link on the next non-empty line under the gist link
 - keep both links in the opening summary or intro paragraph

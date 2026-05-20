@@ -68,8 +68,9 @@ Keep the first paragraph to 2-4 sentences:
 2. State the bug and exact impact in plain English.
 3. Add the prerequisite only if it materially changes severity.
 4. Include the secret gist URL in this summary or intro paragraph.
-5. Put the `asciinema` URL on the next non-empty line below the gist URL.
-6. Point to the decisive proof when the field length allows it.
+5. Format the gist line as `PoC and logs: [url](url)`.
+6. Put the `asciinema` URL on the next non-empty line below the gist URL as `PoC runtime: [url](url)`.
+7. Point to the decisive proof when the field length allows it.
 
 If the form has separate summary and impact fields, keep the summary factual and move consequence detail to impact.
 
@@ -224,4 +225,5 @@ Rules:
 - The primary report body must also include the gist URL inline so the triager sees where the detailed PoC and logs live.
 - The opening summary or intro paragraph must carry that gist URL, not only a later evidence section.
 - The primary report body must also include the `asciinema` URL inline on the next non-empty line below the gist URL.
+- Keep the two reference lines in the `PoC and logs:` then `PoC runtime:` order.
 - Keep both URLs in markdown link format with visible text equal to the URL in local drafts.

@@ -44,7 +44,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -81,7 +81,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                     {
                         "to": ["security@example.com"],
                         "subject": "Target issue",
-                        "body": "Details, proof links, and replay:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "body": "Details, proof links, and replay:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -118,7 +118,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -151,7 +151,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -171,7 +171,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (bundle_dir / "report.md").write_text(
-                "# Heading\n\nOpening summary without link.\n\nEvidence later:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)\n",
+                "# Heading\n\nOpening summary without link.\n\nEvidence later:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)\n",
                 encoding="utf-8",
             )
 
@@ -219,7 +219,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -250,7 +250,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://example.com/proof](https://example.com/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://example.com/proof](https://example.com/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -265,7 +265,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (bundle_dir / "report.md").write_text(
-                "Opening summary with replay links.\n[https://example.com/proof](https://example.com/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)\n",
+                "Opening summary with replay links.\nPoC and logs: [https://example.com/proof](https://example.com/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)\n",
                 encoding="utf-8",
             )
             (bundle_dir / "external-evidence.json").write_text(
@@ -286,8 +286,8 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 "\n".join(
                     [
                         "Opening summary with replay links.",
-                        "[https://gist.github.com/example/proof](https://gist.github.com/example/proof)",
-                        "[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "PoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)",
+                        "PoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                     ]
                 )
                 + "\n",
@@ -309,7 +309,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -343,7 +343,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 json.dumps(
                     {
                         "title": "Finding",
-                        "details": "Replay links:\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                        "details": "Replay links:\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                         "external_proof": {
                             "required": True,
                             "type": "secret-gist",
@@ -363,7 +363,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (bundle_dir / "report.md").write_text(
-                "Opening summary with replay links.\n[https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nReplay video follows after this note.\n[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)\n",
+                "Opening summary with replay links.\nPoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)\nReplay video follows after this note.\nPoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)\n",
                 encoding="utf-8",
             )
 
@@ -464,8 +464,8 @@ def primary_report_text() -> str:
         "\n".join(
             [
                 "Opening summary with replay links.",
-                "[https://gist.github.com/example/proof](https://gist.github.com/example/proof)",
-                "[https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
+                "PoC and logs: [https://gist.github.com/example/proof](https://gist.github.com/example/proof)",
+                "PoC runtime: [https://asciinema.org/a/demo123](https://asciinema.org/a/demo123)",
                 "",
                 "## Output from POC",
                 "",

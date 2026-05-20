@@ -10,7 +10,8 @@ Write after discovering the live form. Make the report read like a specific anal
 - Put the exact practical impact in the first sentence.
 - Put the secret gist URL in the opening summary or intro when a gist-backed proof pack exists.
 - Put the `asciinema` URL on the next non-empty line below the gist URL.
-- Format both URLs as markdown links whose visible text matches the URL.
+- Format the reference lines as `PoC and logs: [url](url)` then `PoC runtime: [url](url)`.
+- Keep the markdown link visible text equal to the URL.
 - Keep sentences direct. Prefer one claim per sentence.
 - Use short paragraphs. Break long explanations into steps or evidence bullets.
 - Vary the opening sentence so it reflects the actual bug, not a canned intro.
@@ -54,7 +55,7 @@ Write after discovering the live form. Make the report read like a specific anal
 ## Evidence Mentions
 
 - Mention proof naturally: `The attached video shows...`, `The included HAR captures...`
-- Mention replay links naturally: `[https://gist.github.com/...](https://gist.github.com/...)` then `[https://asciinema.org/a/...](https://asciinema.org/a/...)`
+- Mention replay links naturally: `PoC and logs: [https://gist.github.com/...](https://gist.github.com/...)` then `PoC runtime: [https://asciinema.org/a/...](https://asciinema.org/a/...)`
 - If a separate evidence field exists, keep the summary concise and move proof inventory there.
 - If the PoC is decisive, say so plainly and summarize the decisive output inline before mentioning any supplemental artifact.
 - Do not fake certainty by citing proof that does not exist in `artifacts.json`.
