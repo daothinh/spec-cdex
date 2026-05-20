@@ -57,13 +57,15 @@ Load these references on demand:
    - SSRF, file upload, archive extraction, and path traversal
    - deserialization, template injection, and dangerous helper execution
    - dangerous defaults in auth, storage, and debug configuration
-6. After the first confirmed issue, use `variant-analysis` to search for siblings.
+6. After the first confirmed `medium+` issue, use `variant-analysis` to search for siblings.
 7. If the root cause can be codified, write a reusable rule with `semgrep-rule-creator` and generalize it with `semgrep-rule-variant-creator`.
 
 ## Lane-Specific Notes
 
 - If you already have a logged-in request in Caido, prefer `edit` over hand-rebuilding cookies, CSRF tokens, and auth headers.
 - Use `kage` for recon and breadth. Use `caido` for authenticated mutation, replay-heavy flows, and quick curl PoCs.
+- Before calling a finding `TRUE POSITIVE`, compare it against `scope/target.json`, `scope/in-scope.md`, `scope/rules.md`, and `prep/severity-conditions.md`.
+- Low-only findings do not end the hunt. Keep going until a `medium+` finding exists or an exact scope or environment blocker is recorded.
 - Save decisive Caido request IDs, replay session IDs, filter presets, `export-curl` output paths, and `export-evidence` directories in the local finding bundle.
 - Use `sync-finding` only for operator visibility. Local finding bundles remain authoritative for reverify and report submission.
 - For Next.js or other hybrid stacks, treat server actions, middleware, and internal fetch helpers as first-class attack surface.

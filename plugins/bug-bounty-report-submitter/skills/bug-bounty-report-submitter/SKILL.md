@@ -42,7 +42,7 @@ Optional helper:
 - Have decisive PoC output, logs, assertions, tx results, or balance deltas proving the replay worked from a clean state.
 - Have a final clean replay recorded with `asciinema`. Native PATH is preferred. WSL is only fallback. If both checks fail, stop immediately.
 - For Web3, blockchain, or exchange findings, know the chain, contract or account identifiers, and any tx hash, block number, order ID, or session identifier that makes the proof concrete.
-- Have `manual-review.md` in the finding bundle. This is the mandatory 20-minute checkpoint before submission. It should record who reviewed the claim, what mechanism or business logic was read manually, which cryptographic or domain-logic blockers were checked, and why the finding still survives.
+- Be able to run the automatic preverify gate before drafting. The gate must write `preverify.md` and `preverify-gate.json`, block AI slop, require a standalone PoC code file, require decisive output logs, and reject any replay path that still depends on source-tree `/test`.
 - Do not begin submission work when the proof stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. For financial or payment findings, the bundle must prove value realization, recipient-controlled settlement, claimed funds, balance delta, or a clearly equivalent end-state.
 
 If any precondition is missing, gather it before submission work starts.
@@ -55,7 +55,8 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `impact.md` - observed impact and reasoned extension kept separate
 - `impact-financials.md` - optional asset delta, attack capital, and solvency or settlement impact for web3 or exchange findings
 - `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
-- `manual-review.md` - human checkpoint recording the 20-minute domain-logic review and blockers checked before disclosure
+- `preverify.md` - automatic pre-submit gate summary with independent clearance reasoning or blockers
+- `preverify-gate.json` - machine-readable pre-submit gate verdict, AI-slop result, standalone PoC path, and decisive log path
 - `environment.md` - optional fork, staging, testnet, or static-only replay assumptions
 - `form-schema.json` - live form fields, options, limits, and notes
 - `artifacts.json` - evidence inventory with stable IDs and file paths
@@ -71,7 +72,9 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
 - `asset-delta.md` - optional observed fund movement or market-state change summary
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
-- `proof-pack/` - optional gist-ready runnable PoC pack with appendix, logs, helper files, and manifest
+- `proof-pack/` - gist-ready runnable PoC pack whose two mandatory anchors are the standalone PoC code file and the decisive output-log file
+- `evidence/poc/` - copied standalone PoC code and helper files
+- `evidence/logs/` - copied decisive output logs
 - `evidence/` - screenshots, HAR, `asciinema` `.cast`, video, logs, payloads, PoC files
 - `confirmation.md` - final URL, report ID, screenshots, follow-up notes
 
@@ -83,12 +86,13 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
    - For Web3 or exchange bugs, record chain, network, contract address, tx hash, order ID, market pair, user role, or custody boundary as structured facts, not buried prose.
    - When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before long-form drafting.
-   - Always run `prepare_report_artifacts.py` before drafting so `artifacts.json` and `evidence/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
-   - Run `record_asciinema_replay.py` during the last clean reverify rerun so `artifacts/asciinema/` is present before `prepare_report_artifacts.py` copies the recording into `evidence/asciinema/`.
+   - Standalone PoC code belongs under `artifacts/poc/` and decisive output logs belong under `artifacts/logs/`. If the saved replay still points at source-tree `/test`, stop and fix the finding before drafting.
    - If the finding bundle includes `asciinema` terminal recordings, preserve the `.cast` files as first-class evidence entries. They stay supplemental; the body still needs inline replay steps and decisive PoC output.
    - Treat `poc.md` as incomplete until it includes an exact run command or deterministic replay sequence plus a success signal that can be observed again.
-4. Stop unless `manual-review.md` survives a sanity read. If it documents unresolved blockers, impossible cryptographic assumptions, or a failure to prove end-state impact, do not draft.
-5. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
+4. Run or refresh the automatic preverify gate before drafting. Stop unless `preverify-gate.json` says `status: passed`, `ai_slop_detected: false`, and points to both a standalone PoC code file plus decisive output logs.
+5. Draft `report.md` from `facts.md`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, `preverify.md`, and `preverify-gate.json` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
+6. After the draft is stable, run `record_asciinema_replay.py` for the final clean standalone rerun, then run `prepare_report_artifacts.py` so `artifacts.json`, `evidence/`, `evidence/poc/`, `evidence/logs/`, and `evidence/asciinema/` exist and local proof does not depend on source tool state. If `artifacts/caido/` exists in the finding bundle, preserve those request metadata files, curl PoCs, and response snapshots as first-class evidence entries.
+7. Build `submission.json` from `form-schema.json`, not from a fixed template. Include custom site fields exactly as discovered and precompute title, summary, severity, CVSS, and field-specific short variants from verified facts and `severity.md` only.
    - When `external-evidence.json` exists, add `submission.json.external_proof` with:
      - `required`
      - `type`
@@ -96,12 +100,11 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
      - `source: "external-evidence.json"`
      - `target_field`
      - `inline_note_required`
-6. Draft `report.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/immunefi-body-template.md](references/immunefi-body-template.md), [references/report-structure.md](references/report-structure.md), and [references/report-writing-rules.md](references/report-writing-rules.md). Use the local scaffold only to preserve content order. Rewrite or collapse generic headings before anything reaches the live form so the submitted text reads like a target-specific analyst note, not a reusable skeleton.
-7. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. The final tone should feel careful, serious, and reviewer-friendly rather than automated or promotional. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-8. Build `report-appendix.md` and `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md) for every report bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, the full report, and raw logs that the main form cannot hold comfortably. The final clean replay must also have an uploaded `asciinema` URL from [references/asciinema-proof.md](references/asciinema-proof.md). The inline body must still name the exact bug, exploit path, run command, decisive output, then place `[gist-url](gist-url)` and `[asciinema-url](asciinema-url)` in that order with the `asciinema` link on the next non-empty line.
-9. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form` after bundle prep and again immediately before submit. Treat any failure as a hard blocker.
-10. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the validator passes and the visible form matches `submission.json`, including the required gist reference.
-11. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
+8. Run the evidence, structure, style, and anti-template pass from [references/writing-style.md](references/writing-style.md) plus the checklist in [references/report-writing-rules.md](references/report-writing-rules.md). If the draft still reads like it could be pasted into a different program by changing a few nouns, rewrite it. If a claim is inferred rather than proved, move it out of the title, opening paragraph, and severity rationale. The final tone should feel careful, serious, and reviewer-friendly rather than automated or promotional. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, `false-positive`, or `preverify-blocked`.
+9. Build `report-appendix.md` and `proof-pack/` with [references/external-proof-pack.md](references/external-proof-pack.md) for every report bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, the full report, and raw logs that the main form cannot hold comfortably. The final clean replay must also have an uploaded `asciinema` URL from [references/asciinema-proof.md](references/asciinema-proof.md). The proof pack must include the standalone PoC code file and the decisive output-log file. The inline body must still name the exact bug, exploit path, run command, decisive output, then place `[gist-url](gist-url)` and `[asciinema-url](asciinema-url)` in that order with the `asciinema` link on the next non-empty line.
+10. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form` after bundle prep and again immediately before submit. Treat any failure as a hard blocker.
+11. Use the Playwright flow in [references/playwright-submit.md](references/playwright-submit.md) to fill the live form. Upload nothing by default. Only upload proof when the program explicitly requires an attachment or a supporting artifact cannot be represented inline without losing fidelity. When an attachment is mandatory, prefer `report-appendix.md` as the primary upload rather than raw source files. Do not add unsolicited follow-up comments, moderator notes, or large code dumps after submission unless the reviewer asks for a missing detail or the original form could not carry a decisive replay step. Submit only after the validator passes and the visible form matches `submission.json`, including the required gist reference.
+12. Capture the confirmation page, report ID, and final URL in `confirmation.md`.
 
 ## Report Rules
 

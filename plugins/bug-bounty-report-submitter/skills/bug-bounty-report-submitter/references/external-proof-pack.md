@@ -9,9 +9,9 @@ This is the pattern visible in strong Cantina-style submissions:
 - store the longer helper files, raw logs, or multi-file PoC in a stable secret link or markdown appendix
 
 The secret gist itself should stay tight. Publish only:
-1. all PoC code files needed for re-check
+1. the standalone PoC code files needed for re-check
 2. the full report body
-3. output logs
+3. decisive output logs
 
 ## When To Create It
 
@@ -34,12 +34,13 @@ The local `proof-pack/` should preserve:
 ## Secret Gist Contents
 
 Publish only the reviewer-critical subset, in this order:
-1. PoC replay files from `evidence/` that the rerun actually needs
+1. standalone PoC replay files from `evidence/poc/` or equivalent evidence paths that the rerun actually needs
 2. `report.md` as the full report body. If it is missing, fall back to `report-appendix.md`
-3. output logs from `evidence/`
+3. output logs from `evidence/logs/` or equivalent evidence paths
 
 Do not push manifests, index files, environment notes, severity notes, or generic evidence inventory into the gist unless the workflow is changed explicitly.
 If the rerun needs helper configs, fixtures, ABI files, or support scripts, `poc.md` must name those files explicitly so the gist builder can include them in the first group.
+If the replay still depends on source-tree `/test` or a borrowed repo harness, stop and fix the finding before building the proof pack.
 
 ## Build It
 
@@ -123,5 +124,7 @@ Bad:
 - The body must include the gist URL inline.
 - The body must include the `asciinema` URL inline on the next non-empty line below the gist URL.
 - Both URLs must use markdown link format with visible text equal to the URL.
+- The gist must include the standalone PoC code file.
+- The gist must include the decisive output-log file.
 - The proof pack is for long helper files, raw logs, and multi-file replay support, not for hiding the main claim.
 - Missing the gist reference in either the payload or the report body is a blocker and the report must not be submitted.

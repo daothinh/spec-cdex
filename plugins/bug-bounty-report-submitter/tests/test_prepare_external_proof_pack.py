@@ -69,13 +69,13 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                         "artifacts": [
                             {
                                 "id": "ART-001",
-                                "relative_bundle_path": "evidence/RemoveLiquidityReentrancyPoC.t.sol",
+                                "relative_bundle_path": "evidence/poc/RemoveLiquidityReentrancyPoC.t.sol",
                                 "kind": "script",
                                 "description": "Foundry PoC file",
                             },
                             {
                                 "id": "ART-002",
-                                "relative_bundle_path": "evidence/test-output.log",
+                                "relative_bundle_path": "evidence/logs/test-output.log",
                                 "kind": "text",
                                 "description": "Captured Forge output",
                             },
@@ -97,8 +97,10 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
-            (evidence_dir / "RemoveLiquidityReentrancyPoC.t.sol").write_text("contract PoC {}\n", encoding="utf-8")
-            (evidence_dir / "test-output.log").write_text("[PASS] replay\n", encoding="utf-8")
+            (evidence_dir / "poc").mkdir()
+            (evidence_dir / "logs").mkdir()
+            (evidence_dir / "poc" / "RemoveLiquidityReentrancyPoC.t.sol").write_text("contract PoC {}\n", encoding="utf-8")
+            (evidence_dir / "logs" / "test-output.log").write_text("[PASS] replay\n", encoding="utf-8")
             asciinema_dir = evidence_dir / "asciinema"
             asciinema_dir.mkdir()
             (asciinema_dir / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
@@ -132,8 +134,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             proof_pack_dir = bundle_dir / "proof-pack"
             self.assertTrue((proof_pack_dir / "poc.md").exists())
             self.assertTrue((proof_pack_dir / "report-appendix.md").exists())
-            self.assertTrue((proof_pack_dir / "evidence__RemoveLiquidityReentrancyPoC.t.sol").exists())
-            self.assertTrue((proof_pack_dir / "evidence__test-output.log").exists())
+            self.assertTrue((proof_pack_dir / "evidence__poc__RemoveLiquidityReentrancyPoC.t.sol").exists())
+            self.assertTrue((proof_pack_dir / "evidence__logs__test-output.log").exists())
             self.assertTrue((proof_pack_dir / "external-proof-pack.md").exists())
             self.assertTrue((proof_pack_dir / "external-proof-pack.json").exists())
 
@@ -153,8 +155,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
 
             manifest = json.loads((proof_pack_dir / "external-proof-pack.json").read_text(encoding="utf-8"))
             filenames = {item["pack_filename"] for item in manifest["files"]}
-            self.assertIn("evidence__RemoveLiquidityReentrancyPoC.t.sol", filenames)
-            self.assertIn("evidence__test-output.log", filenames)
+            self.assertIn("evidence__poc__RemoveLiquidityReentrancyPoC.t.sol", filenames)
+            self.assertIn("evidence__logs__test-output.log", filenames)
             self.assertEqual(manifest["gist"]["url"], "https://gist.github.com/example/proof-pack")
             self.assertEqual(manifest["asciinema"]["server_url"], "https://asciinema.org/a/demo123")
 
@@ -162,13 +164,13 @@ class PrepareExternalProofPackTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             output_dir = Path(temp_dir)
             for name in (
-                "evidence__Exploit.sol",
+                "evidence__poc__Exploit.sol",
                 "evidence__helper.py",
                 "evidence__config.json",
                 "poc.md",
                 "report.md",
                 "report-appendix.md",
-                "evidence__run-output.log",
+                "evidence__logs__run-output.log",
                 "evidence__notes.txt",
                 "artifacts.json",
                 "external-proof-pack.md",
@@ -178,8 +180,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             (output_dir / "poc.md").write_text(
                 "\n".join(
                     [
-                        "Run `evidence/Exploit.sol` with helper `helper.py` and config `config.json`.",
-                        "Logs are written to `run-output.log`.",
+                        "Run `evidence/poc/Exploit.sol` with helper `helper.py` and config `config.json`.",
+                        "Logs are written to `evidence/logs/run-output.log`.",
                     ]
                 )
                 + "\n",
@@ -199,8 +201,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                     "category": "report-appendix",
                 },
                 {
-                    "pack_filename": "evidence__Exploit.sol",
-                    "source_relative_path": "evidence/Exploit.sol",
+                    "pack_filename": "evidence__poc__Exploit.sol",
+                    "source_relative_path": "evidence/poc/Exploit.sol",
                     "category": "code",
                 },
                 {
@@ -214,8 +216,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                     "category": "json",
                 },
                 {
-                    "pack_filename": "evidence__run-output.log",
-                    "source_relative_path": "evidence/run-output.log",
+                    "pack_filename": "evidence__logs__run-output.log",
+                    "source_relative_path": "evidence/logs/run-output.log",
                     "category": "text",
                 },
                 {
@@ -235,11 +237,11 @@ class PrepareExternalProofPackTests(unittest.TestCase):
             self.assertEqual(
                 [Path(path).name for path in selected],
                 [
-                    "evidence__Exploit.sol",
+                    "evidence__poc__Exploit.sol",
                     "evidence__helper.py",
                     "evidence__config.json",
                     "report.md",
-                    "evidence__run-output.log",
+                    "evidence__logs__run-output.log",
                 ],
             )
 
@@ -247,13 +249,15 @@ class PrepareExternalProofPackTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = Path(temp_dir) / "bundle"
             (bundle_dir / "evidence" / "asciinema").mkdir(parents=True)
+            (bundle_dir / "evidence" / "poc").mkdir()
+            (bundle_dir / "evidence" / "logs").mkdir()
             (bundle_dir / "poc.md").write_text(
                 "\n".join(
                     [
                         "## Proof of Concept",
                         "",
                         "```bash",
-                        "python exploit.py",
+                        "python evidence/poc/exploit.py",
                         "```",
                         "",
                         "1. Run the exploit.",
@@ -275,6 +279,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            (bundle_dir / "evidence" / "poc" / "exploit.py").write_text("print('exploit')\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "logs" / "run.log").write_text("[PASS] replay worked\n", encoding="utf-8")
             (bundle_dir / "evidence" / "asciinema" / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
             (bundle_dir / "evidence" / "asciinema" / "asciinema-session.json").write_text(
                 json.dumps(
@@ -301,7 +307,11 @@ class PrepareExternalProofPackTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = Path(temp_dir) / "bundle"
             (bundle_dir / "evidence" / "asciinema").mkdir(parents=True)
+            (bundle_dir / "evidence" / "poc").mkdir()
+            (bundle_dir / "evidence" / "logs").mkdir()
             (bundle_dir / "poc.md").write_text("See attached PoC file.\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "poc" / "exploit.py").write_text("print('exploit')\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "logs" / "run.log").write_text("[PASS] replay completed\n", encoding="utf-8")
             (bundle_dir / "evidence" / "asciinema" / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
             (bundle_dir / "evidence" / "asciinema" / "asciinema-session.json").write_text(
                 json.dumps(
@@ -334,14 +344,15 @@ class PrepareExternalProofPackTests(unittest.TestCase):
     def test_fails_without_asciinema_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = Path(temp_dir) / "bundle"
-            (bundle_dir / "evidence").mkdir(parents=True)
+            (bundle_dir / "evidence" / "poc").mkdir(parents=True)
+            (bundle_dir / "evidence" / "logs").mkdir(parents=True)
             (bundle_dir / "poc.md").write_text(
                 "\n".join(
                     [
                         "## Proof of Concept",
                         "",
                         "```bash",
-                        "python exploit.py",
+                        "python evidence/poc/exploit.py",
                         "```",
                     ]
                 )
@@ -361,6 +372,8 @@ class PrepareExternalProofPackTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            (bundle_dir / "evidence" / "poc" / "exploit.py").write_text("print('exploit')\n", encoding="utf-8")
+            (bundle_dir / "evidence" / "logs" / "run.log").write_text("[PASS] replay worked\n", encoding="utf-8")
 
             result = subprocess.run(
                 [

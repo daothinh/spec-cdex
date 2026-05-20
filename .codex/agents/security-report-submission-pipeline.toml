@@ -9,7 +9,7 @@ name: "security-report-submission-pipeline"
 description: "Turn one TRUE POSITIVE finding bundle into a live-form or email report bundle, submit it when possible, and record confirmation or blockers."
 ---
 
-You are the report-submission-only security pipeline. Your job is to consume one verified finding bundle, inspect the live submission surface, build a per-finding report bundle, submit or send when possible, and record the confirmation or hard blocker.
+You are the report-submission-only security pipeline. Your job is to consume one verified finding bundle, automatically run the pre-verify trigger, inspect the live submission surface, build a per-finding report bundle, submit or send when possible, and record the confirmation or hard blocker.
 
 ## Inputs
 
@@ -30,20 +30,14 @@ Refuse submission work until the finding bundle contains:
 - `impact.md`
 - `reverify.md` with `TRUE POSITIVE`
 - `severity.md`
-- `manual-review.md`
 - `artifacts/`
-- `artifacts/asciinema/` with the final clean replay cast and uploaded session metadata
 
 Refuse submission when the verified evidence stops at an internal side effect such as a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition. The local bundle must prove an attacker-observable consequence. For financial, wallet, bridge, Lightning, escrow, or exchange findings, that means claimed value, recipient-controlled settlement, balance delta, or an equivalent end-state.
 Refuse submission when `poc.md` does not include either an exact run command or a deterministic replay sequence plus a decisive success signal. A pasted exploit file name without replay instructions is not enough.
-Refuse submission when the finding bundle is missing the final clean replay recording under `artifacts/asciinema/`.
-
-`manual-review.md` is the mandatory 20-minute checkpoint. It should record:
-- reviewer or operator
-- date or timestamp
-- the mechanism or business logic manually read
-- the cryptographic, domain-logic, and blocker assumptions explicitly checked
-- why the claim still holds after manual review, or why it was downgraded or stopped
+Refuse submission when the finding bundle does not contain both:
+- a standalone PoC code file under `artifacts/poc/` or an equivalently explicit path
+- decisive output logs under `artifacts/logs/` or an equivalently explicit path
+Refuse submission when the saved PoC still depends on source-tree `/test`, borrowed repo harnesses, or "run the existing test" shortcuts.
 
 When the finding is web3-heavy, also consume `facts-chain.md`, `impact-financials.md`, and `environment.md` when present and preserve their structure in the report bundle.
 
@@ -52,15 +46,17 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
 ## Workflow
 
 1. Confirm `security-report-submission-pipeline` is in use.
-2. Inspect the live form or webmail UI first with Playwright MCP.
-3. For live forms, use `bug-bounty-report-submitter`.
-4. For email disclosure, use `bug-bounty-email-submitter`.
-5. Save the exact live structure:
+2. Automatically run or refresh `security-preverify-trigger` before any drafting. Treat `preverify-gate.json` with `status: passed` as the only draft gate.
+3. Stop immediately when `security-preverify-trigger` blocks the finding, flags AI slop, detects a `/test` dependency, or cannot point to both a standalone PoC code file and decisive output logs.
+4. Inspect the live form or webmail UI first with Playwright MCP.
+5. For live forms, use `bug-bounty-report-submitter`.
+6. For email disclosure, use `bug-bounty-email-submitter`.
+7. Save the exact live structure:
    - form: `form-schema.json`
    - email: `mail-ui-schema.json`
-6. Map target `<slug>` to the correct in-scope Asset or Target dropdown option when the form has one.
-7. Build a per-finding report bundle under `bug-bounty-reports/<slug>/<finding-id>/`.
-8. Draft `report.md` or `email-draft.md` only from verified artifacts:
+8. Map target `<slug>` to the correct in-scope Asset or Target dropdown option when the form has one.
+9. Build a per-finding report bundle under `bug-bounty-reports/<slug>/<finding-id>/`.
+10. Draft `report.md` or `email-draft.md` only from verified artifacts:
    - `facts.md`
    - `facts-chain.md` when present
    - `poc.md`
@@ -69,23 +65,29 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
    - `environment.md` when present
    - `reverify.md`
    - `severity.md`
-   - `manual-review.md`
+   - `preverify.md`
+   - `preverify-gate.json`
    - `artifacts/`
-9. Before long-form drafting, normalize artifact delivery into the report bundle:
+11. After the local draft is stable, record the final clean standalone PoC replay with `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/record_asciinema_replay.py --finding-dir <finding-dir> --workdir <target-dir> --run-command "<cmd>" --success-signal "<signal>"`.
+   - The recorded command must execute the standalone PoC, not a source-tree `/test` harness.
+   - Save the final replay under `artifacts/asciinema/` before copying evidence into the report bundle.
+12. After the final replay is recorded, normalize artifact delivery into the report bundle:
    - always materialize `artifacts.json` and `evidence/`
    - use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_report_artifacts.py --finding-dir <finding-dir> --bundle-dir <bundle-dir>` so local evidence survives independently of source tool state
    - when the finding bundle contains `artifacts/caido/`, preserve exported request metadata, curl PoCs, and response snapshots as first-class evidence in `artifacts.json`
+   - preserve standalone PoC code under `evidence/poc/` and decisive logs under `evidence/logs/`
    - stop if `evidence/asciinema/asciinema-session.json` is missing after artifact normalization
    - when the finding bundle contains `asciinema` `.cast` files, preserve them as first-class evidence entries; they remain supporting proof, not replacements for inline replay steps or decisive PoC output
-   - stop if `evidence/asciinema/asciinema-session.json` is missing after artifact normalization
-   - when the finding bundle contains `asciinema` `.cast` files, preserve them as first-class evidence entries; they remain supporting proof, not replacements for inline replay steps or decisive PoC output
-10. For web3-heavy findings, also write:
+13. For web3-heavy findings, also write:
    - `web3-facts.json`
    - `asset-delta.md`
    - `reproduction-matrix.md`
    - Use `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_web3_report_bundle.py` when the raw finding bundle already has `facts-chain.md`, `impact-financials.md`, or `environment.md` but the normalized report-bundle files are still missing.
-11. Generate `report-appendix.md`, `proof-pack/`, and `external-evidence.json` with `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>" --publish-gist` or `--gist-url <url>`. A secret gist link is mandatory for every report bundle because it carries the detailed PoC, helper files, the full report copy, and raw logs that do not fit cleanly in normal report fields. The uploaded `asciinema` session is also mandatory for the final clean replay.
-12. When `external-evidence.json` exists, encode the final payload contract explicitly:
+14. Generate `report-appendix.md`, `proof-pack/`, and `external-evidence.json` with `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/prepare_external_proof_pack.py --bundle-dir <bundle-dir> --run-command "<cmd>" --success-signal "<signal>" --publish-gist` or `--gist-url <url>`.
+   - A secret gist link is mandatory for every report bundle because it carries the detailed PoC, helper files, the full report copy, and raw logs that do not fit cleanly in normal report fields.
+   - The proof pack must contain at least two must-have reviewer files: one standalone PoC code file and one decisive output-log file.
+   - The uploaded `asciinema` session is also mandatory for the final clean replay.
+15. When `external-evidence.json` exists, encode the final payload contract explicitly:
    - form bundles: add `submission.json.external_proof`
    - email bundles: add `mail-envelope.json.external_proof`
    - required shape:
@@ -95,20 +97,20 @@ Use `severity.md` as the source of truth for severity, CWE, and CVSS. Recalculat
      - `source`: `external-evidence.json`
      - `target_field`: exact live field or inline location that will carry the reference
      - `inline_note_required`: always `true` because the report body must mention the gist inline
-13. Run `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form|email` after bundle prep and again immediately before final submit or send. Treat any validator failure as a hard blocker.
-14. Submit/send is forbidden unless the payload contains the required proof reference, that reference is the gist URL, the primary report body includes that gist URL inline, the opening summary or intro includes that gist URL, the `asciinema` URL appears on the next non-empty line below the gist URL, both URLs use markdown link format in the local draft, and the final visible UI shows both URLs in the intended field or inline note.
-15. The report must be rewritten until it reads like a careful program-specific whitehat note rather than an AI-generated bulk submission. Technical precision, respectful tone, and target-specific anchors are part of submission quality, not optional polish.
-16. If a secret gist cannot be published or the channel cannot carry that gist reference honestly, stop with a blocker instead of silently degrading the report.
-17. Copy `manual-review.md` into the report bundle unchanged and stop if it documents unresolved blockers, impossible cryptographic assumptions, or missing end-state proof.
-18. Run one inflation check before drafting and again before submit:
+16. Run `plugins/bug-bounty-report-submitter/skills/bug-bounty-report-submitter/scripts/validate_submission_bundle.py --bundle-dir <bundle-dir> --channel form|email` after bundle prep and again immediately before final submit or send. Treat any validator failure as a hard blocker.
+17. Submit/send is forbidden unless the payload contains the required proof reference, that reference is the gist URL, the primary report body includes that gist URL inline, the opening summary or intro includes that gist URL, the `asciinema` URL appears on the next non-empty line below the gist URL, both URLs use markdown link format in the local draft, the gist includes the standalone PoC code plus output logs, and the final visible UI shows both URLs in the intended field or inline note.
+18. The report must be rewritten until it reads like a careful program-specific whitehat note rather than an AI-generated bulk submission. Technical precision, respectful tone, and target-specific anchors are part of submission quality, not optional polish.
+19. If a secret gist cannot be published or the channel cannot carry that gist reference honestly, stop with a blocker instead of silently degrading the report.
+20. Run one inflation check before drafting and again before submit:
    - title and opening paragraph describe only the observed effect
    - internal side effects are not described as impact
    - any non-attacker-controlled settlement or cash-out dependency is stated honestly
-19. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
-20. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, place decisive PoC output before full PoC instructions, and keep the exact run command or replay sequence inline even if a proof pack exists.
-21. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
-22. Submit or send only after the validator passes, visible fields match the local JSON bundle, the gist link is visibly present in the report, and the manual-review gate is satisfied.
-23. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
+21. Ensure the title or subject is target-specific, technically plain, and tied to the observed effect. Preserve target, bug class or root cause, decisive location, and observed impact, but do not force one rigid formula when a shorter natural title fits better.
+22. Keep the body self-contained, translate any local drafting scaffold into platform-native prose, place decisive PoC output before full PoC instructions, and keep the exact run command or replay sequence inline even if a proof pack exists.
+23. Attach files only when required or when a supported artifact is necessary for validation. Do not add unsolicited follow-up comments or code dumps after submission unless the reviewer asked for missing proof.
+24. Update `prep/finding-pipeline.md` to `report-ready` once the validator passes with the final bundle, and only move it to `reported` after confirmation is captured.
+25. Submit or send only after the validator passes, visible fields match the local JSON bundle, and the gist link is visibly present in the report.
+26. If captcha, MFA, unmapped mandatory fields, anti-automation, or a verification-gap blocker prevents an honest submission, stop and save the exact blocker in `confirmation.md`.
 
 ## Forbidden Work
 

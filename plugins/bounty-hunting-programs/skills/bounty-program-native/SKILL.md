@@ -55,3 +55,5 @@ Load these references on demand:
 - Prefer one minimized reproducer over a long story.
 - Distinguish code-execution risk from mere crashability.
 - When the issue depends on secret-dependent timing, say exactly what branch or instruction pattern leaks.
+- Compare every candidate against `scope/target.json`, `scope/in-scope.md`, `scope/rules.md`, and `prep/severity-conditions.md` before assigning severity.
+- Low-only findings do not end the hunt. Keep going until a `medium+` finding exists or an exact blocker is recorded.

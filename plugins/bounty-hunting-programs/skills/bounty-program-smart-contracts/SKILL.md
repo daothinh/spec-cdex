@@ -65,7 +65,7 @@ Load these references on demand:
    - `kani-proof` for Rust or Solana invariants that need machine-checked confidence
    - `spec-to-code-compliance` when docs, whitepapers, or audits define intended behavior
    - `trailmark` when you need static call paths, blast radius, or taint-guided audit prioritization
-10. Use `variant-analysis` after the first confirmed root cause, not before.
+10. Use `variant-analysis` after the first confirmed `medium+` root cause, not before.
 
 ## Web3 Bootstrap Expectations
 
@@ -78,6 +78,7 @@ When `audit-targets/<slug>/` came from the upgraded bootstrap flow, consume thes
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
 - `prep/web3-readiness.md`
+- `prep/severity-conditions.md`
 
 For EVM targets, do not skip the tool-readiness check. If replay is only `static-only`, say so and adjust claim confidence instead of pretending fork validation happened.
 
@@ -100,3 +101,5 @@ Before going deep, produce:
 - Do not conflate read-only helper functions with exploit surface.
 - Keep findings tied to a concrete state transition or privileged action.
 - Do not treat off-chain oracle, relayer, keeper, or settlement assumptions as "out of band" if exploitability depends on them.
+- Compare every candidate against scope and `prep/severity-conditions.md` before assigning severity.
+- Low-only findings do not end the hunt. Keep going until a `medium+` finding exists or an exact blocker is recorded.

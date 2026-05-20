@@ -279,7 +279,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("gist.github.com URL", result.stderr)
 
-    def test_accepts_success_signal_from_asciinema_cast_when_log_is_absent(self) -> None:
+    def test_blocks_when_output_log_is_absent_even_if_cast_exists(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             bundle_dir = build_bundle(Path(temp_dir) / "bundle")
             (bundle_dir / "report.md").write_text(
@@ -293,7 +293,7 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
-            (bundle_dir / "evidence" / "run.log").unlink()
+            (bundle_dir / "evidence" / "logs" / "run.log").unlink()
             (bundle_dir / "evidence" / "poc-replay.cast").write_text(
                 "\n".join(
                     [
@@ -331,9 +331,10 @@ class ValidateSubmissionBundleTests(unittest.TestCase):
 
             result = run_validator(bundle_dir, "form")
 
-            self.assertEqual(result.returncode, 0, msg=result.stderr)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("missing decisive output log file in evidence/", result.stderr)
             payload = json.loads(result.stdout)
-            self.assertTrue(payload["ok"])
+            self.assertFalse(payload["ok"])
 
     def test_blocks_when_asciinema_url_is_not_below_gist_url(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -377,8 +378,35 @@ def build_bundle(bundle_dir: Path) -> Path:
     evidence_dir.mkdir(parents=True)
     asciinema_dir = evidence_dir / "asciinema"
     asciinema_dir.mkdir()
+    poc_dir = evidence_dir / "poc"
+    poc_dir.mkdir()
+    logs_dir = evidence_dir / "logs"
+    logs_dir.mkdir()
     (bundle_dir / "artifacts.json").write_text(json.dumps({"artifacts": []}) + "\n", encoding="utf-8")
-    (bundle_dir / "manual-review.md").write_text("Manual review passed.\n", encoding="utf-8")
+    (bundle_dir / "preverify.md").write_text("Automatic preverify passed.\n", encoding="utf-8")
+    (bundle_dir / "preverify-gate.json").write_text(
+        json.dumps(
+            {
+                "status": "passed",
+                "independent_verdict": "TRUE POSITIVE",
+                "ai_slop_detected": False,
+                "standalone_poc": {
+                    "required": True,
+                    "path": "artifacts/poc/exploit.py",
+                    "test_harness_dependency": False,
+                },
+                "output_logs": {
+                    "required": True,
+                    "path": "artifacts/logs/run.log",
+                    "success_signal": "[PASS] replay completed",
+                },
+                "blockers": [],
+                "next_stage": "draft-report",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (bundle_dir / "reverify.md").write_text("TRUE POSITIVE\n", encoding="utf-8")
     (bundle_dir / "severity.md").write_text("High\n", encoding="utf-8")
     (bundle_dir / "report.md").write_text(
@@ -395,7 +423,7 @@ def build_bundle(bundle_dir: Path) -> Path:
                 "## Proof of Concept",
                 "",
                 "```bash",
-                "python exploit.py",
+                "python evidence/poc/exploit.py",
                 "```",
                 "",
                 "1. Run the replay command.",
@@ -405,7 +433,8 @@ def build_bundle(bundle_dir: Path) -> Path:
         + "\n",
         encoding="utf-8",
     )
-    (evidence_dir / "run.log").write_text("[PASS] replay completed\n", encoding="utf-8")
+    (poc_dir / "exploit.py").write_text("print('exploit')\n", encoding="utf-8")
+    (logs_dir / "run.log").write_text("[PASS] replay completed\n", encoding="utf-8")
     (asciinema_dir / "reverify-session.cast").write_text("{}\n", encoding="utf-8")
     (asciinema_dir / "asciinema-session.json").write_text(
         json.dumps(

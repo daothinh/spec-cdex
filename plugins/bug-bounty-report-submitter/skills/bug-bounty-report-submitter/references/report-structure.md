@@ -7,12 +7,13 @@ Start from `form-schema.json`, then write only the content the live form actuall
 - Read the live labels, help text, validators, and limits from `form-schema.json`.
 - Build `submission.json` from those fields first.
 - Add a first-class `external_proof` block to `submission.json` or `mail-envelope.json` before drafting.
-- Treat `artifacts.json`, `poc.md`, `impact.md`, and `severity.md` as required inputs, not optional extras.
+- Treat `artifacts.json`, `poc.md`, `impact.md`, `severity.md`, `preverify.md`, and `preverify-gate.json` as required inputs, not optional extras.
 - Treat `poc.md` as incomplete unless it contains an exact run command or deterministic replay sequence and a success signal.
 - Treat attachments as optional by default, not part of the primary report payload.
+- Run the automatic preverify gate before drafting. If it does not pass cleanly, stop before final compression.
 - Prepare `report-appendix.md`, `proof-pack/`, and `external-evidence.json` before final compression. Every report bundle needs the gist-backed proof pack because the detailed PoC and raw logs do not belong solely in normal report fields.
-- Prepare the final `asciinema` replay recording before final compression. Missing `evidence/asciinema/asciinema-session.json` is a hard stop.
-- The secret gist must contain the full runnable PoC, helper files, raw logs, and the final report copy so the reviewer has one canonical proof pack.
+- Record the final standalone `asciinema` replay after the draft is stable and before final compression. Missing `evidence/asciinema/asciinema-session.json` is a hard stop.
+- The secret gist must contain the full runnable PoC, helper files, raw logs, and the final report copy so the reviewer has one canonical proof pack. The standalone PoC code file and decisive output-log file are mandatory.
 - The payload must name the exact target field or inline location that will carry the proof reference. Missing that mapping is a hard stop.
 - For Web3 or exchange targets, also treat chain or environment identifiers, contract or account IDs, tx hashes, order IDs, and role prerequisites as required facts.
 - Draft the full local body with [immunefi-body-template.md](immunefi-body-template.md) before compressing or splitting it for platform-specific fields.
@@ -154,6 +155,7 @@ Avoid:
 - Do not upload raw source files or archives by default.
 - If the platform requires a file upload or the field length makes the report incomplete, create `report-appendix.md` and upload that markdown appendix before considering any raw code file.
 - If the platform allows a reference URL and the full runnable proof needs multiple files or long logs, create `proof-pack/` and publish a secret gist from that pack. Mention the link as a supplement, never as a substitute for the inline narrative.
+- The gist is incomplete if it lacks the standalone PoC code file or the decisive output-log file.
 - If the final replay is recorded, include the uploaded `asciinema` URL directly below the gist URL in the body.
 - Even when `report-appendix.md` is uploaded, the main report fields must still contain the full bug narrative, root cause, exploit path, and decisive PoC output.
 - Follow-up comments are not part of the default structure. Add one only when the reviewer needs missing delta that the original body or appendix could not convey.

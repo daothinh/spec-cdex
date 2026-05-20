@@ -18,7 +18,8 @@ Use after validation and before any submit action. Write for a tired triager: im
 - Do not confuse an internal side effect with impact. A dangerous function call, queued payment, initiated HTLC, emitted event, outbound request, or partial state transition is not enough unless it produces an attacker-observable consequence.
 - For wallet, payment, Lightning, bridge, escrow, and exchange findings, prove settlement, claimability, cash-out, balance delta, or a clearly equivalent end-state. If the attacker does not control the preimage, signature, relayer, keeper, or liquidity dependency required to realize value, downgrade or block the report.
 - For signature-, proof-, or preimage-based findings, name the exact signature, proof, or preimage gate the attacker satisfies. If you cannot show how the attacker obtains the required signature, witness, preimage, or approval, keep that claim out of the title, opening paragraph, and severity rationale.
-- A completed `manual-review.md` is mandatory before submission. If the 20-minute manual review did not happen, the report is not ready.
+- A passed automatic preverify gate is mandatory before submission. `preverify.md` and `preverify-gate.json` must exist, `ai_slop_detected` must be false, and the gate must point to both a standalone PoC code file plus decisive output logs.
+- Do not call a PoC "standalone" if it still depends on source-tree `/test`, `/tests`, or a borrowed repo harness.
 
 ## Evidence Order Is The Default
 
@@ -107,7 +108,7 @@ Good pattern:
 - Do not attach raw source files, exploit scripts, or full test suites when the same information can be expressed inline.
 - Do not write `see attachment for the PoC` as a substitute for the inline exploit walkthrough.
 - If the platform requires an attachment or field limits make inline detail impossible, attach a markdown appendix such as `report-appendix.md` that mirrors the same self-contained structure.
-- If field limits still make the runnable proof incomplete, build `proof-pack/` and optionally publish it as a secret gist. The inline body must still include the exact bug location, replay command or sequence, and decisive output.
+- If field limits still make the runnable proof incomplete, build `proof-pack/` and optionally publish it as a secret gist. The inline body must still include the exact bug location, replay command or sequence, and decisive output. The gist must still carry the standalone PoC code file and the decisive output-log file.
 - If the final replay exists, the inline body must also include the uploaded `asciinema` URL directly below the gist URL.
 - Upload screenshots, HAR files, videos, and logs only as supporting evidence for claims already made inline.
 - If an attachment is optional and adds no decisive evidence, do not upload it.
@@ -196,7 +197,7 @@ Good pattern:
 - No unsolicited follow-up comment is queued that only reformats the same proof.
 - Two identities are used where an authorization boundary is claimed.
 - Severity or CVSS matches the observed impact and prerequisites.
-- `manual-review.md` exists and confirms the 20-minute domain-logic review happened before submission.
+- `preverify.md` and `preverify-gate.json` exist and the automatic preverify gate passed before submission.
 - Remediation is short and optional unless the program asks for it.
 - No speculative verbs survived the final pass.
 - The report is reproducible from the saved local bundle.

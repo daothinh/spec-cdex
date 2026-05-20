@@ -38,9 +38,9 @@ Optional helper:
 - Know the affected asset, prerequisites, impact, and evidence set.
 - Have the recipient email address supplied by the user.
 - Have the sender mailbox URL and any login requirements.
-- Have `manual-review.md` in the finding bundle.
+- Be able to run the automatic preverify gate before drafting. The gate must write `preverify.md` and `preverify-gate.json`, block AI slop, require a standalone PoC code file, require decisive output logs, and reject any replay path that still depends on source-tree `/test`.
 - Have a runnable PoC or deterministic replay sequence plus decisive output in screenshots, HAR, logs, requests, or a PoC file.
-- Have a final clean replay recorded with `asciinema`. Native PATH is preferred. WSL is only fallback. If both checks fail, stop immediately.
+- Be able to record a final clean standalone replay with `asciinema` after the draft is stable. Native PATH is preferred. WSL is only fallback. If both checks fail, stop immediately.
 
 If any precondition is missing, gather it before email work starts.
 
@@ -52,7 +52,8 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `impact.md` - observed impact and reasoned extension kept separate
 - `impact-financials.md` - optional asset delta, attack capital, and solvency or settlement impact for web3 or exchange findings
 - `severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes
-- `manual-review.md` - human checkpoint recording the manual domain review and blockers checked before disclosure
+- `preverify.md` - automatic pre-submit gate summary with independent clearance reasoning or blockers
+- `preverify-gate.json` - machine-readable pre-submit gate verdict, AI-slop result, standalone PoC path, and decisive log path
 - `environment.md` - optional fork, staging, testnet, or static-only replay assumptions
 - `artifacts.json` - evidence inventory with stable IDs and file paths
 - `poc.md` - replayable exploit or reproduction details
@@ -68,7 +69,7 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 - `web3-facts.json` - optional normalized chain-aware facts for web3-heavy findings
 - `asset-delta.md` - optional observed fund movement or market-state change summary
 - `reproduction-matrix.md` - optional prerequisite and replay matrix for web3-heavy findings
-- `proof-pack/` - optional gist-ready runnable PoC pack with appendix, logs, helper files, and manifest
+- `proof-pack/` - gist-ready runnable PoC pack whose two mandatory anchors are the standalone PoC code file and the decisive output-log file
 - `confirmation.md` - sent time, recipient, provider confirmation, screenshot path, follow-up notes
 - `evidence/` - screenshots, HAR, `asciinema` `.cast`, video, logs, payloads, PoC files
 
@@ -76,11 +77,12 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
 
 1. Confirm the recipient address, sender mailbox URL, and whether the program wants plain text, markdown-like formatting, or a strict disclosure template.
 2. Open the mailbox with Playwright MCP before drafting anything long-form. Snapshot the inbox, login flow, compose button, editor type, attachment control, draft affordance, and success indicator. Store the observed UI contract in `mail-ui-schema.json`.
-3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`. Run `record_asciinema_replay.py` during the last clean reverify rerun, then run `prepare_report_artifacts.py` so the email proof does not depend on source tool state.
+3. Normalize the proof package. Separate observed behavior from theory in `facts.md`, copy impact reasoning into `impact.md`, carry severity/CWE/CVSS from `severity.md`, inventory every artifact in `artifacts.json`, store the replayable exploit path in `poc.md`, and carry the independent verdict into `reverify.md`.
    - If the finding bundle includes `asciinema` terminal recordings, preserve the `.cast` files as first-class evidence entries. They stay supplemental; the email body still needs inline replay steps and decisive PoC output.
+   - Standalone PoC code belongs under `artifacts/poc/` and decisive output logs belong under `artifacts/logs/`. If the saved replay still points at source-tree `/test`, stop and fix the finding before drafting.
 4. When web3-heavy finding files exist, preserve them as `facts-chain.md`, `impact-financials.md`, `environment.md`, `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` instead of flattening everything into one prose blob.
    - When the web3-heavy bundle is still raw, use `prepare_web3_report_bundle.py` to materialize `web3-facts.json`, `asset-delta.md`, and `reproduction-matrix.md` before drafting the email body.
-5. Stop unless `manual-review.md` survives a sanity read. If it records unresolved blockers, impossible assumptions, or missing end-state proof, do not send.
+5. Run or refresh the automatic preverify gate before drafting. Stop unless `preverify-gate.json` says `status: passed`, `ai_slop_detected: false`, and points to both a standalone PoC code file plus decisive output logs.
 6. Build `mail-envelope.json` from the verified recipient, `severity.md`, and the discovered mailbox behavior. Do not invent `cc`, `bcc`, reply-to, or tracking settings.
    - When `external-evidence.json` exists, add `mail-envelope.json.external_proof` with:
      - `required`
@@ -89,12 +91,13 @@ Create `bug-bounty-reports/<slug>/<finding-id>/` and keep:
      - `source: "external-evidence.json"`
      - `target_field`
      - `inline_note_required`
-7. Draft `email-draft.md` from `facts.md`, `artifacts.json`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, and `manual-review.md` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
-8. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) plus the checklist in the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Every major claim must map to an artifact or be marked as an explicit assumption. The body must still show the vulnerable function or endpoint, exploit path, exact run command or replay sequence, `Output from POC`, and exploit excerpt even in plain text. The final tone should feel careful, serious, and reviewer-friendly rather than automated or promotional. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, or `false-positive`.
-9. Create `report-appendix.md` and build `proof-pack/` with the shared external-proof-pack workflow for every disclosure bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, the full report, and raw logs. The final clean replay must also have an uploaded `asciinema` URL. The email body must place `[gist-url](gist-url)` and `[asciinema-url](asciinema-url)` in that order, with the `asciinema` link on the next non-empty line starting in the opening summary or intro paragraph.
-10. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel email` after bundle prep and again immediately before send. Treat any failure as a hard blocker.
-11. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
-12. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, including the required gist reference, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
+7. Draft `email-draft.md` from `facts.md`, `poc.md`, `impact.md`, `reverify.md`, `severity.md`, `preverify.md`, and `preverify-gate.json` using [references/email-report-structure.md](references/email-report-structure.md), the [shared Immunefi-style body template](../bug-bounty-report-submitter/references/immunefi-body-template.md), and the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Build the subject from target, exact vuln type, location, and max observed impact.
+8. After the draft is stable, run `record_asciinema_replay.py` for the final clean standalone rerun, then run `prepare_report_artifacts.py` so the email proof does not depend on source tool state.
+9. Run the cleanup pass from the [shared writing-style reference](../bug-bounty-report-submitter/references/writing-style.md) plus the checklist in the [shared report-writing rules](../bug-bounty-report-submitter/references/report-writing-rules.md). Every major claim must map to an artifact or be marked as an explicit assumption. The body must still show the vulnerable function or endpoint, exploit path, exact run command or replay sequence, `Output from POC`, and exploit excerpt even in plain text. The final tone should feel careful, serious, and reviewer-friendly rather than automated or promotional. Do not proceed if the finding is still `reverify-pending`, `needs-more-evidence`, `false-positive`, or `preverify-blocked`.
+10. Create `report-appendix.md` and build `proof-pack/` with the shared external-proof-pack workflow for every disclosure bundle. A secret gist link is mandatory because it carries the detailed PoC, helper files, the full report, and raw logs. The proof pack must include the standalone PoC code file and the decisive output-log file. The final clean replay must also have an uploaded `asciinema` URL. The email body must place `[gist-url](gist-url)` and `[asciinema-url](asciinema-url)` in that order, with the `asciinema` link on the next non-empty line starting in the opening summary or intro paragraph.
+11. Run `validate_submission_bundle.py --bundle-dir <bundle-dir> --channel email` after bundle prep and again immediately before send. Treat any failure as a hard blocker.
+12. Use the Playwright flow in [references/playwright-email-submit.md](references/playwright-email-submit.md) to open a fresh compose window, set the `To` field to the user-specified address, fill the subject and body from `mail-envelope.json` and `email-draft.md`, and save a draft when the provider supports it. Do not attach files by default. If an attachment is genuinely required, prefer `report-appendix.md` instead of raw source files.
+13. Take a final snapshot, verify the visible recipient, subject, body, and attachments match the local bundle, including the required gist reference, then send. Capture the provider confirmation, sent-folder URL if available, and any message ID in `confirmation.md`.
 
 ## Email Rules
 

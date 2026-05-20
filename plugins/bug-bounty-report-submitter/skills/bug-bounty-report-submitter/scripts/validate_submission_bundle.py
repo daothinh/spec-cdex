@@ -11,8 +11,9 @@ from typing import Any
 
 BASE_REQUIRED_FILES = [
     "artifacts.json",
-    "manual-review.md",
     "poc.md",
+    "preverify.md",
+    "preverify-gate.json",
     "reverify.md",
     "severity.md",
     "external-evidence.json",
@@ -49,6 +50,8 @@ COMMAND_PREFIXES = (
     "git clone ",
 )
 OUTPUT_MARKERS = ("[PASS]", "Logs:", "Suite result:", "status code", "balance", "delta", "reserve", "returned", "assert")
+CODE_EXTENSIONS = {".py", ".js", ".ts", ".sh", ".ps1", ".sol", ".rs", ".go", ".c", ".cc", ".cpp", ".java"}
+TEST_PATH_PARTS = {"test", "tests", "__tests__"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -104,6 +107,8 @@ def main() -> int:
         success_signals=success_signals,
         errors=errors,
     )
+    validate_preverify_gate(bundle_dir=bundle_dir, errors=errors)
+    validate_standalone_proof_assets(bundle_dir=bundle_dir, errors=errors)
 
     primary_draft_path = bundle_dir / PRIMARY_DRAFT_BY_CHANNEL[args.channel]
     primary_draft_text = read_text_if_exists(primary_draft_path)
@@ -238,6 +243,98 @@ def validate_external_proof(
             errors.append("submission payload must include the asciinema URL in a report field")
     if gist_url and asciinema_url and not asciinema_appears_below_gist(primary_draft_text, gist_url, asciinema_url):
         errors.append("primary report draft must place the asciinema URL on the next non-empty line below the gist URL")
+
+
+def validate_preverify_gate(*, bundle_dir: Path, errors: list[str]) -> None:
+    gate_path = bundle_dir / "preverify-gate.json"
+    gate = load_json(gate_path)
+    if gate is None:
+        errors.append("invalid JSON payload: preverify-gate.json")
+        return
+
+    status = str(gate.get("status") or "").strip().lower()
+    if status != "passed":
+        errors.append("preverify-gate.json status must be passed before submission")
+
+    independent_verdict = str(gate.get("independent_verdict") or "").strip().upper()
+    if independent_verdict != "TRUE POSITIVE":
+        errors.append("preverify-gate.json independent_verdict must be TRUE POSITIVE")
+
+    if gate.get("ai_slop_detected") is not False:
+        errors.append("preverify-gate.json ai_slop_detected must be false")
+
+    standalone_poc = gate.get("standalone_poc")
+    if not isinstance(standalone_poc, dict):
+        errors.append("preverify-gate.json standalone_poc must be an object")
+    else:
+        if standalone_poc.get("required") is not True:
+            errors.append("preverify-gate.json standalone_poc.required must be true")
+        poc_path = str(standalone_poc.get("path") or "").strip()
+        if not poc_path:
+            errors.append("preverify-gate.json standalone_poc.path is required")
+        elif is_test_harness_path(poc_path):
+            errors.append("preverify-gate.json standalone_poc.path must not point to /test or /tests")
+        if standalone_poc.get("test_harness_dependency") not in (False, None):
+            errors.append("preverify-gate.json standalone_poc.test_harness_dependency must be false")
+
+    output_logs = gate.get("output_logs")
+    if not isinstance(output_logs, dict):
+        errors.append("preverify-gate.json output_logs must be an object")
+    else:
+        if output_logs.get("required") is not True:
+            errors.append("preverify-gate.json output_logs.required must be true")
+        log_path = str(output_logs.get("path") or "").strip()
+        if not log_path:
+            errors.append("preverify-gate.json output_logs.path is required")
+        success_signal = str(output_logs.get("success_signal") or "").strip()
+        if not success_signal:
+            errors.append("preverify-gate.json output_logs.success_signal is required")
+
+
+def validate_standalone_proof_assets(*, bundle_dir: Path, errors: list[str]) -> None:
+    evidence_dir = bundle_dir / "evidence"
+    if not evidence_dir.is_dir():
+        errors.append("missing evidence/ directory")
+        return
+
+    poc_files = [
+        path for path in evidence_dir.rglob("*") if path.is_file() and is_standalone_poc_file(path.relative_to(evidence_dir).as_posix())
+    ]
+    log_files = [
+        path for path in evidence_dir.rglob("*") if path.is_file() and is_output_log_file(path.relative_to(evidence_dir).as_posix())
+    ]
+
+    if not poc_files:
+        errors.append("missing standalone PoC code file in evidence/")
+    if not log_files:
+        errors.append("missing decisive output log file in evidence/")
+
+
+def is_standalone_poc_file(relative_path: str) -> bool:
+    path = Path(relative_path)
+    if is_test_harness_path(relative_path):
+        return False
+    if path.suffix.lower() not in CODE_EXTENSIONS:
+        return False
+    parts = [part.lower() for part in path.parts]
+    if "asciinema" in parts or "caido" in parts:
+        return False
+    return True
+
+
+def is_output_log_file(relative_path: str) -> bool:
+    path = Path(relative_path)
+    lower = relative_path.lower()
+    if path.suffix.lower() == ".log":
+        return True
+    if path.suffix.lower() == ".txt" and ("log" in lower or "output" in lower or "trace" in lower):
+        return True
+    return False
+
+
+def is_test_harness_path(relative_path: str) -> bool:
+    parts = [part.lower() for part in Path(relative_path).parts]
+    return any(part in TEST_PATH_PARTS for part in parts)
 
 
 def emit_and_exit(

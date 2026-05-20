@@ -5,43 +5,38 @@ Source of truth:
 - `.codex/agents/security-bootstrap-pipeline.toml`
 - `.codex/agents/security-hunting-pipeline.toml`
 - `.codex/agents/security-finding-reverify.toml`
+- `.codex/agents/security-preverify-trigger.toml`
 - `.codex/agents/security-report-submission-pipeline.toml`
 
 Use these prompts only to start each stage cleanly.
-Prefer terse outputs. Surface decisive files only. Skip long artifact inventories unless they are directly needed.
+Prefer terse outputs. Show only user-facing essentials.
 
 
-Prompt 1: Bootstrap Outcome + Next Best Attack
-=========================================
+Prompt 1: Bootstrap Outcome
+===========================
 Use the custom agent `security-bootstrap-pipeline` for this run if it is available in `.codex/agents/security-bootstrap-pipeline.toml`.
 
 Input:
-- Program URL or local path: `<url-or-path>`
-- Target type if known: `<web|android|smart-contract|native|unknown>`
-- Constraints: `<rate limit / no destructive testing / test accounts / scope notes>`
+- Target: `<url-or-path>`
+- Constraints: `<scope notes / rate limit / no destructive testing / test accounts>`
 - Extra artifacts: `<burp / caido / apk / contract addresses / docs / audit pdf>`
 
 Focus:
-- Bootstrap the target into `audit-targets/<slug>/`
-- Choose the primary lane
-- Make the lane ready now, or say exactly what blocks it
-- End with the next best attack path for hunting
+- Bootstrap `audit-targets/<slug>/`
+- Lock scope, primary lane, readiness, and severity handoff
+- Leave hunting with no missing setup context
 
 Return only:
-- normalized slug and working directory
-- chosen primary lane
-- follow-on lanes only if they matter
+- in-scope summary and out-of-scope reminders that materially affect hunting
 - trust-boundary summary in 3-5 lines
 - readiness status: `ready`, `partial`, or `blocked`
-- setup attempted and remaining blockers
 - first 3 prioritized bug classes
+- severity conditions for `medium`, `high`, and `critical`
 - decisive bootstrap artifacts only, max 5 repo-relative paths
-  - include `prep/caido-plan.md` when web/API authenticated replay is relevant
-- next best attack path
 
 
-Prompt 2: TRUE POSITIVE + Severity + Exploit Flow
-==================================================
+Prompt 2: Audit + Recon + Hunting -> TRUE POSITIVE + Severity + Exploit Flow
+=============================================================================
 Use the custom agent `security-hunting-pipeline` for this step if it is available in `.codex/agents/security-hunting-pipeline.toml`.
 
 Input:
@@ -51,27 +46,44 @@ Input:
 
 Focus:
 - Resume from bootstrap and hunt the highest-value lane first
-- For web/API, load `prep/caido-plan.md` and use Caido request history when it is faster than rebuilding authenticated requests
-- Reverify before calling anything real
-- Only surface findings that end as `TRUE POSITIVE`
-- If nothing reaches `TRUE POSITIVE`, say so and give the next best attack path
+- Audit the in-scope surfaces, do recon, choose attack directions, then hunt
+- Compare every candidate against scope before confirming it or assigning severity
+- Only `TRUE POSITIVE` findings with final severity `medium`, `high`, or `critical` satisfy the completion bar
 
 Return:
-- one-line outcome: `<n> TRUE POSITIVE` or `no TRUE POSITIVE`
-- for each `TRUE POSITIVE`:
+- one-line outcome: `<n> TRUE POSITIVE (medium+)`, `continue-hunting`, or `blocked`
+- for each `TRUE POSITIVE` that is `medium+`:
   - `finding-id`
-  - severity, plus CVSS/CWE if already established
   - real observed impact only
-  - exploit preconditions
-  - exploit flow as short ordered steps
-  - decisive replay signal or proof
   - finding bundle path
-  - Caido request IDs, replay session IDs, curl exports, or `artifacts/caido/` paths if used
-- blockers before submission, only if a `TRUE POSITIVE` exists
-- next best attack path, only if no `TRUE POSITIVE` exists
+- blockers before submission, only if there is a `TRUE POSITIVE`
+- remaining in-scope attack directions and exact blocker, only when outcome is `continue-hunting` or `blocked`
 
 
-Prompt 3: Submission Success or Exact Blocker
+Prompt 3: Automatic Preverify Gate
+=========================================
+Use the custom agent `security-preverify-trigger` for this step if it is available in `.codex/agents/security-preverify-trigger.toml`.
+
+Inputs:
+- Finding bundle: `audit-targets/<slug>/findings/<finding-id>/`
+- Optional report bundle target: `bug-bounty-reports/<slug>/<finding-id>/`
+- Constraints: `<field limits / attachment rules / no upload unless required>`
+
+Focus:
+- Check if the finding is real or AI slop
+- Require standalone PoC + decisive logs
+- Clear or block report drafting
+
+Return only:
+- status: `passed` or `blocked`
+- standalone PoC code path
+- decisive output-log path
+- saved `preverify.md` path
+- saved `preverify-gate.json` path
+- updated finding-pipeline status
+
+
+Prompt 4: Submission Success or Exact Blocker
 ================================================
 Use the custom agent `security-report-submission-pipeline` for this step if it is available in `.codex/agents/security-report-submission-pipeline.toml`.
 
@@ -82,18 +94,17 @@ Inputs:
 - Constraints: `<field limits / attachment rules / no upload unless required>`
 
 Focus:
-- Build the report bundle from one verified finding
+- Run preverify first
+- Draft only after preverify passes
+- Build the final verified report bundle
 - Submit if possible
-- Only report success or the exact blocker
-- Do not re-summarize the full report body
+- Report only success or the exact blocker
 
 Return only:
 - status: `submitted` or `blocked`
 - channel: `form` or `email`
 - report title or email subject
-- severity, plus CVSS/CWE if applicable
 - confirmation ID, or the exact blocker / validator error
-- decisive missing prerequisite, if blocked
 - saved report bundle path
 - saved `submission.json` or `mail-envelope.json` path
 - manual follow-up only if still required

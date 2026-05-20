@@ -562,11 +562,10 @@ def bootstrap_target(
     attack_surface_map = build_attack_surface_map(target_record, surface_signals, protocol_archetype)
     web3_readiness = assess_web3_readiness(target_record)
     top_assets = collect_top_assets(target_record, repo_results, artifact_results)
-    next_attack_path = recommend_next_attack_path(
+    severity_conditions = build_severity_conditions(
         target=target_record,
         suggested_lane=suggested_lane,
-        follow_on_lanes=follow_on_lanes,
-        top_assets=top_assets,
+        protocol_archetype=protocol_archetype,
     )
     target_record["chain_inventory"] = chain_inventory
     target_record["protocol_archetype"] = protocol_archetype
@@ -577,7 +576,7 @@ def bootstrap_target(
     target_record["domain_logic_checks"] = domain_logic_checks
     target_record["attack_surface_map"] = attack_surface_map
     target_record["web3_readiness"] = web3_readiness
-    target_record["next_attack_path"] = next_attack_path
+    target_record["severity_conditions"] = severity_conditions
 
     environment_readiness = {}
     if readiness_mode != "skip":
@@ -608,6 +607,7 @@ def bootstrap_target(
     write_text(prep_dir / "finding-pipeline.md", render_finding_pipeline())
     write_text(prep_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
     write_text(prep_dir / "protocol-invariants.md", render_protocol_invariants(protocol_archetype, protocol_invariants))
+    write_text(prep_dir / "severity-conditions.md", render_severity_conditions(severity_conditions))
     write_text(
         prep_dir / "domain-logic.md",
         render_domain_logic(
@@ -618,7 +618,7 @@ def bootstrap_target(
             checks=domain_logic_checks,
         ),
     )
-    write_text(prep_dir / "manual-review-checkpoint.md", render_manual_review_checkpoint())
+    write_text(prep_dir / "preverify-trigger.md", render_preverify_trigger())
     write_text(prep_dir / "web3-readiness.md", render_web3_readiness(web3_readiness))
     if environment_readiness:
         write_json(prep_dir / "environment-readiness.json", environment_readiness)
@@ -651,7 +651,7 @@ def bootstrap_target(
             trust_boundaries=trust_boundaries,
             prioritized_bug_classes=prioritized_bug_classes,
             top_assets=top_assets,
-            next_attack_path=next_attack_path,
+            severity_conditions=severity_conditions,
             web3_readiness=web3_readiness,
             environment_readiness=environment_readiness,
         ),
@@ -666,7 +666,7 @@ def bootstrap_target(
         trust_boundaries=trust_boundaries,
         prioritized_bug_classes=prioritized_bug_classes,
         top_assets=top_assets,
-        next_attack_path=next_attack_path,
+        severity_conditions=severity_conditions,
         dependency_boundaries=dependency_boundaries,
         attack_surface_map=attack_surface_map,
         domain_logic_checks=domain_logic_checks,
@@ -701,8 +701,9 @@ def bootstrap_target(
         "bootstrap_summary_file": relative_path(prep_dir / "bootstrap-summary.md", repo_root),
         "attack_surface_file": relative_path(prep_dir / "attack-surface-map.md", repo_root),
         "protocol_invariants_file": relative_path(prep_dir / "protocol-invariants.md", repo_root),
+        "severity_conditions_file": relative_path(prep_dir / "severity-conditions.md", repo_root),
         "domain_logic_file": relative_path(prep_dir / "domain-logic.md", repo_root),
-        "manual_review_checkpoint_file": relative_path(prep_dir / "manual-review-checkpoint.md", repo_root),
+        "preverify_trigger_file": relative_path(prep_dir / "preverify-trigger.md", repo_root),
         "web3_readiness_file": relative_path(prep_dir / "web3-readiness.md", repo_root),
         "environment_readiness_file": relative_path(prep_dir / "environment-readiness.md", repo_root)
         if (prep_dir / "environment-readiness.md").exists()
@@ -1246,30 +1247,62 @@ def assess_web3_readiness(target: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def recommend_next_attack_path(
-    *, target: dict[str, Any], suggested_lane: str, follow_on_lanes: list[str], top_assets: list[str]
-) -> str:
-    lane = suggested_lane
-    if lane == "bounty-program-triage" and follow_on_lanes:
-        lane = follow_on_lanes[0]
+def build_severity_conditions(
+    *,
+    target: dict[str, Any],
+    suggested_lane: str,
+    protocol_archetype: dict[str, str],
+) -> dict[str, list[str]]:
+    common_gate = [
+        "The affected asset, host, contract, package, workflow, or account boundary must be explicitly in scope.",
+        "The proof must stay inside persisted rules, rate limits, and forbidden-action constraints.",
+        "The observed consequence must be attacker-observable, not just a dangerous function call or internal side effect.",
+    ]
+    medium = [
+        *common_gate,
+        "Show a real confidentiality, integrity, availability, authorization, or settlement boundary break with a replayable PoC.",
+        "The impact must not depend entirely on an out-of-scope actor or forbidden destructive action.",
+    ]
+    high = [
+        *common_gate,
+        "Show a material privilege, tenant, custody, or settlement break with direct attacker leverage over a sensitive workflow or asset.",
+        "Show that any required relayer, signer, keeper, oracle, or operator dependency does not block exploitation in practice.",
+    ]
+    critical = [
+        *common_gate,
+        "Show direct asset theft, platform-wide compromise, signer or custody takeover, reliable code execution, or equivalent irreversible impact at scale.",
+        "The end-state must be reproducible with the documented exploit flow, not inferred from a partial transition.",
+    ]
 
-    asset_hint = top_assets[0] if top_assets else "the normalized target workspace"
-    if lane == "bounty-program-web":
-        return f"Start `bounty-program-web` from {asset_hint}; map auth middleware, routes, and object-authorization checks first."
-    if lane == "bounty-program-mobile-android":
-        return f"Start `bounty-program-mobile-android` from {asset_hint}; inspect manifest, network config, local storage, and backend API trust."
-    if lane == "bounty-program-smart-contracts":
-        contract_languages = {contract["language"].lower() for contract in target["smart_contracts"] if contract["language"]}
-        contract_vms = {contract["vm"].lower() for contract in target["smart_contracts"] if contract["vm"]}
-        if contract_languages & {"solidity", "vyper"} or "evm" in contract_vms:
-            return (
-                f"Start `bounty-program-smart-contracts` from {asset_hint}; map privileged entry points first, "
-                "then hand the first deep pass to `evm-protocol-audit` for protocol-specific EVM review."
-            )
-        return f"Start `bounty-program-smart-contracts` from {asset_hint}; enumerate privileged entry points and value-moving invariants first."
-    if lane == "bounty-program-native":
-        return f"Start `bounty-program-native` from {asset_hint}; identify parsers, external byte boundaries, and fuzzable harness targets first."
-    return f"Start `bounty-program-triage` from {asset_hint}; resolve the first executable lane before exploit work."
+    if suggested_lane == "bounty-program-web":
+        medium.append("Typical medium+ web outcomes: cross-account read or write, tenant isolation break, auth bypass, or privileged workflow abuse.")
+        high.append("High web outcomes usually require admin takeover, broad multi-tenant access, secret disclosure with immediate abuse value, or decisive workflow control.")
+        critical.append("Critical web outcomes usually require platform-wide compromise, unauthenticated code execution, or direct high-value asset movement.")
+    elif suggested_lane == "bounty-program-mobile-android":
+        medium.append("Typical medium+ mobile outcomes: exported-component abuse that reaches a backend boundary, account-boundary break, or sensitive local secret exposure with real abuse value.")
+        high.append("High mobile outcomes usually require backend authorization impact, signing-material disclosure, or privileged action abuse beyond the local device.")
+        critical.append("Critical mobile outcomes usually require remote compromise, signing takeover, or platform-wide backend impact.")
+    elif suggested_lane == "bounty-program-smart-contracts":
+        medium.append(
+            f"Typical medium+ contract outcomes for `{protocol_archetype['name']}`: unauthorized state transition, meaningful accounting break, claimable value path, or replayable privileged action."
+        )
+        high.append("High contract outcomes usually require direct fund movement, durable custody break, oracle or signer abuse with realizable value, or systemic insolvency impact.")
+        critical.append("Critical contract outcomes usually require direct large-scale theft, total protocol insolvency, signer takeover, or irreversible settlement control.")
+    elif suggested_lane == "bounty-program-native":
+        medium.append("Typical medium+ native outcomes: proven memory corruption with security impact, parser confusion crossing a privilege boundary, or secret-dependent behavior with real exploit leverage.")
+        high.append("High native outcomes usually require reliable code execution, cross-user data exposure, or privilege-boundary bypass with strong control.")
+        critical.append("Critical native outcomes usually require reliable pre-auth compromise, root or equivalent takeover, or catastrophic key-material exposure.")
+    else:
+        medium.append("Use the primary trust boundary and asset at risk to define the minimum attacker-observable outcome that reaches reportable severity.")
+        high.append("Escalate only when the observed effect materially expands control, custody, or blast radius.")
+        critical.append("Reserve critical for irreversible or platform-wide compromise with direct, reproducible attacker leverage.")
+
+    return {
+        "scope_gate": common_gate,
+        "medium": unique_preserve_order(medium),
+        "high": unique_preserve_order(high),
+        "critical": unique_preserve_order(critical),
+    }
 
 
 def iter_relative_names(root: Path, *, max_depth: int = 4, limit: int = 4000) -> list[str]:
@@ -1458,7 +1491,7 @@ def render_bootstrap_summary(
     trust_boundaries: list[str],
     prioritized_bug_classes: list[dict[str, str]],
     top_assets: list[str],
-    next_attack_path: str,
+    severity_conditions: dict[str, list[str]],
     web3_readiness: dict[str, Any],
     environment_readiness: dict[str, Any],
 ) -> str:
@@ -1474,6 +1507,10 @@ def render_bootstrap_summary(
         "## Active Constraints",
     ]
     lines.extend(render_constraints_list(target))
+    lines.extend(["", "## In Scope Highlights"])
+    lines.extend(render_list(target["in_scope"]))
+    lines.extend(["", "## Out Of Scope Reminders"])
+    lines.extend(render_list(target["out_of_scope"]))
     lines.extend(["", "## Protocol Archetype"])
     lines.extend(render_protocol_archetype_list(protocol_archetype))
     lines.extend(["", "## Trust Boundaries"])
@@ -1485,9 +1522,11 @@ def render_bootstrap_summary(
             "",
             "## Domain Logic Gate",
             "- Use `prep/domain-logic.md` to capture custody, settlement, signature, preimage, proof, and replay assumptions before calling a finding confirmed.",
-            "- Use `prep/manual-review-checkpoint.md` before any finding becomes `report-ready` or enters submission packaging.",
+            "- Use `prep/preverify-trigger.md` before any finding becomes `report-ready` or enters submission packaging.",
         ]
     )
+    lines.extend(["", "## Severity Conditions"])
+    lines.extend(render_severity_conditions_summary_list(severity_conditions))
     lines.extend(["", "## First 3 Prioritized Bug Classes"])
     lines.extend(render_bug_class_list(prioritized_bug_classes))
     if environment_readiness:
@@ -1510,7 +1549,6 @@ def render_bootstrap_summary(
     lines.extend(render_list(auth_state))
     lines.extend(["", "## Top Assets"])
     lines.extend(render_list(top_assets))
-    lines.extend(["", "## Next Best Attack Path", f"- {next_attack_path}"])
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -1525,7 +1563,7 @@ def write_context_pack(
     trust_boundaries: list[str],
     prioritized_bug_classes: list[dict[str, str]],
     top_assets: list[str],
-    next_attack_path: str,
+    severity_conditions: dict[str, list[str]],
     dependency_boundaries: list[str],
     attack_surface_map: dict[str, list[str]],
     domain_logic_checks: list[str],
@@ -1542,9 +1580,9 @@ def write_context_pack(
             follow_on_lanes=follow_on_lanes,
             protocol_archetype=protocol_archetype,
             prioritized_bug_classes=prioritized_bug_classes,
-            next_attack_path=next_attack_path,
         ),
     )
+    write_text(context_pack_dir / "severity-conditions.md", render_severity_conditions(severity_conditions))
     write_text(context_pack_dir / "asset-pointers.md", render_context_asset_pointers(target, top_assets))
     write_text(context_pack_dir / "dependency-boundaries.md", render_dependency_boundaries(dependency_boundaries))
     write_text(context_pack_dir / "attack-surface-map.md", render_attack_surface_map(attack_surface_map))
@@ -1575,7 +1613,8 @@ def render_context_pack_readme() -> str:
         "# Context Pack\n\n"
         "This directory holds bootstrap-only summaries so the hunting pipeline can resume without rebuilding triage context.\n\n"
         "- `trust-boundaries.md` - bootstrap trust-boundary summary\n"
-        "- `lane-decision.md` - primary lane, follow-on lanes, bug-class priorities, and next attack path\n"
+        "- `lane-decision.md` - primary lane, follow-on lanes, and bug-class priorities\n"
+        "- `severity-conditions.md` - scope gate plus conditions that clear medium, high, and critical severity\n"
         "- `asset-pointers.md` - top asset references collected during bootstrap\n"
         "- `protocol-archetype.md` - current protocol classification and why it was chosen\n"
         "- `dependency-boundaries.md` - off-chain and cross-surface trust edges that still matter\n"
@@ -1624,7 +1663,6 @@ def render_context_lane_decision(
     follow_on_lanes: list[str],
     protocol_archetype: dict[str, str],
     prioritized_bug_classes: list[dict[str, str]],
-    next_attack_path: str,
 ) -> str:
     lines = [
         "# Lane Decision",
@@ -1639,8 +1677,31 @@ def render_context_lane_decision(
     lines.extend(render_bug_class_list(prioritized_bug_classes))
     lines.extend(["", "## Archetype Reason"])
     lines.extend(render_list([protocol_archetype["reason"]]))
-    lines.extend(["", "## Next Best Attack Path", f"- {next_attack_path}"])
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_severity_conditions(severity_conditions: dict[str, list[str]]) -> str:
+    lines = ["# Severity Conditions", ""]
+    for title, key in (
+        ("Scope Gate", "scope_gate"),
+        ("Medium", "medium"),
+        ("High", "high"),
+        ("Critical", "critical"),
+    ):
+        lines.extend([f"## {title}", ""])
+        lines.extend(render_list(severity_conditions.get(key, [])))
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_severity_conditions_summary_list(severity_conditions: dict[str, list[str]]) -> list[str]:
+    lines: list[str] = []
+    for title, key in (("Scope Gate", "scope_gate"), ("Medium", "medium"), ("High", "high"), ("Critical", "critical")):
+        items = severity_conditions.get(key, [])
+        if not items:
+            continue
+        lines.append(f"- {title}: {items[0]}")
+    return lines or ["- None recorded"]
 
 
 def render_context_asset_pointers(target: dict[str, Any], top_assets: list[str]) -> str:
@@ -1868,12 +1929,13 @@ def render_ready_for_bounty(
             "- `prep/asset-inventory.md` for local paths and download or clone status",
             "- `prep/tried-and-ruled-out.md` to track attack paths that were tested and discarded",
             "- `prep/finding-pipeline.md` to track candidate, re-verify, and reporting status",
-            "- `prep/bootstrap-summary.md` for trust boundaries, lane choice, bug-class priorities, and the next attack path",
+            "- `prep/bootstrap-summary.md` for scope, trust boundaries, lane choice, bug-class priorities, and severity handoff",
             "- `prep/environment-readiness.md` and `prep/environment-readiness.json` for the current toolchain state, auto-setup actions, and remaining blockers",
+            "- `prep/severity-conditions.md` for the scope gate and the conditions that clear medium, high, and critical severity",
             "- `prep/attack-surface-map.md` for public, privileged, callback, and dependency-centric attack surface",
             "- `prep/protocol-invariants.md` for archetype-specific invariants",
             "- `prep/domain-logic.md` for business-logic, settlement, and cryptographic gates that must be satisfied",
-            "- `prep/manual-review-checkpoint.md` for the mandatory 20-minute human review before submission",
+            "- `prep/preverify-trigger.md` for the automatic submission gate before drafting or submission",
             "- `prep/web3-readiness.md` for toolchain and replay readiness on web3-heavy targets",
             "- `prep/context-pack/` for the resumable hunting context pack",
             "- `prep/kage-plan.md` when web/API breadth testing is part of the next pass",
@@ -1893,7 +1955,7 @@ def render_target_readme(target: dict[str, Any], suggested_lane: str) -> str:
         f"- Program URL: {target['program_url']}",
         f"- Suggested Lane: `{suggested_lane}`",
         "",
-        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/domain-logic.md`, `prep/manual-review-checkpoint.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
+        "See `scope/target.json` for the machine-readable contract, `scope/chain-inventory.json` for normalized network metadata, `scope/target-surface.md` for the host-provided asset map, `scope/smart-contracts.md` for deployed contract metadata, `scope/protocol-archetype.md` and `scope/proxy-topology.md` for web3-first context, `scope/summary.md` for the full scope digest, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/severity-conditions.md`, `prep/domain-logic.md`, `prep/preverify-trigger.md`, `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/` for the hunting handoff, `prep/ready-for-bounty.md` for the suggested lane, and `findings/README.md` for the closed-loop finding bundle layout.",
     ]
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1916,6 +1978,7 @@ def render_finding_pipeline() -> str:
         "# Finding Pipeline\n\n"
         "Use this file to track candidate findings from first hypothesis through independent re-verification and reporting.\n\n"
         "## Evidence Bar\n\n"
+        "- Scope check must pass before a finding can be confirmed or scored.\n"
         "- Do not move a finding to `confirmed` from a source pattern or internal side effect alone.\n"
         "- A dangerous function call, queued invoice or payment, emitted event, outbound request, or partial state transition is not impact by itself.\n"
         "- `confirmed` requires an attacker-observable consequence.\n"
@@ -1927,7 +1990,10 @@ def render_finding_pipeline() -> str:
         "- `true-positive` - independent re-verification passed\n"
         "- `false-positive` - independent re-verification disproved the claim\n"
         "- `needs-more-evidence` - plausible claim but independent proof is incomplete\n"
-        "- `report-ready` - true positive with `severity.md`, `manual-review.md`, and a complete evidence bundle ready for disclosure\n"
+        "- `preverify-pending` - true positive with severity triage but not yet cleared by the automatic submission gate\n"
+        "- `preverify-passed` - automatic submission gate cleared the finding for drafting\n"
+        "- `preverify-blocked` - automatic submission gate found AI slop, `/test` dependence, or missing proof artifacts\n"
+        "- `report-ready` - preverify passed and the final draft, replay, gist, and validation bundle are complete\n"
         "- `reported` - disclosure submitted or sent\n\n"
         "## Candidate Findings\n\n"
         "| ID | Surface | Hypothesis | Hunt Status | PoC Path | Evidence | Next Action |\n"
@@ -1945,6 +2011,7 @@ def render_findings_readme() -> str:
         "Create one directory per finding under this folder once a hypothesis becomes a real candidate for reporting.\n\n"
         "Recommended layout:\n\n"
         "- `findings/<finding-id>/claim.md` - one falsifiable security claim naming the asset, attacker capability, intended control, broken boundary, and observed consequence\n"
+        "- `findings/<finding-id>/scope-check.md` - scope alignment, allowed test method, and why the claimed severity is valid for this program\n"
         "- `findings/<finding-id>/facts.md` - observed facts only, including negative controls and decisive success signals\n"
         "- `findings/<finding-id>/facts-chain.md` - chain, market, tx, block, and contract identifiers for web3 or exchange findings\n"
         "- `findings/<finding-id>/poc.md` - replayable exploit or reproduction path\n"
@@ -1953,22 +2020,27 @@ def render_findings_readme() -> str:
         "- `findings/<finding-id>/environment.md` - fork, staging, testnet, or static-analysis assumptions needed to replay the finding\n"
         "- `findings/<finding-id>/reverify.md` - independent re-verification verdict, failed disproof attempts, and gate review for attacker control, boundary failure, and observed consequence or value realization\n"
         "- `findings/<finding-id>/severity.md` - severity level, CWE, CVSS when applicable, affected asset, preconditions, impact reasoning, and downgrade notes\n"
-        "- `findings/<finding-id>/manual-review.md` - completed 20-minute human review of the mechanism, cryptographic gates, and strongest blocker hypotheses before disclosure\n"
+        "- `findings/<finding-id>/preverify.md` - automatic pre-submit gate summary with independent clearance reasoning or blockers\n"
+        "- `findings/<finding-id>/preverify-gate.json` - machine-readable pre-submit gate verdict, AI-slop result, standalone PoC path, and decisive log path\n"
         "- `findings/<finding-id>/artifacts/` - scripts, payloads, traces, screenshots, logs, or tx data\n\n"
         "Suggested sub-layouts:\n\n"
         "- `findings/<finding-id>/artifacts/caido/` - exported request metadata, curl PoCs, replay responses, and request snapshots from Caido\n"
+        "- `findings/<finding-id>/artifacts/poc/` - standalone PoC code and helper files that do not depend on source-tree `/test`\n"
+        "- `findings/<finding-id>/artifacts/logs/` - decisive output logs proving the replay result\n"
         "- `findings/<finding-id>/artifacts/http/` - raw request pairs, HAR slices, or manual diff logs\n"
         "- `findings/<finding-id>/artifacts/runtime/` - debugger traces, screenshots, or transaction receipts\n\n"
         "Verification notes:\n\n"
         "- Do not report from a dangerous function call, queued payment, initiated HTLC, emitted event, or partial state transition alone.\n"
         "- For financial or payment findings, prove the attacker can realize value, settle the flow, or claim the asset.\n"
         "- For signature-, proof-, or preimage-based findings, state exactly how the attacker satisfies that gate or keep the claim below reportable severity.\n"
+        "- The reportable PoC must be standalone. Do not depend on source-tree `/test`, `/tests`, or borrowed repo harnesses.\n"
         "- Capture at least one negative control that would have falsified the claim if the security boundary were actually sound.\n\n"
         "Lifecycle:\n\n"
-        "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists and the proof reaches an attacker-observable consequence.\n"
+        "1. Move the finding from `untested` to `confirmed` only after a runnable PoC exists, the proof reaches an attacker-observable consequence, and `scope-check.md` is satisfied.\n"
         "2. Create the bundle and move the finding to `reverify-pending`.\n"
         "3. Run `security-finding-reverify` and record `true-positive`, `false-positive`, or `needs-more-evidence`.\n"
-        "4. For each `true-positive`, write `severity.md`, complete `manual-review.md`, and only then let the finding become `report-ready` and feed the report submitter.\n"
+        "4. For each `true-positive`, write `severity.md`, keep the standalone PoC code plus decisive logs clean, confirm the final severity is really `medium` or above if the hunt is to stop, move to `preverify-pending`, and let `security-preverify-trigger` decide whether the report may be drafted.\n"
+        "5. Only after `preverify-passed` should the report pipeline draft the report, record the final replay, build the gist, and move the finding to `report-ready`.\n"
     )
 
 
@@ -2218,30 +2290,38 @@ def render_domain_logic(
         [
             "",
             "## Submission Reminder",
-            "- Before disclosure, copy the relevant reasoning into `findings/<finding-id>/manual-review.md` and record the manual 20-minute review result.",
+            "- Before disclosure, run the automatic submit gate and save the result into `findings/<finding-id>/preverify.md` plus `findings/<finding-id>/preverify-gate.json`.",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
 
 
-def render_manual_review_checkpoint() -> str:
+def render_preverify_trigger() -> str:
     return (
-        "# Manual Review Checkpoint\n\n"
+        "# Preverify Trigger\n\n"
         "Use this before any finding becomes `report-ready` or enters submission packaging.\n\n"
         "## Rule\n\n"
-        "- Spend at least 20 minutes manually reading the decisive mechanism before disclosure.\n"
-        "- Focus on business logic, custody, settlement, and cryptographic gates rather than prose polish.\n"
-        "- If the manual read uncovers an impossible attacker assumption, stop or downgrade the finding.\n\n"
+        "- Run the automatic submit gate before report drafting starts.\n"
+        "- The gate must independently detect AI slop rather than trusting hunter or reverify prose.\n"
+        "- The gate must require a standalone PoC code file and decisive output logs.\n"
+        "- The gate must block any replay path that still depends on source-tree `/test`, `/tests`, or borrowed repo harnesses.\n\n"
         "## Create In Each Reportable Finding Bundle\n\n"
-        "- `findings/<finding-id>/manual-review.md`\n\n"
-        "## Required Sections For `manual-review.md`\n\n"
-        "- Reviewer or operator\n"
-        "- Date or timestamp\n"
-        "- Approximate time spent, with a target of at least 20 minutes\n"
-        "- Mechanism manually reviewed\n"
-        "- Cryptographic or domain-logic gates checked: signatures, preimages, proofs, witnesses, nonce, replay, settlement, custody, or equivalent\n"
-        "- Strongest blocker hypotheses considered\n"
-        "- Why the claim still holds, or why it was downgraded or stopped\n"
+        "- `findings/<finding-id>/preverify.md`\n"
+        "- `findings/<finding-id>/preverify-gate.json`\n\n"
+        "## Required Sections For `preverify.md`\n\n"
+        "- Independent exploitability restatement\n"
+        "- Standalone PoC path and why it is independent from `/test`\n"
+        "- Decisive output-log path and success signal\n"
+        "- AI-slop or inflation checks performed\n"
+        "- Final preverify status and blockers, if any\n\n"
+        "## Required Fields For `preverify-gate.json`\n\n"
+        "- `status`\n"
+        "- `independent_verdict`\n"
+        "- `ai_slop_detected`\n"
+        "- `standalone_poc`\n"
+        "- `output_logs`\n"
+        "- `blockers`\n"
+        "- `next_stage`\n"
     )
 
 

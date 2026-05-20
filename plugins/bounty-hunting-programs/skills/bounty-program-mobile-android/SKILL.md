@@ -50,4 +50,6 @@ Load these references on demand:
 
 - Do not claim a mobile-only bug if the real issue is backend authorization.
 - Use dynamic testing to confirm reachability whenever static analysis finds an interesting path.
+- Compare every candidate against `scope/target.json`, `scope/in-scope.md`, `scope/rules.md`, and `prep/severity-conditions.md` before assigning severity.
+- Low-only findings do not end the hunt. Keep going until a `medium+` finding exists or an exact blocker is recorded.
 - Keep the proof safe: avoid mass requests, destructive writes, or broad data extraction.

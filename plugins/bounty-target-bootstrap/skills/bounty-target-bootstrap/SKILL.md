@@ -43,7 +43,7 @@ Load these on demand:
 4. Normalize findings into a JSON file matching `references/workspace-contract.md`.
 5. Run:
    `python plugins/bounty-target-bootstrap/skills/bounty-target-bootstrap/scripts/bootstrap_target.py --input <json> --repo-root . --readiness-mode ensure`
-6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/context-pack/`, and `prep/ready-for-bounty.md`.
+6. Review `audit-targets/<slug>/scope/target.json`, `scope/target-surface.md`, `scope/smart-contracts.md`, `prep/bootstrap-summary.md`, `prep/environment-readiness.md`, `prep/severity-conditions.md`, `prep/context-pack/`, and `prep/ready-for-bounty.md`.
 7. For web3-heavy targets, ensure the generated handoff also includes `scope/chain-inventory.json`, `scope/protocol-archetype.md`, `scope/proxy-topology.md`, `scope/dependency-boundaries.md`, `prep/attack-surface-map.md`, `prep/protocol-invariants.md`, and `prep/web3-readiness.md`.
 8. When the target keeps a web/API lane alive, ensure bootstrap also emits `prep/kage-plan.md`, `prep/caido-plan.md`, and `prep/context-pack/web-handoff.md`.
 9. Do not stop at scope capture if the environment is not ready. Assess the local toolchain and attempt repo-local setup immediately:
@@ -59,6 +59,7 @@ Load these on demand:
    - `prep/bootstrap-summary.md`
    - `prep/environment-readiness.md`
    - `prep/environment-readiness.json`
+   - `prep/severity-conditions.md`
    - `prep/kage-plan.md` when web/API breadth testing stays in scope
    - `prep/caido-plan.md` when authenticated replay is likely useful
    - `prep/attack-surface-map.md`
@@ -91,7 +92,8 @@ Load these on demand:
 - For web3-heavy targets, write dedicated files for chain inventory, proxy topology, dependency boundaries, attack-surface mapping, protocol invariants, and readiness.
 - Write a reusable handoff state bundle for asset inventory, tried paths, finding lifecycle state, and the per-finding evidence contract.
 - Write a reusable readiness bundle that records the current toolchain state, auto-setup actions, and remaining blockers.
-- Write `prep/bootstrap-summary.md` so the hunting pipeline can resume without reconstructing trust boundaries, lane choice, or next best attack path.
+- Write `prep/bootstrap-summary.md` so the hunting pipeline can resume without reconstructing scope, trust boundaries, lane choice, or severity expectations.
+- Write `prep/severity-conditions.md` so hunting can compare each candidate against the program's medium, high, and critical bars before stopping.
 - Write `prep/context-pack/` with bootstrap-friendly summaries or pointers for the baseline context.
 - Clone source repos when a git URL exists.
 - Download APK or source archives when direct URLs exist and are explicitly in scope.

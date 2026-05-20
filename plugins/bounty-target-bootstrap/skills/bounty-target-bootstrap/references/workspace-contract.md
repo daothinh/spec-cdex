@@ -167,6 +167,7 @@ Each `smart_contracts` entry may include:
 - `prep/bootstrap-summary.md`
 - `prep/environment-readiness.md`
 - `prep/environment-readiness.json`
+- `prep/severity-conditions.md`
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
 - `prep/web3-readiness.md`
@@ -200,6 +201,7 @@ The generated `scope/target.json` also records:
 The generated `findings/README.md` defines the closed-loop per-finding bundle contract used by the standard pipeline:
 
 - `claim.md`
+- `scope-check.md`
 - `facts.md`
 - `facts-chain.md` for chain, market, tx, block, and contract identifiers on web3-heavy findings
 - `poc.md`
@@ -213,16 +215,17 @@ The generated `findings/README.md` defines the closed-loop per-finding bundle co
 The generated `prep/bootstrap-summary.md` is the hunting handoff contract and should summarize:
 
 - active constraints
+- decisive in-scope assets and out-of-scope reminders
 - trust-boundary summary
 - chosen primary lane
 - follow-on lanes
 - protocol archetype
 - first three prioritized bug classes
+- severity conditions that clear medium, high, and critical
 - environment readiness status, active tool profiles, and remaining blockers
 - auth or test-account state
 - top endpoints, repos, binaries, APKs, contracts, or other assets
 - toolchain and replay readiness for web3-heavy targets
-- next best attack path
 
 The generated `prep/finding-pipeline.md` also uses explicit lifecycle states:
 
@@ -232,5 +235,8 @@ The generated `prep/finding-pipeline.md` also uses explicit lifecycle states:
 - `true-positive`
 - `false-positive`
 - `needs-more-evidence`
+- `preverify-pending`
+- `preverify-passed`
+- `preverify-blocked`
 - `report-ready`
 - `reported`

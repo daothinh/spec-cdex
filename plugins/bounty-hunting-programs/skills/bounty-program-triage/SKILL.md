@@ -48,12 +48,17 @@ Load these references on demand:
    - off-chain vs on-chain control plane
    - wallet or browser-extension origin trust
    - exchange custody, settlement, and signer boundaries
-7. Run baseline building blocks when relevant:
+7. Write severity conditions before handing off hunting:
+   - what concrete observed effect would clear `medium`
+   - what stronger attacker control or blast radius would clear `high`
+   - what irreversible or platform-wide consequence would clear `critical`
+   - which out-of-scope assets or forbidden actions must never be used to inflate impact
+8. Run baseline building blocks when relevant:
    - `audit-context-building` for unfamiliar architectures
    - `supply-chain-risk-auditor` for risky dependency surface
    - `sharp-edges` and `insecure-defaults` for language/framework anti-patterns
    - `agentic-actions-auditor` if CI, GitHub Actions, or AI-agent workflows are in scope
-8. If the first confirmed issue exposes a repeatable pattern, expand with `variant-analysis`.
+9. If the first confirmed `medium+` issue exposes a repeatable pattern, expand with `variant-analysis`.
 
 ## Web3-Specific Routing Rule
 
@@ -69,6 +74,7 @@ Before switching to a deeper lane, produce:
 - the surface inventory, including wallet, blockchain, and exchange context when present
 - the top trust boundaries to test first
 - the first three bug classes to prioritize
+- the scope gate and severity conditions that hunting must satisfy before stopping
 
 ## Rules
 

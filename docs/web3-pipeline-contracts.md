@@ -26,10 +26,11 @@ Bootstrap should also emit:
 - `prep/bootstrap-summary.md`
 - `prep/environment-readiness.md`
 - `prep/environment-readiness.json`
+- `prep/severity-conditions.md`
 - `prep/attack-surface-map.md`
 - `prep/protocol-invariants.md`
 - `prep/domain-logic.md`
-- `prep/manual-review-checkpoint.md`
+- `prep/preverify-trigger.md`
 - `prep/web3-readiness.md`
 - `prep/context-pack/`
 
@@ -39,6 +40,7 @@ Bootstrap should also emit:
 
 - `trust-boundaries.md`
 - `lane-decision.md`
+- `severity-conditions.md`
 - `asset-pointers.md`
 - `protocol-archetype.md`
 - `dependency-boundaries.md`
@@ -52,12 +54,14 @@ Bootstrap should also emit:
 Every finding bundle still uses the generic core files:
 
 - `claim.md`
+- `scope-check.md`
 - `facts.md`
 - `poc.md`
 - `impact.md`
 - `reverify.md` with gate review and verdict
 - `severity.md`
-- `manual-review.md`
+- `preverify.md`
+- `preverify-gate.json`
 - `artifacts/`
 
 For web3 or exchange-heavy findings, add:
@@ -73,7 +77,8 @@ For web3 or exchange-heavy disclosures under `bug-bounty-reports/<slug>/<finding
 - `web3-facts.json`
 - `asset-delta.md`
 - `reproduction-matrix.md`
-- `manual-review.md` copied from the verified finding bundle
+- `preverify.md` copied from the verified finding bundle
+- `preverify-gate.json` copied from the verified finding bundle
 
 ## Readiness Expectations
 
@@ -109,3 +114,4 @@ For web3-heavy and exchange-heavy findings, do not stop at code reachability or 
 - how the attacker satisfies the decisive signature, proof, witness, preimage, or approval gate
 - how settlement or value realization actually occurs
 - why any relayer, keeper, signer, or off-chain engine dependency does not kill exploitability
+- why the affected asset and claimed severity are still in scope

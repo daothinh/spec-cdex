@@ -52,16 +52,19 @@ Every playbook follows the same reportable sequence:
 1. Read program rules, scope, and safe-harbor constraints.
 2. Fingerprint the target stack and trust boundaries.
 3. Map attack surface before testing or exploit reasoning.
-4. Use the most specific Codex-ready building blocks available for that target.
-5. Reproduce the issue with the least-destructive evidence that still proves impact.
-6. Expand to variants only after the first issue is understood.
-7. Package evidence using the shared reporting checklist.
+4. Record the scope gate and the conditions that would clear `medium`, `high`, or `critical`.
+5. Use the most specific Codex-ready building blocks available for that target.
+6. Reproduce the issue with the least-destructive evidence that still proves impact.
+7. Scope-check the finding before assigning severity or calling it `TRUE POSITIVE`.
+8. Expand to variants only after the first `medium+` issue is understood.
+9. Package evidence using the shared reporting checklist.
 
 The routing layer now keeps hybrid Web3 targets honest:
 
 - wallet, blockchain, and exchange context stay visible during triage
 - smart-contract review now classifies protocol archetypes before deep review
 - hybrid targets can keep follow-on lanes in scope instead of forcing a fake single-lane answer
+- the hunting loop is not considered complete while every confirmed issue remains below `medium`
 
 ## Recommended Install Set
 

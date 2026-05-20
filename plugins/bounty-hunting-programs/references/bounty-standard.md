@@ -7,6 +7,7 @@ Use this flow across every target class in this plugin.
 - Capture the program rules, explicit out-of-scope assets, rate-limit guidance, and whether test accounts are permitted.
 - Identify what evidence is acceptable: screenshots, request/response pairs, transaction traces, crash logs, or invariant violations.
 - Record anything that constrains testing: production-only assets, no-destructive-testing language, prohibited spam, or financial-loss limits.
+- Write down what kinds of observed impact would reasonably clear `medium`, `high`, or `critical` severity for this program.
 
 ## 2. Fingerprint
 
@@ -31,10 +32,12 @@ Use this flow across every target class in this plugin.
 - Prove the bug with the smallest safe reproduction.
 - Show why a normal user or attacker can reach the vulnerable state.
 - Keep evidence concise: requests, parameters, traces, or minimal PoC steps.
+- Compare the candidate against scope before calling it real.
+- Separate low-signal clues from attacker-observable consequence and real value realization.
 
 ## 6. Variant Expansion
 
-- Only expand after understanding the first confirmed pattern.
+- Only expand after understanding the first confirmed `medium+` pattern.
 - Reuse `variant-analysis` or a targeted grep/rule search to find siblings.
 - Group variants by root cause, not by superficial syntax.
 
@@ -44,3 +47,4 @@ Use this flow across every target class in this plugin.
 - State prerequisites clearly.
 - Separate assumptions from confirmed facts.
 - Include impact in terms the program owner will accept.
+- Do not stop the hunt while only low-severity findings exist and in-scope attack paths still remain.

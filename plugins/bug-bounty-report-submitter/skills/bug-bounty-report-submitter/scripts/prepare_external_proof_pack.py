@@ -44,6 +44,8 @@ COMMAND_PREFIXES = (
 )
 OUTPUT_MARKERS = ("[PASS]", "Logs:", "Suite result:", "status code", "balance", "delta", "reserve", "returned", "assert")
 ASCIINEMA_URL_PATTERN = re.compile(r"^https?://asciinema\.org/a/\S+$", re.IGNORECASE)
+CODE_EXTENSIONS = {".py", ".js", ".ts", ".sh", ".ps1", ".sol", ".rs", ".go", ".c", ".cc", ".cpp", ".java"}
+TEST_PATH_PARTS = {"test", "tests", "__tests__"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,6 +91,7 @@ def main() -> int:
     title = args.title or f"{bundle_dir.parent.name}/{bundle_dir.name} runnable proof pack"
     artifact_map = load_artifact_map(bundle_dir / "artifacts.json")
     pack_files = copy_bundle_files(bundle_dir, output_dir, artifact_map)
+    gist_candidate_files = select_gist_files(output_dir=output_dir, pack_files=pack_files)
     asciinema_session = load_asciinema_session(bundle_dir)
 
     poc_text = read_text_if_exists(bundle_dir / "poc.md")
@@ -123,6 +126,7 @@ def main() -> int:
             "link_markdown": markdown_link(asciinema_session["server_url"]),
         },
         "gist": {"published": False, "url": None, "visibility": None},
+        "gist_candidate_files": [Path(path).name for path in gist_candidate_files],
         "files": pack_files,
     }
     index_path = output_dir / "external-proof-pack.md"
@@ -147,7 +151,7 @@ def main() -> int:
         raise SystemExit("error: provide either --publish-gist or --gist-url, not both")
     if args.publish_gist:
         gist_desc = args.gist_desc or title
-        gist_url = publish_gist(output_dir=output_dir, description=gist_desc, pack_files=pack_files)
+        gist_url = publish_gist(output_dir=output_dir, description=gist_desc, gist_candidate_files=gist_candidate_files)
     if not gist_url:
         raise SystemExit("error: gist link is required. Use --publish-gist or provide --gist-url.")
     manifest["gist"] = {"published": True, "url": gist_url, "visibility": "secret"}
@@ -213,6 +217,7 @@ def main() -> int:
             "url": gist_url,
             "visibility": "secret",
         },
+        "mandatory_reviewer_files": [Path(path).name for path in gist_candidate_files],
     }
     external_evidence_path = bundle_dir / "external-evidence.json"
     external_evidence_path.write_text(json.dumps(external_evidence, indent=2) + "\n", encoding="utf-8")
@@ -442,8 +447,8 @@ def validate_replay_material(*, poc_text: str, run_commands: list[str], replay_s
         raise SystemExit("error: no decisive success signal found. Add --success-signal or include observed output in report.md/report-appendix.md.")
 
 
-def publish_gist(*, output_dir: Path, description: str, pack_files: list[dict[str, Any]]) -> str:
-    files = select_gist_files(output_dir=output_dir, pack_files=pack_files)
+def publish_gist(*, output_dir: Path, description: str, gist_candidate_files: list[str]) -> str:
+    files = gist_candidate_files
     if not files:
         raise SystemExit("error: proof-pack directory is empty; nothing to publish")
     result = subprocess.run(
@@ -520,13 +525,29 @@ def select_gist_files(*, output_dir: Path, pack_files: list[dict[str, Any]]) -> 
             log_seen.add(filename)
 
     ordered = unique_paths(replay_files) + unique_paths(report_files) + unique_paths(log_files)
+    standalone_poc_candidates = [
+        path
+        for path in ordered
+        if is_standalone_poc_item(next((item for item in evidence_items if str(output_dir / str(item.get("pack_filename") or "").strip()) == path), None))
+    ]
+    output_log_candidates = [
+        path
+        for path in ordered
+        if is_output_log_item(next((item for item in evidence_items if str(output_dir / str(item.get("pack_filename") or "").strip()) == path), None))
+    ]
+    if not standalone_poc_candidates:
+        raise SystemExit("error: proof-pack must include a standalone PoC code file and it must not depend on /test")
+    if not output_log_candidates:
+        raise SystemExit("error: proof-pack must include a decisive output log file")
     return ordered
 
 
 def is_default_replay_file(*, source_relative_path: str, category: str) -> bool:
     if not source_relative_path.startswith("evidence/"):
         return False
-    return category in {"code", "script"}
+    if is_test_harness_path(source_relative_path):
+        return False
+    return category in {"code", "script"} or Path(source_relative_path).suffix.lower() in CODE_EXTENSIONS
 
 
 def referenced_evidence_items(*, reference_text: str, evidence_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -580,6 +601,32 @@ def is_output_log_file(*, filename: str, source_relative_path: str, category: st
     return False
 
 
+def is_standalone_poc_item(item: dict[str, Any] | None) -> bool:
+    if not item:
+        return False
+    source_relative_path = str(item.get("source_relative_path") or "").strip()
+    if not source_relative_path.startswith("evidence/"):
+        return False
+    if is_test_harness_path(source_relative_path):
+        return False
+    category = str(item.get("category") or "").strip().lower()
+    suffix = Path(source_relative_path).suffix.lower()
+    return category in {"code", "script"} or suffix in CODE_EXTENSIONS
+
+
+def is_output_log_item(item: dict[str, Any] | None) -> bool:
+    if not item:
+        return False
+    filename = str(item.get("pack_filename") or "").strip()
+    source_relative_path = str(item.get("source_relative_path") or "").strip()
+    category = str(item.get("category") or "").strip().lower()
+    return is_output_log_file(filename=filename, source_relative_path=source_relative_path, category=category)
+
+
+def is_test_harness_path(relative_path: str) -> bool:
+    return any(part.lower() in TEST_PATH_PARTS for part in Path(relative_path).parts)
+
+
 def unique_paths(values: list[str]) -> list[str]:
     seen: set[str] = set()
     output: list[str] = []
@@ -626,6 +673,7 @@ def render_index(
             "## Suggested Reference Text",
             "",
             "Full runnable PoC, raw logs, and helper files are preserved in the linked secret gist.",
+            "The gist must include the standalone PoC code file and the decisive output-log file.",
         ]
     )
     if gist_url:

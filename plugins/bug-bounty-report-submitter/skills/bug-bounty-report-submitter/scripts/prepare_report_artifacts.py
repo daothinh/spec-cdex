@@ -170,6 +170,8 @@ def infer_kind(rel_source: Path) -> str:
         return "text"
     if suffix in {".py", ".js", ".ts", ".sh", ".ps1"}:
         return "script"
+    if suffix in {".sol", ".rs", ".go", ".c", ".cc", ".cpp", ".java"}:
+        return "code"
     return "artifact"
 
 

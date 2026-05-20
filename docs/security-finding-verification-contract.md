@@ -22,6 +22,7 @@ Those may be useful clues, but they are not reportable impact unless they lead t
 Every `claim.md` should answer:
 
 - which asset is at risk
+- why that asset or workflow is in scope
 - what attacker capability exists at the start
 - which control is supposed to stop the attacker
 - which exact trust boundary fails
@@ -62,6 +63,7 @@ The pipeline should distinguish these levels:
 
 Do not call a finding `confirmed`, `TRUE POSITIVE`, or `report-ready` when any of these remain unresolved:
 
+- the affected asset, workflow, or user boundary is out of scope or the method violated persisted rules
 - the proof ends at an internal side effect instead of an attacker-visible consequence
 - the attacker does not control a required preimage, signature, relayer, keeper, settlement worker, or liquidity dependency
 - the attacker does not control a required proof, witness, approval, or other domain-logic gate
@@ -136,18 +138,20 @@ sleep 2
 - carry both the local cast and uploaded URL into the report bundle
 - place the `asciinema` URL directly under the gist URL in the report link block
 
-## Manual 20-Minute Gate
+## Automatic Preverify Gate
 
-Before any finding becomes `report-ready` or enters submission packaging, a human must complete `manual-review.md`.
+Before any finding becomes `report-ready` or enters submission packaging, the pipeline must run an independent pre-verify gate.
 
-That review should record:
+`security-preverify-trigger` is that gate. Its job is to block AI slop before report drafting starts.
 
-- who reviewed the finding
-- when the review happened
-- that at least about 20 minutes were spent on the mechanism
-- what business logic or cryptographic mechanism was read manually
-- which blocker hypotheses were checked
-- why the claim still holds, or why it was downgraded or stopped
+Minimum bar:
+
+- write `preverify.md`
+- write `preverify-gate.json`
+- require a standalone PoC code file
+- require decisive output logs
+- block any replay path that depends on source-tree `/test` or borrowed source-owned harnesses
+- block any claim where the saved PoC, logs, and stated impact no longer line up
 
 ## Submission Discipline
 
@@ -161,3 +165,12 @@ If the proof shows only:
 - a state machine entering an intermediate state
 
 then the report should stop until the end-state is proved or the claim is downgraded to the actually observed effect.
+
+## Hunting Completion Bar
+
+The hunting pipeline should not conclude "done" while every confirmed issue is still below `medium` and at least one in-scope attack path remains testable.
+
+Stop only when one of these is true:
+
+- at least one `TRUE POSITIVE` is in scope and clearly `medium`, `high`, or `critical`
+- an exact scope or environment blocker prevents further in-scope hunting
